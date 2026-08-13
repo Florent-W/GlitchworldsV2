@@ -1,3 +1,550 @@
+/* ===============================================================
+   1. Design tokens GlitchWorlds
+   Source unique de vérité : couleurs, rayons, ombres, espacements.
+   =============================================================== */
+:root {
+    --gw-primary: #2f7df6;
+    --gw-primary-rgb: 47, 125, 246;
+    --gw-primary-dark: #1f63cf;
+    --gw-secondary: #8b5cf6;
+    --gw-secondary-rgb: 139, 92, 246;
+
+    --gw-background: #eef5ff;
+    --gw-background-accent: #dbe9ff;
+    --gw-surface: rgba(255, 255, 255, 0.82);
+    --gw-surface-solid: #ffffff;
+
+    --gw-text: #0f172a;
+    --gw-muted: #64748b;
+    --gw-border: rgba(47, 125, 246, 0.16);
+
+    --gw-radius-sm: 0.5rem;
+    --gw-radius-md: 1rem;
+    --gw-radius-lg: 1.5rem;
+    --gw-radius-pill: 999px;
+
+    --gw-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    --gw-shadow-soft: 0 4px 16px rgba(15, 23, 42, 0.08);
+    --gw-glow: 0 0 0 3px rgba(var(--gw-primary-rgb), 0.18);
+
+    --gw-rail-width: 104px;
+}
+
+/* ===============================================================
+   2. Pont vers Bootstrap
+   Nos tokens pilotent les variables Bootstrap : on ne réécrit pas
+   les composants, on les reconfigure.
+   =============================================================== */
+:root {
+    --bs-primary: var(--gw-primary);
+    --bs-primary-rgb: var(--gw-primary-rgb);
+    --bs-secondary: var(--gw-secondary);
+    --bs-secondary-rgb: var(--gw-secondary-rgb);
+    --bs-body-color: var(--gw-text);
+    --bs-body-bg: var(--gw-background);
+    --bs-link-color: var(--gw-primary);
+    --bs-link-color-rgb: var(--gw-primary-rgb);
+    --bs-link-hover-color: var(--gw-primary-dark);
+    --bs-border-color: var(--gw-border);
+    --bs-border-radius: var(--gw-radius-sm);
+    --bs-border-radius-lg: var(--gw-radius-md);
+    --bs-border-radius-xl: var(--gw-radius-lg);
+}
+
 body {
-    background-color: skyblue;
+    min-height: 100vh;
+    background-image:
+        radial-gradient(circle at top left, rgba(var(--gw-primary-rgb), 0.26), transparent 42%),
+        radial-gradient(circle at top right, rgba(var(--gw-secondary-rgb), 0.18), transparent 38%),
+        linear-gradient(180deg, var(--gw-background) 0%, var(--gw-background-accent) 100%);
+    background-attachment: fixed;
+}
+
+:focus-visible {
+    outline: 3px solid rgba(var(--gw-primary-rgb), 0.55);
+    outline-offset: 2px;
+}
+
+/* ===============================================================
+   3. Shell applicatif : barre haute + rail latéral + barre basse
+   =============================================================== */
+.gw-app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem clamp(0.75rem, 2vw, 1.5rem);
+}
+
+/* --- Barre haute ------------------------------------------------ */
+.gw-topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+}
+
+.gw-logo {
+    display: inline-flex;
+    flex-direction: column;
+    text-decoration: none;
+    line-height: 1.05;
+}
+
+.gw-logo__name {
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--gw-text);
+}
+
+.gw-logo__accent {
+    background: linear-gradient(90deg, var(--gw-primary), var(--gw-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.gw-logo__tagline {
+    margin-top: 0.15rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gw-muted);
+}
+
+.gw-search {
+    justify-self: center;
+    width: min(560px, 100%);
+}
+
+.gw-search form {
+    position: relative;
+}
+
+.gw-search__icon {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    color: var(--gw-primary);
+    pointer-events: none;
+}
+
+.gw-search__input {
+    width: 100%;
+    padding: 0.7rem 1.1rem 0.7rem 2.6rem;
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-pill);
+    background: var(--gw-surface-solid);
+    box-shadow: var(--gw-shadow-soft);
+    font-size: 0.95rem;
+}
+
+.gw-search__input::placeholder {
+    color: var(--gw-muted);
+}
+
+.gw-search__input:focus {
+    outline: none;
+    border-color: var(--gw-primary);
+    box-shadow: var(--gw-glow);
+}
+
+.gw-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem;
+    background: var(--gw-surface);
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-pill);
+    box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(10px);
+}
+
+.gw-icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background: var(--gw-surface-solid);
+    color: var(--gw-primary);
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gw-icon-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--gw-shadow-soft);
+    color: var(--gw-primary-dark);
+}
+
+.gw-icon-btn--avatar {
+    background: linear-gradient(135deg, var(--gw-primary), var(--gw-secondary));
+    color: #fff;
+}
+
+.gw-icon-btn--avatar:hover {
+    color: #fff;
+}
+
+.gw-status-dot {
+    position: absolute;
+    right: 1px;
+    bottom: 1px;
+    width: 11px;
+    height: 11px;
+    border: 2px solid var(--gw-surface-solid);
+    border-radius: 50%;
+    background: #22c55e;
+}
+
+/* --- Zone centrale : rail + contenu ----------------------------- */
+.gw-layout {
+    flex: 1;
+    display: grid;
+    grid-template-columns: var(--gw-rail-width) minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.gw-rail {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+    padding: 0.6rem 0.5rem;
+    background: var(--gw-surface);
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-lg);
+    box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(10px);
+}
+
+.gw-rail__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.gw-rail__item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.75rem 0.35rem;
+    border: 2px solid transparent;
+    border-radius: var(--gw-radius-md);
+    color: var(--gw-muted);
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.gw-rail__item i {
+    font-size: 1.35rem;
+}
+
+.gw-rail__label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.gw-rail__item:hover {
+    background: rgba(var(--gw-primary-rgb), 0.08);
+    color: var(--gw-primary);
+    transform: translateY(-1px);
+}
+
+.gw-rail__item.is-active {
+    background: rgba(var(--gw-primary-rgb), 0.12);
+    border-color: var(--gw-primary);
+    color: var(--gw-primary);
+    box-shadow: var(--gw-glow);
+}
+
+.gw-rail__badge {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: var(--gw-radius-pill);
+    background: var(--gw-secondary);
+    color: #fff;
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.gw-main {
+    min-width: 0;
+}
+
+/* --- Barre basse ------------------------------------------------ */
+.gw-bottombar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+.gw-bottombar__side {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gw-bottombar__side--end {
+    justify-content: flex-end;
+}
+
+.gw-console-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--gw-surface-solid);
+    box-shadow: var(--gw-shadow-soft);
+    color: var(--gw-primary);
+    text-decoration: none;
+    line-height: 1;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gw-console-btn i {
+    font-size: 1.2rem;
+}
+
+.gw-console-btn span {
+    margin-top: 0.15rem;
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.gw-console-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--gw-shadow);
+}
+
+.gw-storage {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gw-muted);
+    font-size: 0.75rem;
+}
+
+.gw-storage i {
+    font-size: 1.4rem;
+}
+
+.gw-storage strong {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gw-text);
+}
+
+.gw-clock {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.5rem;
+    background: var(--gw-surface);
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-pill);
+    box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(10px);
+}
+
+.gw-clock time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+}
+
+.gw-clock strong {
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.gw-clock span {
+    font-size: 0.7rem;
+    color: var(--gw-muted);
+}
+
+.gw-clock i {
+    color: #22c55e;
+}
+
+.gw-messages {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    background: var(--gw-surface-solid);
+    border-radius: var(--gw-radius-pill);
+    box-shadow: var(--gw-shadow-soft);
+    color: var(--gw-text);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gw-messages:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--gw-shadow);
+}
+
+.gw-messages i {
+    color: var(--gw-primary);
+    font-size: 1rem;
+}
+
+.gw-messages__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 0.35rem;
+    border-radius: var(--gw-radius-pill);
+    background: var(--gw-primary);
+    color: #fff;
+    font-size: 0.65rem;
+}
+
+/* ===============================================================
+   4. Composants réutilisables
+   =============================================================== */
+.gw-panel {
+    background: var(--gw-surface);
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-lg);
+    box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(10px);
+}
+
+.btn-gw {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--gw-primary);
+    --bs-btn-border-color: var(--gw-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--gw-primary-dark);
+    --bs-btn-hover-border-color: var(--gw-primary-dark);
+    --bs-btn-focus-shadow-rgb: var(--gw-primary-rgb);
+    --bs-btn-active-bg: var(--gw-primary-dark);
+    --bs-btn-active-border-color: var(--gw-primary-dark);
+    --bs-btn-border-radius: var(--gw-radius-md);
+
+    padding: 0.65rem 1.5rem;
+    font-weight: 600;
+    box-shadow: var(--gw-shadow-soft);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-gw:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--gw-shadow);
+}
+
+/* ===============================================================
+   5. Responsive
+   Le rail devient une barre horizontale scrollable sur mobile.
+   =============================================================== */
+@media (max-width: 991.98px) {
+    .gw-topbar {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .gw-search {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+    }
+
+    .gw-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .gw-rail {
+        position: static;
+    }
+
+    .gw-rail__list {
+        flex-direction: row;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .gw-rail__list::-webkit-scrollbar {
+        display: none;
+    }
+
+    .gw-rail__item {
+        flex: 0 0 84px;
+    }
+
+    .gw-bottombar {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        gap: 0.75rem;
+    }
+
+    .gw-bottombar__side--end {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .gw-logo__tagline,
+    .gw-storage span {
+        display: none;
+    }
+}
+
+/* ===============================================================
+   6. Accessibilité : mouvement réduit
+   =============================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .gw-icon-btn,
+    .gw-rail__item,
+    .gw-console-btn,
+    .gw-messages,
+    .btn-gw {
+        transition: none;
+    }
+
+    .gw-icon-btn:hover,
+    .gw-rail__item:hover,
+    .gw-console-btn:hover,
+    .gw-messages:hover,
+    .btn-gw:hover {
+        transform: none;
+    }
 }

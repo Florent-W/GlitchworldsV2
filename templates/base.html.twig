@@ -1,24 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}GlitchWorlds{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}Bienvenue sur GlitchWorlds — fangames, hacks, mods et communauté.{% endblock %}">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🌐</text></svg>">
+        {% block stylesheets %}{% endblock %}
 
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
-
-        {% set frankenphp_hot_reload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphp_hot_reload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphp_hot_reload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        {% set current_route = app.request.attributes.get('_route') %}
+        {% set nav_items = [
+            { label: 'Accueil',    icon: 'house-door-fill', route: 'app_home' },
+            { label: 'Jeux',       icon: 'controller',      route: 'app_jeux' },
+            { label: 'Favoris',    icon: 'heart-fill',      route: null },
+            { label: 'Communauté', icon: 'people-fill',     route: null },
+            { label: 'Actualités', icon: 'newspaper',     route: null },
+            { label: 'Paramètres', icon: 'gear-fill',       route: null },
+            { label: 'Boutique',   icon: 'bag-fill',        route: null, badge: 'New' }
+        ] %}
+
+        <div class="gw-app">
+            <header class="gw-topbar">
+                <a class="gw-logo" href="{{ path('app_home') }}">
+                    <span class="gw-logo__name">Glitch<span class="gw-logo__accent">Worlds</span></span>
+                    <span class="gw-logo__tagline">Play. Hack. Rewrite Reality.</span>
+                </a>
+
+                <search class="gw-search">
+                    <form role="search" action="{{ path('app_home') }}" method="get">
+                        <label class="visually-hidden" for="gw-search-input">Rechercher</label>
+                        <i class="bi bi-search gw-search__icon" aria-hidden="true"></i>
+                        <input id="gw-search-input" class="gw-search__input" type="search" name="q"
+                               placeholder="Rechercher un fangame, un univers..." autocomplete="off">
+                    </form>
+                </search>
+
+                <div class="gw-actions">
+                    <button type="button" class="gw-icon-btn" aria-label="Activer ou couper les sons d'interface">
+                        <i class="bi bi-volume-up-fill" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="gw-icon-btn" aria-label="Changer de thème">
+                        <i class="bi bi-brightness-high-fill" aria-hidden="true"></i>
+                    </button>
+                    <a class="gw-icon-btn gw-icon-btn--avatar" href="{{ path('app_home') }}" aria-label="Mon profil">
+                        <i class="bi bi-person-fill" aria-hidden="true"></i>
+                        <span class="gw-status-dot" aria-hidden="true"></span>
+                    </a>
+                </div>
+            </header>
+
+            <div class="gw-layout">
+                <nav class="gw-rail" aria-label="Navigation principale">
+                    <ul class="gw-rail__list">
+                        {% for item in nav_items %}
+                            {% set is_active = item.route is not null and item.route == current_route %}
+                            <li>
+                                <a class="gw-rail__item{{ is_active ? ' is-active' : '' }}"
+                                   href="{{ item.route ? path(item.route) : '#' }}"
+                                   {{ is_active ? 'aria-current="page"' : '' }}>
+                                    <i class="bi bi-{{ item.icon }}" aria-hidden="true"></i>
+                                    <span class="gw-rail__label">{{ item.label }}</span>
+                                    {% if item.badge is defined %}
+                                        <span class="gw-rail__badge">{{ item.badge }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+
+                <main class="gw-main">
+                    {% block body %}{% endblock %}
+                </main>
+            </div>
+
+            <footer class="gw-bottombar">
+                <div class="gw-bottombar__side">
+                    <a class="gw-console-btn" href="#" aria-label="Passer en mode console">
+                        <i class="bi bi-controller" aria-hidden="true"></i>
+                        <span>Mode</span>
+                    </a>
+                    <div class="gw-storage">
+                        <i class="bi bi-sd-card" aria-hidden="true"></i>
+                        <span>
+                            <strong>Stockage libre</strong>
+                            12,4 Go
+                        </span>
+                    </div>
+                </div>
+
+                <div class="gw-clock">
+                    <time datetime="{{ 'now'|date('c') }}">
+                        <strong>{{ 'now'|date('H:i') }}</strong>
+                        <span>{{ 'now'|format_datetime('none', 'none', 'EEEE d MMMM y', locale='fr')|capitalize }}</span>
+                    </time>
+                    <i class="bi bi-wifi" aria-hidden="true"></i>
+                </div>
+
+                <div class="gw-bottombar__side gw-bottombar__side--end">
+                    <a class="gw-messages" href="#">
+                        <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                        <span>Messages</span>
+                        <span class="gw-messages__count">3</span>
+                    </a>
+                </div>
+            </footer>
+        </div>
     </body>
 </html>

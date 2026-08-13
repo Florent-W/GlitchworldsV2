@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}GlitchWorlds - Accueil{% endblock %}
+
+{% block body %}
+<div class="gw-panel p-4">
+    <h1 class="h3 mb-2">Bienvenue sur GlitchWorlds</h1>
+    <p class="text-secondary mb-3">
+        Le contenu de l'accueil arrivera avec les fiches de jeux.
+    </p>
+    <a class="btn btn-gw" href="{{ path('app_jeux') }}">Voir les jeux</a>
+</div>
+{% endblock %}
