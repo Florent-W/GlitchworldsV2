@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ jeu.nom }} - GlitchWorlds{% endblock %}
+
+{% block meta_description %}
+    {%- if jeu.description is not empty -%}
+        {{ jeu.description }}
+    {%- elseif jeu.contenu is not empty -%}
+        {{ jeu.contenu|bbcode_texte|slice(0, 160) }}
+    {%- else -%}
+        Découvre {{ jeu.nom }} sur GlitchWorlds.
+    {%- endif -%}
+{% endblock %}
+
+{% block body %}
+<article class="gw-panel p-4">
+    <nav class="mb-3" aria-label="Fil d'Ariane">
+        <a href="{{ path('app_jeux') }}">Jeux</a>
+        <span class="text-secondary"> / </span>
+        <span>{{ jeu.nom }}</span>
+    </nav>
+
+    <header class="mb-4">
+        <h1 class="h2 mb-2">{{ jeu.nom }}</h1>
+
+        <div class="d-flex flex-wrap gap-2 align-items-center text-secondary">
+            <span class="badge text-bg-secondary">{{ jeu.statut.label }}</span>
+            {% if jeu.categorie %}
+                <a class="badge text-bg-light border text-decoration-none" href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}">{{ jeu.categorie.nom }}</a>
+            {% endif %}
+            {% if jeu.dateSortie %}
+                <span>Sortie : {{ jeu.dateSortie|format_datetime('none', 'none', 'd MMMM y', locale='fr') }}</span>
+            {% endif %}
+            {% if jeu.developpeur %}
+                <span>Par {{ jeu.developpeur }}</span>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if jeu.description is not empty %}
+        <p class="lead">{{ jeu.description }}</p>
+    {% endif %}
+
+    {% if jeu.contenu is not empty %}
+        <div class="jeu-contenu">
+            {{ jeu.contenu|bbcode }}
+        </div>
+    {% endif %}
+</article>
+{% endblock %}

@@ -1,12 +1,108 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Jeux — GlitchWorlds{% endblock %}
+{% block title %}
+    {%- if categorie is not empty -%}
+        {%- for cat in categories -%}
+            {%- if cat.slug == categorie -%}
+                {{ cat.nom ~ ' - ' }}
+            {%- endif -%}
+        {%- endfor -%}
+    {%- endif -%}
+    Jeux - GlitchWorlds
+{% endblock %}
 
 {% block body %}
 <div class="gw-panel p-4">
-    <h1 class="h3 mb-2">Jeux</h1>
-    <p class="text-secondary mb-0">
-        Le catalogue des fangames, rom hacks et jeux officiels arrivera ici.
-    </p>
+    <div class="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
+        <h1 class="h3 mb-0">Jeux</h1>
+        <span class="badge text-bg-primary">{{ total }}</span>
+    </div>
+
+    <form class="row g-2 align-items-center mb-3" method="get" action="{{ path('app_jeux') }}" role="search">
+        <div class="col-sm">
+            <label class="visually-hidden" for="jeux-recherche">Rechercher un jeu</label>
+            <input
+                id="jeux-recherche"
+                class="form-control"
+                type="search"
+                name="recherche"
+                value="{{ recherche }}"
+                placeholder="Rechercher un fangame, un hack..."
+                autocomplete="off"
+            >
+        </div>
+        <div class="col-sm-auto">
+            <label class="visually-hidden" for="jeux-categorie">Catégorie</label>
+            <select id="jeux-categorie" class="form-select" name="categorie">
+                <option value="">Toutes les catégories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {{ categorie == cat.slug ? 'selected' : '' }}>{{ cat.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-auto d-flex gap-2">
+            <button type="submit" class="btn btn-gw">Rechercher</button>
+            {% if recherche is not empty or categorie is not empty %}
+                <a class="btn btn-outline-secondary" href="{{ path('app_jeux') }}">Effacer</a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% if jeux is empty %}
+        <p class="text-secondary mb-0">
+            {% if recherche is not empty or categorie is not empty %}
+                Aucun jeu trouvé pour ces critères.
+            {% else %}
+                Aucun jeu approuvé pour le moment.
+            {% endif %}
+        </p>
+    {% else %}
+        <ul class="list-unstyled mb-4">
+            {% for jeu in jeux %}
+                <li class="py-2 border-bottom">
+                    <a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" class="text-decoration-none">
+                        <strong>{{ jeu.nom }}</strong>
+                    </a>
+                    {% if jeu.categorie %}
+                        <span class="badge text-bg-light border">{{ jeu.categorie.nom }}</span>
+                    {% endif %}
+                    {% if jeu.description is not empty %}
+                        <span class="text-secondary">- {{ jeu.description }}</span>
+                    {% elseif jeu.contenu is not empty %}
+                        <span class="text-secondary">- {{ jeu.contenu|bbcode_texte|slice(0, 120) }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        {% if pages > 1 %}
+            <nav aria-label="Pagination des jeux">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item{{ page <= 1 ? ' disabled' : '' }}">
+                        <a class="page-link" href="{{ path('app_jeux', { page: page - 1, recherche: recherche ?: null, categorie: categorie ?: null }) }}" {% if page <= 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                            Précédent
+                        </a>
+                    </li>
+
+                    {% for p in 1..pages %}
+                        <li class="page-item{{ p == page ? ' active' : '' }}">
+                            <a class="page-link" href="{{ path('app_jeux', { page: p, recherche: recherche ?: null, categorie: categorie ?: null }) }}" {% if p == page %}aria-current="page"{% endif %}>
+                                {{ p }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    <li class="page-item{{ page >= pages ? ' disabled' : '' }}">
+                        <a class="page-link" href="{{ path('app_jeux', { page: page + 1, recherche: recherche ?: null, categorie: categorie ?: null }) }}" {% if page >= pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                            Suivant
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <p class="text-center text-secondary small mt-2 mb-0">
+                Page {{ page }} / {{ pages }}
+            </p>
+        {% endif %}
+    {% endif %}
 </div>
 {% endblock %}

@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}GlitchWorlds{% endblock %}</title>
-        <meta name="description" content="{% block meta_description %}Bienvenue sur GlitchWorlds — fangames, hacks, mods et communauté.{% endblock %}">
+        <meta name="description" content="{% block meta_description %}Bienvenue sur GlitchWorlds - fangames, hacks, mods et communauté.{% endblock %}">
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🌐</text></svg>">
         {% block stylesheets %}{% endblock %}
 
@@ -32,10 +32,10 @@
                 </a>
 
                 <search class="gw-search">
-                    <form role="search" action="{{ path('app_home') }}" method="get">
+                    <form role="search" action="{{ path('app_jeux') }}" method="get">
                         <label class="visually-hidden" for="gw-search-input">Rechercher</label>
                         <i class="bi bi-search gw-search__icon" aria-hidden="true"></i>
-                        <input id="gw-search-input" class="gw-search__input" type="search" name="q"
+                        <input id="gw-search-input" class="gw-search__input" type="search" name="recherche"
                                placeholder="Rechercher un fangame, un univers..." autocomplete="off">
                     </form>
                 </search>
@@ -94,10 +94,11 @@
                     </div>
                 </div>
 
-                <div class="gw-clock">
-                    <time datetime="{{ 'now'|date('c') }}">
-                        <strong>{{ 'now'|date('H:i') }}</strong>
-                        <span>{{ 'now'|format_datetime('none', 'none', 'EEEE d MMMM y', locale='fr')|capitalize }}</span>
+                <div class="gw-clock" data-controller="horloge">
+                    <time data-horloge-target="time" datetime="{{ 'now'|date('c') }}">
+                        {# Fallback serveur si JS désactivé #}
+                        <strong data-horloge-target="heure">{{ 'now'|date('H:i') }}</strong>
+                        <span data-horloge-target="date">{{ 'now'|format_datetime('none', 'none', 'EEEE d MMMM y', locale='fr')|capitalize }}</span>
                     </time>
                     <i class="bi bi-wifi" aria-hidden="true"></i>
                 </div>
