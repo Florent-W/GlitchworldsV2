@@ -473,6 +473,199 @@ body {
     box-shadow: var(--gw-shadow);
 }
 
+.gw-tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid rgba(var(--gw-primary-rgb), 0.35);
+    border-radius: var(--gw-radius-pill);
+    background: rgba(var(--gw-primary-rgb), 0.1);
+    color: var(--gw-primary-dark);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+}
+
+.gw-tag--plateforme {
+    border-color: rgba(var(--gw-secondary-rgb), 0.35);
+    background: rgba(var(--gw-secondary-rgb), 0.1);
+    color: #5b21b6;
+}
+
+a.gw-tag:hover {
+    background: rgba(var(--gw-primary-rgb), 0.2);
+}
+
+a.gw-tag--plateforme:hover {
+    background: rgba(var(--gw-secondary-rgb), 0.2);
+}
+
+/* Catalogue de jeux */
+.gw-page-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.gw-eyebrow {
+    color: var(--gw-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.gw-result-count {
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-pill);
+    background: var(--gw-surface);
+    color: var(--gw-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.gw-search-box {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem;
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-lg);
+    background: var(--gw-surface);
+    box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(18px);
+}
+
+.gw-search-box > .bi {
+    margin-left: 0.5rem;
+    color: var(--gw-muted);
+    font-size: 1.25rem;
+}
+
+.gw-search-box .form-control {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.gw-filter-panel {
+    position: sticky;
+    top: 1rem;
+    padding: 1.25rem;
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-lg);
+    background: var(--gw-surface);
+    box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(18px);
+}
+
+.gw-filter-panel .form-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.gw-game-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-md);
+    background: var(--gw-surface-solid);
+    box-shadow: var(--gw-shadow-soft);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.gw-game-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--gw-shadow);
+}
+
+.gw-game-card__visual {
+    display: flex;
+    min-height: 145px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    background:
+        radial-gradient(circle at 75% 20%, rgba(255, 255, 255, 0.3), transparent 28%),
+        linear-gradient(135deg, var(--gw-primary-dark), var(--gw-secondary));
+}
+
+.gw-game-card__visual .bi {
+    font-size: 2.5rem;
+}
+
+.gw-game-card__visual span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.gw-game-card__body {
+    padding: 1rem;
+}
+
+.gw-game-card__title {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.gw-game-card__title a {
+    color: var(--gw-text);
+    text-decoration: none;
+}
+
+.gw-game-card__developer,
+.gw-game-card__description {
+    color: var(--gw-muted);
+    font-size: 0.8rem;
+}
+
+.gw-game-card__developer {
+    margin: 0.3rem 0 0.65rem;
+}
+
+.gw-game-card__description {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0.75rem 0 0;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.gw-game-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.65rem;
+}
+
+@media (max-width: 768px) {
+    .gw-page-heading {
+        align-items: start;
+        flex-direction: column;
+    }
+
+    .gw-filter-panel {
+        position: static;
+    }
+
+    .gw-search-box {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .gw-search-box .btn {
+        grid-column: 1 / -1;
+    }
+}
+
 /* ===============================================================
    5. Responsive
    Le rail devient une barre horizontale scrollable sur mobile.

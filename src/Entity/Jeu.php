@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Enum\StatutJeu;
 use App\Repository\JeuRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -38,6 +40,22 @@ class Jeu
     #[ORM\JoinColumn(nullable: true)]
     private ?CategorieJeu $categorie = null;
 
+    /**
+     * @var Collection<int, Plateforme>
+     */
+    #[ORM\ManyToMany(targetEntity: Plateforme::class)]
+    #[ORM\JoinTable(name: 'jeu_plateforme')]
+    #[ORM\OrderBy(['nom' => 'ASC'])]
+    private Collection $plateformes;
+
+    /**
+     * @var Collection<int, Genre>
+     */
+    #[ORM\ManyToMany(targetEntity: Genre::class)]
+    #[ORM\JoinTable(name: 'jeu_genre')]
+    #[ORM\OrderBy(['nom' => 'ASC'])]
+    private Collection $genres;
+
     #[ORM\Column(enumType: StatutJeu::class)]
     private StatutJeu $statut = StatutJeu::Brouillon;
 
@@ -55,6 +73,8 @@ class Jeu
 
     public function __construct()
     {
+        $this->plateformes = new ArrayCollection();
+        $this->genres = new ArrayCollection();
         $this->creeLe = new \DateTimeImmutable();
         $this->modifieLe = new \DateTimeImmutable();
     }
@@ -157,6 +177,54 @@ class Jeu
     public function setCategorie(?CategorieJeu $categorie): static
     {
         $this->categorie = $categorie;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Plateforme>
+     */
+    public function getPlateformes(): Collection
+    {
+        return $this->plateformes;
+    }
+
+    public function addPlateforme(Plateforme $plateforme): static
+    {
+        if (!$this->plateformes->contains($plateforme)) {
+            $this->plateformes->add($plateforme);
+        }
+
+        return $this;
+    }
+
+    public function removePlateforme(Plateforme $plateforme): static
+    {
+        $this->plateformes->removeElement($plateforme);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Genre>
+     */
+    public function getGenres(): Collection
+    {
+        return $this->genres;
+    }
+
+    public function addGenre(Genre $genre): static
+    {
+        if (!$this->genres->contains($genre)) {
+            $this->genres->add($genre);
+        }
+
+        return $this;
+    }
+
+    public function removeGenre(Genre $genre): static
+    {
+        $this->genres->removeElement($genre);
 
         return $this;
     }

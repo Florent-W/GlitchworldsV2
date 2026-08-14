@@ -55,6 +55,22 @@ final class ImportLegacyJeuxCommand extends Command
             'SELECT id, nom FROM categorie_jeu ORDER BY id ASC'
         );
 
+        $plateformes = $legacy->fetchAllAssociative(
+            'SELECT id, nom_plateforme, nom_image FROM plateformes ORDER BY id ASC'
+        );
+
+        $liaisonsPlateformes = $legacy->fetchAllAssociative(
+            'SELECT id_jeu, id_plateforme FROM jeu_lier_plateformes ORDER BY id_jeu ASC, id_plateforme ASC'
+        );
+
+        $genres = $legacy->fetchAllAssociative(
+            'SELECT id, genre, nom_image FROM genres ORDER BY id ASC'
+        );
+
+        $liaisonsGenres = $legacy->fetchAllAssociative(
+            'SELECT id_jeu, id_genre FROM jeu_lier_genres ORDER BY id_jeu ASC, id_genre ASC'
+        );
+
         $rows = $legacy->fetchAllAssociative(
             'SELECT j.id, j.nom, j.contenu, j.nom_miniature, j.date_sortie, j.url, j.nom_banniere, j.approuver, j.description,
                     j.id_categorie, u.pseudo AS developpeur
@@ -100,8 +116,10 @@ final class ImportLegacyJeuxCommand extends Command
                 ], \array_slice($slugPlan, 0, 15))
             );
             $io->success(sprintf(
-                'Dry-run OK - %d catégories, %d jeux prêts (%d slugs renommés). Rien n’a été écrit.',
+                'Dry-run OK - %d catégories, %d plateformes, %d liaisons, %d jeux prêts (%d slugs renommés). Rien n’a été écrit.',
                 \count($categories),
+                \count($plateformes),
+                \count($liaisonsPlateformes),
                 \count($slugPlan),
                 \count($conflicts)
             ));
@@ -110,13 +128,21 @@ final class ImportLegacyJeuxCommand extends Command
         }
 
         if ($purge) {
+            $this->connection->executeStatement('DELETE FROM jeu_genre');
+            $this->connection->executeStatement('DELETE FROM jeu_plateforme');
             $this->connection->executeStatement('DELETE FROM jeu');
+            $this->connection->executeStatement('DELETE FROM genre');
+            $this->connection->executeStatement('DELETE FROM plateforme');
             $this->connection->executeStatement('DELETE FROM categorie_jeu');
-            $io->writeln('Tables jeu et categorie_jeu V2 purgées.');
+            $io->writeln('Tables jeu, plateforme, categorie_jeu et liaisons V2 purgées.');
         }
 
         $this->importerCategories($categories);
         $io->writeln(sprintf('%d catégories synchronisées.', \count($categories)));
+
+        $this->importerPlateformes($plateformes);
+        $this->importerGenres($genres);
+        $io->writeln(sprintf('%d plateformes synchronisées.', \count($plateformes)));
 
         $inserted = 0;
         $updated = 0;
@@ -153,6 +179,10 @@ final class ImportLegacyJeuxCommand extends Command
 
         $maxId = (int) $this->connection->fetchOne('SELECT MAX(id) FROM jeu');
         $this->connection->executeStatement('ALTER TABLE jeu AUTO_INCREMENT = '.($maxId + 1));
+
+        $nbLiaisons = $this->importerLiaisonsPlateformes($liaisonsPlateformes);
+        $nbLiaisonsGenres = $this->importerLiaisonsGenres($liaisonsGenres);
+        $io->writeln(sprintf('%d liaisons jeu/plateforme synchronisées.', $nbLiaisons));
 
         $io->success(sprintf(
             'Import terminé - %d insérés, %d mis à jour, %d slugs ajustés (doublons). AUTO_INCREMENT = %d',
@@ -285,6 +315,120 @@ final class ImportLegacyJeuxCommand extends Command
         if ($maxId > 0) {
             $this->connection->executeStatement('ALTER TABLE categorie_jeu AUTO_INCREMENT = '.($maxId + 1));
         }
+    }
+
+    /**
+     * @param list<array{id: int|string, nom_plateforme: string, nom_image: ?string}> $plateformes
+     */
+    private function importerPlateformes(array $plateformes): void
+    {
+        foreach ($plateformes as $plateforme) {
+            $id = (int) $plateforme['id'];
+            $payload = [
+                'id' => $id,
+                'nom' => (string) $plateforme['nom_plateforme'],
+                'slug' => $this->normaliserSlug((string) $plateforme['nom_plateforme']),
+                'image' => $this->chaineOuNull($plateforme['nom_image'] ?? null),
+            ];
+
+            $exists = (bool) $this->connection->fetchOne('SELECT 1 FROM plateforme WHERE id = ?', [$id]);
+            if ($exists) {
+                unset($payload['id']);
+                $this->connection->update('plateforme', $payload, ['id' => $id]);
+            } else {
+                $this->connection->insert('plateforme', $payload);
+            }
+        }
+
+        $maxId = (int) $this->connection->fetchOne('SELECT MAX(id) FROM plateforme');
+        if ($maxId > 0) {
+            $this->connection->executeStatement('ALTER TABLE plateforme AUTO_INCREMENT = '.($maxId + 1));
+        }
+    }
+
+    /**
+     * @param list<array{id_jeu: int|string, id_plateforme: int|string}> $liaisons
+     */
+    private function importerLiaisonsPlateformes(array $liaisons): int
+    {
+        $this->connection->executeStatement('DELETE FROM jeu_plateforme');
+
+        $inserted = 0;
+        foreach ($liaisons as $liaison) {
+            $jeuId = (int) $liaison['id_jeu'];
+            $plateformeId = (int) $liaison['id_plateforme'];
+
+            $jeuExiste = (bool) $this->connection->fetchOne('SELECT 1 FROM jeu WHERE id = ?', [$jeuId]);
+            $plateformeExiste = (bool) $this->connection->fetchOne('SELECT 1 FROM plateforme WHERE id = ?', [$plateformeId]);
+            if (!$jeuExiste || !$plateformeExiste) {
+                continue;
+            }
+
+            $this->connection->insert('jeu_plateforme', [
+                'jeu_id' => $jeuId,
+                'plateforme_id' => $plateformeId,
+            ]);
+            ++$inserted;
+        }
+
+        return $inserted;
+    }
+
+    /**
+     * @param list<array{id: int|string, genre: string, nom_image: ?string}> $genres
+     */
+    private function importerGenres(array $genres): void
+    {
+        foreach ($genres as $genre) {
+            $id = (int) $genre['id'];
+            $payload = [
+                'id' => $id,
+                'nom' => (string) $genre['genre'],
+                'slug' => $this->normaliserSlug((string) $genre['genre']),
+                'image' => $this->chaineOuNull($genre['nom_image'] ?? null),
+            ];
+
+            $exists = (bool) $this->connection->fetchOne('SELECT 1 FROM genre WHERE id = ?', [$id]);
+            if ($exists) {
+                unset($payload['id']);
+                $this->connection->update('genre', $payload, ['id' => $id]);
+            } else {
+                $this->connection->insert('genre', $payload);
+            }
+        }
+
+        $maxId = (int) $this->connection->fetchOne('SELECT MAX(id) FROM genre');
+        if ($maxId > 0) {
+            $this->connection->executeStatement('ALTER TABLE genre AUTO_INCREMENT = '.($maxId + 1));
+        }
+    }
+
+    /**
+     * @param list<array{id_jeu: int|string, id_genre: int|string}> $liaisons
+     */
+    private function importerLiaisonsGenres(array $liaisons): int
+    {
+        $this->connection->executeStatement('DELETE FROM jeu_genre');
+
+        $inserted = 0;
+        foreach ($liaisons as $liaison) {
+            $jeuId = (int) $liaison['id_jeu'];
+            $genreId = (int) $liaison['id_genre'];
+
+            $jeuExiste = (bool) $this->connection->fetchOne('SELECT 1 FROM jeu WHERE id = ?', [$jeuId]);
+            $genreExiste = (bool) $this->connection->fetchOne('SELECT 1 FROM genre WHERE id = ?', [$genreId]);
+            if (!$jeuExiste || !$genreExiste) {
+                continue;
+            }
+
+            $this->connection->insert('jeu_genre', [
+                'jeu_id' => $jeuId,
+                'genre_id' => $genreId,
+            ]);
+            ++$inserted;
+        }
+
+        return $inserted;
     }
 
     private function convertirStatut(string $legacy): StatutJeu

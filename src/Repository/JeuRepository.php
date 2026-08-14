@@ -18,14 +18,22 @@ class JeuRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array{jeux: list<Jeu>, total: int, page: int, pages: int, parPage: int, recherche: string, categorie: string}
+     * @return array{jeux: list<Jeu>, total: int, page: int, pages: int, parPage: int, recherche: string, categorie: string, plateforme: string, genre: string}
      */
-    public function trouverApprouvesPagines(int $page = 1, int $parPage = 20, string $recherche = '', string $categorie = ''): array
-    {
+    public function trouverApprouvesPagines(
+        int $page = 1,
+        int $parPage = 20,
+        string $recherche = '',
+        string $categorie = '',
+        string $plateforme = '',
+        string $genre = '',
+    ): array {
         $page = max(1, $page);
         $parPage = max(1, min(50, $parPage));
         $recherche = trim($recherche);
         $categorie = trim($categorie);
+        $plateforme = trim($plateforme);
+        $genre = trim($genre);
 
         $qb = $this->createQueryBuilder('j')
             ->leftJoin('j.categorie', 'c')
@@ -45,8 +53,22 @@ class JeuRepository extends ServiceEntityRepository
                 ->setParameter('categorie', $categorie);
         }
 
+        if ($plateforme !== '') {
+            $qb
+                ->innerJoin('j.plateformes', 'p')
+                ->andWhere('p.slug = :plateforme')
+                ->setParameter('plateforme', $plateforme);
+        }
+
+        if ($genre !== '') {
+            $qb
+                ->innerJoin('j.genres', 'g')
+                ->andWhere('g.slug = :genre')
+                ->setParameter('genre', $genre);
+        }
+
         $total = (clone $qb)
-            ->select('COUNT(j.id)')
+            ->select('COUNT(DISTINCT j.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -57,6 +79,7 @@ class JeuRepository extends ServiceEntityRepository
 
         /** @var list<Jeu> $jeux */
         $jeux = $qb
+            ->distinct()
             ->orderBy('j.dateSortie', 'DESC')
             ->addOrderBy('j.id', 'DESC')
             ->setFirstResult(($page - 1) * $parPage)
@@ -72,6 +95,8 @@ class JeuRepository extends ServiceEntityRepository
             'parPage' => $parPage,
             'recherche' => $recherche,
             'categorie' => $categorie,
+            'plateforme' => $plateforme,
+            'genre' => $genre,
         ];
     }
 }

@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Jeu;
 use App\Repository\CategorieJeuRepository;
+use App\Repository\GenreRepository;
 use App\Repository\JeuRepository;
+use App\Repository\PlateformeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,15 +19,21 @@ final class JeuController extends AbstractController
         Request $request,
         JeuRepository $jeuRepository,
         CategorieJeuRepository $categorieJeuRepository,
+        PlateformeRepository $plateformeRepository,
+        GenreRepository $genreRepository,
     ): Response {
         $page = $request->query->getInt('page', 1);
         $recherche = trim((string) $request->query->get('recherche', ''));
         $categorie = trim((string) $request->query->get('categorie', ''));
-        $pagination = $jeuRepository->trouverApprouvesPagines($page, 20, $recherche, $categorie);
+        $plateforme = trim((string) $request->query->get('plateforme', ''));
+        $genre = trim((string) $request->query->get('genre', ''));
+        $pagination = $jeuRepository->trouverApprouvesPagines($page, 20, $recherche, $categorie, $plateforme, $genre);
 
         return $this->render('jeu/index.html.twig', [
             ...$pagination,
             'categories' => $categorieJeuRepository->trouverToutes(),
+            'plateformes' => $plateformeRepository->trouverToutes(),
+            'genres' => $genreRepository->trouverTous(),
         ]);
     }
 

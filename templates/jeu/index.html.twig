@@ -2,107 +2,179 @@
 
 {% block title %}
     {%- if categorie is not empty -%}
-        {%- for cat in categories -%}
-            {%- if cat.slug == categorie -%}
-                {{ cat.nom ~ ' - ' }}
-            {%- endif -%}
+        {%- for item in categories -%}
+            {%- if item.slug == categorie -%}{{ item.nom ~ ' - ' }}{%- endif -%}
+        {%- endfor -%}
+    {%- endif -%}
+    {%- if plateforme is not empty -%}
+        {%- for item in plateformes -%}
+            {%- if item.slug == plateforme -%}{{ item.nom ~ ' - ' }}{%- endif -%}
+        {%- endfor -%}
+    {%- endif -%}
+    {%- if genre is not empty -%}
+        {%- for item in genres -%}
+            {%- if item.slug == genre -%}{{ item.nom ~ ' - ' }}{%- endif -%}
         {%- endfor -%}
     {%- endif -%}
     Jeux - GlitchWorlds
 {% endblock %}
 
-{% block body %}
-<div class="gw-panel p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
-        <h1 class="h3 mb-0">Jeux</h1>
-        <span class="badge text-bg-primary">{{ total }}</span>
-    </div>
+{% block meta_description %}Découvre les fangames, rom hacks et jeux référencés par la communauté GlitchWorlds.{% endblock %}
 
-    <form class="row g-2 align-items-center mb-3" method="get" action="{{ path('app_jeux') }}" role="search">
-        <div class="col-sm">
-            <label class="visually-hidden" for="jeux-recherche">Rechercher un jeu</label>
-            <input
-                id="jeux-recherche"
-                class="form-control"
-                type="search"
-                name="recherche"
-                value="{{ recherche }}"
-                placeholder="Rechercher un fangame, un hack..."
-                autocomplete="off"
-            >
+{% block body %}
+    {% set filtres = {
+        recherche: recherche ?: null,
+        categorie: categorie ?: null,
+        plateforme: plateforme ?: null,
+        genre: genre ?: null
+    } %}
+
+    <header class="gw-page-heading mb-4">
+        <div>
+            <p class="gw-eyebrow mb-1">Catalogue communautaire</p>
+            <h1 class="h2 mb-1">Jeux</h1>
+            <p class="text-secondary mb-0">Découvre des fangames, rom hacks et jeux officiels.</p>
         </div>
-        <div class="col-sm-auto">
-            <label class="visually-hidden" for="jeux-categorie">Catégorie</label>
-            <select id="jeux-categorie" class="form-select" name="categorie">
-                <option value="">Toutes les catégories</option>
-                {% for cat in categories %}
-                    <option value="{{ cat.slug }}" {{ categorie == cat.slug ? 'selected' : '' }}>{{ cat.nom }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-sm-auto d-flex gap-2">
-            <button type="submit" class="btn btn-gw">Rechercher</button>
-            {% if recherche is not empty or categorie is not empty %}
-                <a class="btn btn-outline-secondary" href="{{ path('app_jeux') }}">Effacer</a>
-            {% endif %}
+        <span class="gw-result-count">{{ total }} résultat{{ total > 1 ? 's' : '' }}</span>
+    </header>
+
+    <form method="get" action="{{ path('app_jeux') }}" role="search">
+        <div class="row g-4 align-items-start">
+            <div class="col-xl-9">
+                <div class="gw-search-box mb-4">
+                    <label class="visually-hidden" for="jeux-recherche">Rechercher un jeu</label>
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input
+                        id="jeux-recherche"
+                        class="form-control"
+                        type="search"
+                        name="recherche"
+                        value="{{ recherche }}"
+                        placeholder="Rechercher un fangame, un univers..."
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="btn btn-gw">Rechercher</button>
+                </div>
+
+                {% if jeux is empty %}
+                    <div class="gw-panel p-5 text-center">
+                        <i class="bi bi-search fs-1 text-primary" aria-hidden="true"></i>
+                        <h2 class="h4 mt-3">Aucun jeu trouvé</h2>
+                        <p class="text-secondary">Essaie de modifier ta recherche ou d'effacer les filtres.</p>
+                        <a class="btn btn-outline-primary" href="{{ path('app_jeux') }}">Effacer les filtres</a>
+                    </div>
+                {% else %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xxl-3 g-3">
+                        {% for jeu in jeux %}
+                            <div class="col">
+                            <article class="gw-game-card h-100">
+                                <a class="gw-game-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" aria-label="Voir {{ jeu.nom }}">
+                                    <i class="bi bi-controller" aria-hidden="true"></i>
+                                    {% if jeu.categorie %}
+                                        <span>{{ jeu.categorie.nom }}</span>
+                                    {% endif %}
+                                </a>
+
+                                <div class="gw-game-card__body">
+                                    <h2 class="gw-game-card__title">
+                                        <a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a>
+                                    </h2>
+
+                                    {% if jeu.developpeur %}
+                                        <p class="gw-game-card__developer">Par {{ jeu.developpeur }}</p>
+                                    {% endif %}
+
+                                    <div class="gw-game-card__tags">
+                                        {% for item in jeu.genres|slice(0, 2) %}
+                                            <span class="gw-tag">{{ item.nom }}</span>
+                                        {% endfor %}
+                                        {% for item in jeu.plateformes|slice(0, 1) %}
+                                            <span class="gw-tag gw-tag--plateforme">{{ item.nom }}</span>
+                                        {% endfor %}
+                                        {% set restant = jeu.genres|length + jeu.plateformes|length - 3 %}
+                                        {% if restant > 0 %}
+                                            <span class="gw-tag">+{{ restant }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if jeu.description is not empty %}
+                                        <p class="gw-game-card__description">{{ jeu.description|slice(0, 110) }}</p>
+                                    {% elseif jeu.contenu is not empty %}
+                                        <p class="gw-game-card__description">{{ jeu.contenu|bbcode_texte|slice(0, 110) }}</p>
+                                    {% endif %}
+                                </div>
+                            </article>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if pages > 1 %}
+                        <nav class="mt-4" aria-label="Pagination des jeux">
+                            <ul class="pagination justify-content-center mb-0">
+                                <li class="page-item{{ page <= 1 ? ' disabled' : '' }}">
+                                    <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: page - 1 })) }}" {% if page <= 1 %}tabindex="-1" aria-disabled="true"{% endif %}>Précédent</a>
+                                </li>
+                                {% for p in 1..pages %}
+                                    <li class="page-item{{ p == page ? ' active' : '' }}">
+                                        <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: p })) }}" {% if p == page %}aria-current="page"{% endif %}>{{ p }}</a>
+                                    </li>
+                                {% endfor %}
+                                <li class="page-item{{ page >= pages ? ' disabled' : '' }}">
+                                    <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: page + 1 })) }}" {% if page >= pages %}tabindex="-1" aria-disabled="true"{% endif %}>Suivant</a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <p class="text-center text-secondary small mt-2 mb-0">Page {{ page }} / {{ pages }}</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <aside class="col-xl-3">
+            <div class="gw-filter-panel" aria-labelledby="filtres-title">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 id="filtres-title" class="h5 mb-0">Filtres avancés</h2>
+                    <i class="bi bi-sliders" aria-hidden="true"></i>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="jeux-categorie">Catégorie</label>
+                    <select id="jeux-categorie" class="form-select" name="categorie">
+                        <option value="">Toutes les catégories</option>
+                        {% for item in categories %}
+                            <option value="{{ item.slug }}" {{ categorie == item.slug ? 'selected' : '' }}>{{ item.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="jeux-plateforme">Plateforme</label>
+                    <select id="jeux-plateforme" class="form-select" name="plateforme">
+                        <option value="">Toutes les plateformes</option>
+                        {% for item in plateformes %}
+                            <option value="{{ item.slug }}" {{ plateforme == item.slug ? 'selected' : '' }}>{{ item.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="jeux-genre">Genre</label>
+                    <select id="jeux-genre" class="form-select" name="genre">
+                        <option value="">Tous les genres</option>
+                        {% for item in genres %}
+                            <option value="{{ item.slug }}" {{ genre == item.slug ? 'selected' : '' }}>{{ item.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-gw w-100">Appliquer les filtres</button>
+                {% if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty %}
+                    <a class="btn btn-link w-100 mt-2" href="{{ path('app_jeux') }}">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        Effacer les filtres
+                    </a>
+                {% endif %}
+            </div>
+            </aside>
         </div>
     </form>
-
-    {% if jeux is empty %}
-        <p class="text-secondary mb-0">
-            {% if recherche is not empty or categorie is not empty %}
-                Aucun jeu trouvé pour ces critères.
-            {% else %}
-                Aucun jeu approuvé pour le moment.
-            {% endif %}
-        </p>
-    {% else %}
-        <ul class="list-unstyled mb-4">
-            {% for jeu in jeux %}
-                <li class="py-2 border-bottom">
-                    <a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" class="text-decoration-none">
-                        <strong>{{ jeu.nom }}</strong>
-                    </a>
-                    {% if jeu.categorie %}
-                        <span class="badge text-bg-light border">{{ jeu.categorie.nom }}</span>
-                    {% endif %}
-                    {% if jeu.description is not empty %}
-                        <span class="text-secondary">- {{ jeu.description }}</span>
-                    {% elseif jeu.contenu is not empty %}
-                        <span class="text-secondary">- {{ jeu.contenu|bbcode_texte|slice(0, 120) }}</span>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-
-        {% if pages > 1 %}
-            <nav aria-label="Pagination des jeux">
-                <ul class="pagination justify-content-center mb-0">
-                    <li class="page-item{{ page <= 1 ? ' disabled' : '' }}">
-                        <a class="page-link" href="{{ path('app_jeux', { page: page - 1, recherche: recherche ?: null, categorie: categorie ?: null }) }}" {% if page <= 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
-                            Précédent
-                        </a>
-                    </li>
-
-                    {% for p in 1..pages %}
-                        <li class="page-item{{ p == page ? ' active' : '' }}">
-                            <a class="page-link" href="{{ path('app_jeux', { page: p, recherche: recherche ?: null, categorie: categorie ?: null }) }}" {% if p == page %}aria-current="page"{% endif %}>
-                                {{ p }}
-                            </a>
-                        </li>
-                    {% endfor %}
-
-                    <li class="page-item{{ page >= pages ? ' disabled' : '' }}">
-                        <a class="page-link" href="{{ path('app_jeux', { page: page + 1, recherche: recherche ?: null, categorie: categorie ?: null }) }}" {% if page >= pages %}tabindex="-1" aria-disabled="true"{% endif %}>
-                            Suivant
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            <p class="text-center text-secondary small mt-2 mb-0">
-                Page {{ page }} / {{ pages }}
-            </p>
-        {% endif %}
-    {% endif %}
-</div>
 {% endblock %}

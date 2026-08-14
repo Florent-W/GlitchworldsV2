@@ -26,8 +26,14 @@
         <div class="d-flex flex-wrap gap-2 align-items-center text-secondary">
             <span class="badge text-bg-secondary">{{ jeu.statut.label }}</span>
             {% if jeu.categorie %}
-                <a class="badge text-bg-light border text-decoration-none" href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}">{{ jeu.categorie.nom }}</a>
+                <a class="gw-tag" href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}">{{ jeu.categorie.nom }}</a>
             {% endif %}
+            {% for plat in jeu.plateformes %}
+                <a class="gw-tag gw-tag--plateforme" href="{{ path('app_jeux', { plateforme: plat.slug }) }}">{{ plat.nom }}</a>
+            {% endfor %}
+            {% for item in jeu.genres %}
+                <a class="gw-tag" href="{{ path('app_jeux', { genre: item.slug }) }}">{{ item.nom }}</a>
+            {% endfor %}
             {% if jeu.dateSortie %}
                 <span>Sortie : {{ jeu.dateSortie|format_datetime('none', 'none', 'd MMMM y', locale='fr') }}</span>
             {% endif %}
