@@ -156,4 +156,17 @@ class JeuRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @return list<Jeu>
+     */
+    public function trouverPourSitemap(): array
+    {
+        return $this->createQueryBuilder('j')
+            ->andWhere('j.statut = :statut')
+            ->setParameter('statut', StatutJeu::Approuve)
+            ->orderBy('j.modifieLe', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

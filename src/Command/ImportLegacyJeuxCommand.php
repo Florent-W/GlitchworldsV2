@@ -80,6 +80,18 @@ final class ImportLegacyJeuxCommand extends Command
             'SELECT id_jeu, id_langue FROM jeu_lier_langues ORDER BY id_jeu ASC, id_langue ASC'
         );
 
+        $avis = $legacy->fetchAllAssociative(
+            'SELECT id, contenu, id_jeu, date_avis, note FROM avis ORDER BY id ASC'
+        );
+
+        $utilisateurs = $legacy->fetchAllAssociative(
+            'SELECT id, pseudo, nom_photo_profil FROM utilisateurs ORDER BY id ASC'
+        );
+
+        $commentairesJeux = $legacy->fetchAllAssociative(
+            'SELECT id, id_utilisateur, contenu, id_jeu, date_commentaire FROM commentaire_jeu ORDER BY id ASC'
+        );
+
         $rows = $legacy->fetchAllAssociative(
             'SELECT j.id, j.nom, j.contenu, j.nom_miniature, j.date_sortie, j.url, j.nom_banniere, j.approuver, j.description,
                     j.id_categorie, u.pseudo AS developpeur
@@ -137,10 +149,13 @@ final class ImportLegacyJeuxCommand extends Command
         }
 
         if ($purge) {
+            $this->connection->executeStatement('DELETE FROM commentaire_jeu');
+            $this->connection->executeStatement('DELETE FROM avis');
             $this->connection->executeStatement('DELETE FROM jeu_langue');
             $this->connection->executeStatement('DELETE FROM jeu_genre');
             $this->connection->executeStatement('DELETE FROM jeu_plateforme');
             $this->connection->executeStatement('DELETE FROM jeu');
+            $this->connection->executeStatement('DELETE FROM utilisateur');
             $this->connection->executeStatement('DELETE FROM langue');
             $this->connection->executeStatement('DELETE FROM genre');
             $this->connection->executeStatement('DELETE FROM plateforme');
@@ -154,6 +169,7 @@ final class ImportLegacyJeuxCommand extends Command
         $this->importerPlateformes($plateformes);
         $this->importerGenres($genres);
         $this->importerLangues($langues);
+        $this->importerUtilisateurs($utilisateurs);
         $io->writeln(sprintf('%d plateformes synchronisées.', \count($plateformes)));
 
         $inserted = 0;
@@ -195,6 +211,8 @@ final class ImportLegacyJeuxCommand extends Command
         $nbLiaisons = $this->importerLiaisonsPlateformes($liaisonsPlateformes);
         $nbLiaisonsGenres = $this->importerLiaisonsGenres($liaisonsGenres);
         $nbLiaisonsLangues = $this->importerLiaisonsLangues($liaisonsLangues);
+        $this->importerAvis($avis);
+        $this->importerCommentairesJeux($commentairesJeux);
         $io->writeln(sprintf('%d liaisons jeu/plateforme synchronisées.', $nbLiaisons));
 
         $io->success(sprintf(
@@ -504,6 +522,107 @@ final class ImportLegacyJeuxCommand extends Command
         }
 
         return $inserted;
+    }
+
+    /**
+     * @param list<array{id: int|string, contenu: string, id_jeu: int|string, date_avis: string, note: float|string}> $avis
+     */
+    private function importerAvis(array $avis): void
+    {
+        foreach ($avis as $item) {
+            $id = (int) $item['id'];
+            $jeuId = (int) $item['id_jeu'];
+            if (!(bool) $this->connection->fetchOne('SELECT 1 FROM jeu WHERE id = ?', [$jeuId])) {
+                continue;
+            }
+
+            $payload = [
+                'id' => $id,
+                'jeu_id' => $jeuId,
+                'contenu' => (string) $item['contenu'],
+                'note' => $item['note'],
+                'date_avis' => $item['date_avis'],
+            ];
+
+            $exists = (bool) $this->connection->fetchOne('SELECT 1 FROM avis WHERE id = ?', [$id]);
+            if ($exists) {
+                unset($payload['id']);
+                $this->connection->update('avis', $payload, ['id' => $id]);
+            } else {
+                $this->connection->insert('avis', $payload);
+            }
+        }
+
+        $maxId = (int) $this->connection->fetchOne('SELECT MAX(id) FROM avis');
+        if ($maxId > 0) {
+            $this->connection->executeStatement('ALTER TABLE avis AUTO_INCREMENT = '.($maxId + 1));
+        }
+    }
+
+    /**
+     * @param list<array{id: int|string, pseudo: string, nom_photo_profil: string}> $utilisateurs
+     */
+    private function importerUtilisateurs(array $utilisateurs): void
+    {
+        foreach ($utilisateurs as $utilisateur) {
+            $id = (int) $utilisateur['id'];
+            $payload = [
+                'id' => $id,
+                'pseudo' => (string) $utilisateur['pseudo'],
+                'avatar' => $this->chaineOuNull($utilisateur['nom_photo_profil'] ?? null),
+            ];
+
+            $exists = (bool) $this->connection->fetchOne('SELECT 1 FROM utilisateur WHERE id = ?', [$id]);
+            if ($exists) {
+                unset($payload['id']);
+                $this->connection->update('utilisateur', $payload, ['id' => $id]);
+            } else {
+                $this->connection->insert('utilisateur', $payload);
+            }
+        }
+
+        $maxId = (int) $this->connection->fetchOne('SELECT MAX(id) FROM utilisateur');
+        if ($maxId > 0) {
+            $this->connection->executeStatement('ALTER TABLE utilisateur AUTO_INCREMENT = '.($maxId + 1));
+        }
+    }
+
+    /**
+     * @param list<array{id: int|string, id_utilisateur: int|string, contenu: string, id_jeu: int|string, date_commentaire: string}> $commentaires
+     */
+    private function importerCommentairesJeux(array $commentaires): void
+    {
+        foreach ($commentaires as $commentaire) {
+            $id = (int) $commentaire['id'];
+            $jeuId = (int) $commentaire['id_jeu'];
+            $auteurId = (int) $commentaire['id_utilisateur'];
+
+            if (!(bool) $this->connection->fetchOne('SELECT 1 FROM jeu WHERE id = ?', [$jeuId])) {
+                continue;
+            }
+
+            $auteurExiste = (bool) $this->connection->fetchOne('SELECT 1 FROM utilisateur WHERE id = ?', [$auteurId]);
+            $payload = [
+                'id' => $id,
+                'jeu_id' => $jeuId,
+                'auteur_id' => $auteurExiste ? $auteurId : null,
+                'contenu' => (string) $commentaire['contenu'],
+                'date_commentaire' => $commentaire['date_commentaire'],
+            ];
+
+            $exists = (bool) $this->connection->fetchOne('SELECT 1 FROM commentaire_jeu WHERE id = ?', [$id]);
+            if ($exists) {
+                unset($payload['id']);
+                $this->connection->update('commentaire_jeu', $payload, ['id' => $id]);
+            } else {
+                $this->connection->insert('commentaire_jeu', $payload);
+            }
+        }
+
+        $maxId = (int) $this->connection->fetchOne('SELECT MAX(id) FROM commentaire_jeu');
+        if ($maxId > 0) {
+            $this->connection->executeStatement('ALTER TABLE commentaire_jeu AUTO_INCREMENT = '.($maxId + 1));
+        }
     }
 
     private function convertirStatut(string $legacy): StatutJeu

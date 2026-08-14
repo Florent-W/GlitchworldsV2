@@ -6,6 +6,8 @@ use App\Entity\Jeu;
 use App\Enum\StatutJeu;
 use App\Enum\TriJeu;
 use App\Repository\CategorieJeuRepository;
+use App\Repository\AvisRepository;
+use App\Repository\CommentaireJeuRepository;
 use App\Repository\GenreRepository;
 use App\Repository\JeuRepository;
 use App\Repository\LangueRepository;
@@ -46,7 +48,13 @@ final class JeuController extends AbstractController
     }
 
     #[Route('/jeu/{slug}-{id}', name: 'app_jeu_show', requirements: ['id' => '\d+', 'slug' => '[a-z0-9\-]+'])]
-    public function show(string $slug, int $id, JeuRepository $jeuRepository): Response
+    public function show(
+        string $slug,
+        int $id,
+        JeuRepository $jeuRepository,
+        AvisRepository $avisRepository,
+        CommentaireJeuRepository $commentaireJeuRepository,
+    ): Response
     {
         $jeu = $jeuRepository->find($id);
 
@@ -64,6 +72,9 @@ final class JeuController extends AbstractController
         return $this->render('jeu/show.html.twig', [
             'jeu' => $jeu,
             'jeuxSimilaires' => $jeuRepository->trouverSimilaires($jeu),
+            'resumeAvis' => $avisRepository->trouverResume($jeu),
+            'commentaires' => $commentaireJeuRepository->trouverRecents($jeu),
+            'totalCommentaires' => $commentaireJeuRepository->compterPourJeu($jeu),
         ]);
     }
 }
