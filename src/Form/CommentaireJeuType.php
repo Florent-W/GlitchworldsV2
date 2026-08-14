@@ -24,13 +24,17 @@ final class CommentaireJeuType extends AbstractType
                 ],
             ])
             ->add('publier', SubmitType::class, [
-                'label' => 'Publier',
+                'label' => $options['bouton_libelle'],
                 'attr' => ['class' => 'btn btn-primary'],
             ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(['data_class' => CommentaireJeu::class]);
+        $resolver->setDefaults([
+            'data_class' => CommentaireJeu::class,
+            'bouton_libelle' => 'Publier',
+        ]);
+        $resolver->setAllowedTypes('bouton_libelle', 'string');
     }
 }

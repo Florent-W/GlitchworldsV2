@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon compte - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width: 760px">
+    <nav aria-label="Fil d’Ariane">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_compte') }}">Mon compte</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+        </ol>
+    </nav>
+
+    <h1 class="h2">Modifier mon compte</h1>
+    <p class="text-secondary">Le mot de passe et les rôles ne sont jamais modifiables depuis ce formulaire.</p>
+
+    {{ form_start(formulaire) }}
+        {{ form_row(formulaire.pseudo) }}
+        {{ form_row(formulaire.email) }}
+        <div class="d-flex flex-wrap gap-2">
+            {{ form_widget(formulaire.enregistrer) }}
+            <a class="btn btn-outline-secondary" href="{{ path('app_compte') }}">Annuler</a>
+        </div>
+    {{ form_end(formulaire) }}
+</section>
+{% endblock %}

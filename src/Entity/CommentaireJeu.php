@@ -24,12 +24,13 @@ class CommentaireJeu
     private ?Utilisateur $auteur = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: 'Écris un commentaire avant de publier.')]
+    #[Assert\NotBlank(message: 'Écris un commentaire avant de publier.', normalizer: 'trim')]
     #[Assert\Length(
         min: 3,
         max: 1000,
         minMessage: 'Le commentaire doit contenir au moins {{ limit }} caractères.',
         maxMessage: 'Le commentaire ne peut pas dépasser {{ limit }} caractères.',
+        normalizer: 'trim',
     )]
     private string $contenu = '';
 

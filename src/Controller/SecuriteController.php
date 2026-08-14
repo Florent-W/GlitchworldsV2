@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Form\InscriptionType;
+use App\Form\CompteType;
+use App\Form\MotDePasseType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,6 +48,65 @@ final class SecuriteController extends AbstractController
         return $this->render('securite/connexion.html.twig', [
             'derniereAdresse' => $authenticationUtils->getLastUsername(),
             'erreur' => $authenticationUtils->getLastAuthenticationError(),
+        ]);
+    }
+
+    #[Route('/mon-compte', name: 'app_compte')]
+    public function compte(): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        return $this->render('securite/compte.html.twig');
+    }
+
+    #[Route('/mon-compte/modifier', name: 'app_compte_modifier')]
+    public function modifierCompte(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $formulaire = $this->createForm(CompteType::class, $utilisateur);
+        $formulaire->handleRequest($request);
+
+        if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Ton profil a été mis à jour.');
+
+            return $this->redirectToRoute('app_compte');
+        }
+
+        return $this->render('securite/modifier_compte.html.twig', [
+            'formulaire' => $formulaire,
+        ]);
+    }
+
+    #[Route('/mon-compte/mot-de-passe', name: 'app_compte_mot_de_passe')]
+    public function modifierMotDePasse(
+        Request $request,
+        UserPasswordHasherInterface $hasher,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $formulaire = $this->createForm(MotDePasseType::class);
+        $formulaire->handleRequest($request);
+
+        if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $nouveauMotDePasse = (string) $formulaire->get('nouveauMotDePasse')->getData();
+            $utilisateur->setPassword($hasher->hashPassword($utilisateur, $nouveauMotDePasse));
+            $entityManager->flush();
+            $this->addFlash('success', 'Ton mot de passe a été modifié.');
+
+            return $this->redirectToRoute('app_compte');
+        }
+
+        return $this->render('securite/modifier_mot_de_passe.html.twig', [
+            'formulaire' => $formulaire,
         ]);
     }
 

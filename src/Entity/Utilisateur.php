@@ -54,7 +54,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setPseudo(string $pseudo): static
     {
-        $this->pseudo = $pseudo;
+        $this->pseudo = trim($pseudo);
 
         return $this;
     }
@@ -66,7 +66,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmail(?string $email): static
     {
-        $this->email = $email;
+        $this->email = $email === null ? null : strtolower(trim($email));
 
         return $this;
     }

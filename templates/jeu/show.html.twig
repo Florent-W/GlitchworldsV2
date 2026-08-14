@@ -188,6 +188,19 @@
                                 <time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">
                                     {{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}
                                 </time>
+                                {% if is_granted('COMMENTAIRE_SUPPRIMER', commentaire) %}
+                                    <a class="btn btn-sm btn-outline-primary ms-auto" href="{{ path('app_commentaire_modifier', { id: commentaire.id }) }}">
+                                        <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                                        <span class="visually-hidden">Modifier</span>
+                                    </a>
+                                    <form method="post" action="{{ path('app_commentaire_supprimer', { id: commentaire.id }) }}" onsubmit="return confirm('Supprimer ce commentaire ?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-' ~ commentaire.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer le commentaire">
+                                            <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                                            <span class="visually-hidden">Supprimer</span>
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </header>
                             <div class="gw-comment__content">{{ commentaire.contenu|nl2br }}</div>
                         </div>

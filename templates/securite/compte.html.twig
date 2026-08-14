@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width: 760px">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="gw-comment__avatar fs-4" aria-hidden="true">{{ app.user.pseudo|first|upper }}</div>
+            <div>
+                <h1 class="h2 mb-1">{{ app.user.pseudo }}</h1>
+                <p class="text-secondary mb-0">{{ app.user.email }}</p>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-primary" href="{{ path('app_compte_modifier') }}">
+                <i class="bi bi-pencil-fill me-2" aria-hidden="true"></i>Modifier
+            </a>
+            <a class="btn btn-outline-primary" href="{{ path('app_compte_mot_de_passe') }}">
+                <i class="bi bi-key-fill me-2" aria-hidden="true"></i>Mot de passe
+            </a>
+            <a class="btn btn-outline-danger" href="{{ path('app_deconnexion') }}">
+                <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Se déconnecter
+            </a>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <h2 class="h5">Compte GlitchWorlds</h2>
+    <dl class="row mb-0">
+        <dt class="col-sm-4">Identifiant</dt>
+        <dd class="col-sm-8">#{{ app.user.id }}</dd>
+        <dt class="col-sm-4">Rôle</dt>
+        <dd class="col-sm-8">Membre</dd>
+    </dl>
+</section>
+{% endblock %}

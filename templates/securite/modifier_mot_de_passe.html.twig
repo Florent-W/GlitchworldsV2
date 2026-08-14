@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Changer mon mot de passe - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width: 760px">
+    <nav aria-label="Fil d’Ariane">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_compte') }}">Mon compte</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Mot de passe</li>
+        </ol>
+    </nav>
+
+    <h1 class="h2">Changer mon mot de passe</h1>
+    <p class="text-secondary">Choisis au moins 12 caractères.</p>
+
+    {{ form_start(formulaire) }}
+        {{ form_row(formulaire.motDePasseActuel) }}
+        <div class="row g-3">
+            <div class="col-md-6">{{ form_row(formulaire.nouveauMotDePasse.first) }}</div>
+            <div class="col-md-6">{{ form_row(formulaire.nouveauMotDePasse.second) }}</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {{ form_widget(formulaire.enregistrer) }}
+            <a class="btn btn-outline-secondary" href="{{ path('app_compte') }}">Annuler</a>
+        </div>
+    {{ form_end(formulaire) }}
+</section>
+{% endblock %}

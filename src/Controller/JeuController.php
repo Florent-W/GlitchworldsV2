@@ -53,6 +53,7 @@ final class JeuController extends AbstractController
 
     #[Route('/jeu/{slug}-{id}', name: 'app_jeu_show', requirements: ['id' => '\d+', 'slug' => '[a-z0-9\-]+'])]
     public function show(
+        Request $request,
         string $slug,
         int $id,
         JeuRepository $jeuRepository,
