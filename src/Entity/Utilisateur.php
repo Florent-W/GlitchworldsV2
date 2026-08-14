@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UtilisateurRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -34,6 +36,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $avatar = null;
+
+    /** @var Collection<int, Jeu> */
+    #[ORM\ManyToMany(targetEntity: Jeu::class, inversedBy: 'ajouteAuxFavorisPar')]
+    #[ORM\JoinTable(name: 'utilisateur_jeu_favori')]
+    private Collection $jeuxFavoris;
+
+    public function __construct()
+    {
+        $this->jeuxFavoris = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -116,5 +128,32 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->avatar = $avatar;
 
         return $this;
+    }
+
+    /** @return Collection<int, Jeu> */
+    public function getJeuxFavoris(): Collection
+    {
+        return $this->jeuxFavoris;
+    }
+
+    public function ajouterJeuFavori(Jeu $jeu): static
+    {
+        if (!$this->jeuxFavoris->contains($jeu)) {
+            $this->jeuxFavoris->add($jeu);
+        }
+
+        return $this;
+    }
+
+    public function retirerJeuFavori(Jeu $jeu): static
+    {
+        $this->jeuxFavoris->removeElement($jeu);
+
+        return $this;
+    }
+
+    public function aPourFavori(Jeu $jeu): bool
+    {
+        return $this->jeuxFavoris->contains($jeu);
     }
 }

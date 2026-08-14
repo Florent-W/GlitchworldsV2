@@ -85,9 +85,19 @@
                         <a class="btn btn-light btn-lg" href="#a-propos">
                             <i class="bi bi-info-circle me-2" aria-hidden="true"></i>Plus d'infos
                         </a>
-                        <button class="btn btn-outline-light btn-lg" type="button" disabled title="Fonctionnalité à venir">
-                            <i class="bi bi-heart me-2" aria-hidden="true"></i>Ajouter aux favoris
-                        </button>
+                        {% if app.user %}
+                            {% set estFavori = app.user.aPourFavori(jeu) %}
+                            <form method="post" action="{{ path('app_jeu_favori', { id: jeu.id }) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('favori-jeu-' ~ jeu.id) }}">
+                                <button class="btn {{ estFavori ? 'btn-light' : 'btn-outline-light' }} btn-lg" type="submit">
+                                    <i class="bi bi-heart{{ estFavori ? '-fill' : '' }} me-2" aria-hidden="true"></i>{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+                                </button>
+                            </form>
+                        {% else %}
+                            <a class="btn btn-outline-light btn-lg" href="{{ path('app_connexion') }}">
+                                <i class="bi bi-heart me-2" aria-hidden="true"></i>Ajouter aux favoris
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
                 <i class="bi bi-controller gw-game-hero__icon" aria-hidden="true"></i>
@@ -104,6 +114,17 @@
                         <strong>{{ resumeAvis.moyenne }}</strong><span>/5</span>
                         <small>{{ resumeAvis.total }} avis</small>
                     </div>
+                {% endif %}
+
+                {% if app.user %}
+                    <div class="border-top pt-3 mb-3">
+                        {{ form_start(formulaireNote) }}
+                            {{ form_row(formulaireNote.note) }}
+                            {{ form_widget(formulaireNote.enregistrer) }}
+                        {{ form_end(formulaireNote) }}
+                    </div>
+                {% else %}
+                    <p class="small"><a href="{{ path('app_connexion') }}">Connecte-toi</a> pour noter ce jeu.</p>
                 {% endif %}
 
                 {% if jeu.developpeur %}

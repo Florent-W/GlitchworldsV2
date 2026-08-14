@@ -64,6 +64,10 @@ class Jeu
     #[ORM\OrderBy(['nom' => 'ASC'])]
     private Collection $langues;
 
+    /** @var Collection<int, Utilisateur> */
+    #[ORM\ManyToMany(targetEntity: Utilisateur::class, mappedBy: 'jeuxFavoris')]
+    private Collection $ajouteAuxFavorisPar;
+
     #[ORM\Column(enumType: StatutJeu::class)]
     private StatutJeu $statut = StatutJeu::Brouillon;
 
@@ -84,6 +88,7 @@ class Jeu
         $this->plateformes = new ArrayCollection();
         $this->genres = new ArrayCollection();
         $this->langues = new ArrayCollection();
+        $this->ajouteAuxFavorisPar = new ArrayCollection();
         $this->creeLe = new \DateTimeImmutable();
         $this->modifieLe = new \DateTimeImmutable();
     }
@@ -260,6 +265,12 @@ class Jeu
         $this->langues->removeElement($langue);
 
         return $this;
+    }
+
+    /** @return Collection<int, Utilisateur> */
+    public function getAjouteAuxFavorisPar(): Collection
+    {
+        return $this->ajouteAuxFavorisPar;
     }
 
     public function getStatut(): StatutJeu

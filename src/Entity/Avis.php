@@ -5,8 +5,10 @@ namespace App\Entity;
 use App\Repository\AvisRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AvisRepository::class)]
+#[ORM\UniqueConstraint(name: 'UNIQ_AVIS_JEU_AUTEUR', columns: ['jeu_id', 'auteur_id'])]
 class Avis
 {
     #[ORM\Id]
@@ -18,10 +20,15 @@ class Avis
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Jeu $jeu = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $auteur = null;
+
     #[ORM\Column(type: Types::TEXT)]
     private string $contenu = '';
 
     #[ORM\Column]
+    #[Assert\Range(min: 1, max: 5)]
     private float $note = 0;
 
     #[ORM\Column]
@@ -45,6 +52,18 @@ class Avis
     public function setJeu(Jeu $jeu): static
     {
         $this->jeu = $jeu;
+
+        return $this;
+    }
+
+    public function getAuteur(): ?Utilisateur
+    {
+        return $this->auteur;
+    }
+
+    public function setAuteur(?Utilisateur $auteur): static
+    {
+        $this->auteur = $auteur;
 
         return $this;
     }

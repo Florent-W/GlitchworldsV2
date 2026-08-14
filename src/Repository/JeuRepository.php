@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Jeu;
+use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
 use App\Enum\TriJeu;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -155,6 +156,77 @@ class JeuRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /** @return array{jeux: list<Jeu>, total: int, page: int, pages: int} */
+    public function trouverFavorisPagines(Utilisateur $utilisateur, int $page = 1, int $parPage = 12): array
+    {
+        $page = max(1, $page);
+        $parPage = max(1, min(50, $parPage));
+        $qb = $this->createQueryBuilder('j')
+            ->innerJoin('j.ajouteAuxFavorisPar', 'u')
+            ->leftJoin('j.categorie', 'categorie')
+            ->addSelect('categorie')
+            ->andWhere('u = :utilisateur')
+            ->andWhere('j.statut = :statut')
+            ->setParameter('utilisateur', $utilisateur)
+            ->setParameter('statut', StatutJeu::Approuve);
+
+        $total = (int) (clone $qb)->select('COUNT(j.id)')->getQuery()->getSingleScalarResult();
+        $pages = max(1, (int) ceil($total / $parPage));
+        $page = min($page, $pages);
+
+        /** @var list<Jeu> $jeux */
+        $jeux = $qb
+            ->orderBy('j.nom', 'ASC')
+            ->setFirstResult(($page - 1) * $parPage)
+            ->setMaxResults($parPage)
+            ->getQuery()
+            ->getResult();
+
+        if ($jeux !== []) {
+            $this->createQueryBuilder('details')
+                ->leftJoin('details.genres', 'genre')->addSelect('genre')
+                ->leftJoin('details.plateformes', 'plateforme')->addSelect('plateforme')
+                ->andWhere('details.id IN (:ids)')
+                ->setParameter('ids', array_map(static fn (Jeu $jeu) => $jeu->getId(), $jeux))
+                ->getQuery()
+                ->getResult();
+        }
+
+        return compact('jeux', 'total', 'page', 'pages');
+    }
+
+    /** @return list<Jeu> */
+    public function trouverNouveautes(int $limite = 6): array
+    {
+        return $this->createQueryBuilder('j')
+            ->leftJoin('j.categorie', 'categorie')->addSelect('categorie')
+            ->andWhere('j.statut = :statut')
+            ->setParameter('statut', StatutJeu::Approuve)
+            ->orderBy('j.creeLe', 'DESC')
+            ->addOrderBy('j.id', 'DESC')
+            ->setMaxResults(max(1, min(12, $limite)))
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return list<Jeu> */
+    public function trouverPopulaires(int $limite = 6): array
+    {
+        return $this->createQueryBuilder('j')
+            ->leftJoin('j.categorie', 'categorie')->addSelect('categorie')
+            ->innerJoin('App\Entity\Avis', 'avis', 'WITH', 'avis.jeu = j')
+            ->addSelect('AVG(avis.note) AS HIDDEN moyenneNote')
+            ->addSelect('COUNT(avis.id) AS HIDDEN nombreAvis')
+            ->andWhere('j.statut = :statut')
+            ->setParameter('statut', StatutJeu::Approuve)
+            ->groupBy('j.id, categorie.id')
+            ->orderBy('moyenneNote', 'DESC')
+            ->addOrderBy('nombreAvis', 'DESC')
+            ->setMaxResults(max(1, min(12, $limite)))
+            ->getQuery()
+            ->getResult();
     }
 
     /**

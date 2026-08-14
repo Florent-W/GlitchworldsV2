@@ -8,6 +8,7 @@ use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
 use App\Enum\TriJeu;
 use App\Form\CommentaireJeuType;
+use App\Form\NoteJeuType;
 use App\Repository\CategorieJeuRepository;
 use App\Repository\AvisRepository;
 use App\Repository\CommentaireJeuRepository;
@@ -98,6 +99,15 @@ final class JeuController extends AbstractController
             ]).'#commentaires');
         }
 
+        $avisUtilisateur = $this->getUser() instanceof Utilisateur
+            ? $avisRepository->findOneBy(['jeu' => $jeu, 'auteur' => $this->getUser()])
+            : null;
+        $formulaireNote = $this->createForm(NoteJeuType::class, [
+            'note' => $avisUtilisateur?->getNote(),
+        ], [
+            'action' => $this->generateUrl('app_jeu_noter', ['id' => $jeu->getId()]),
+        ]);
+
         return $this->render('jeu/show.html.twig', [
             'jeu' => $jeu,
             'jeuxSimilaires' => $jeuRepository->trouverSimilaires($jeu),
@@ -105,6 +115,8 @@ final class JeuController extends AbstractController
             'commentaires' => $commentaireJeuRepository->trouverRecents($jeu),
             'totalCommentaires' => $commentaireJeuRepository->compterPourJeu($jeu),
             'formulaireCommentaire' => $formulaireCommentaire,
+            'formulaireNote' => $formulaireNote,
+            'avisUtilisateur' => $avisUtilisateur,
         ]);
     }
 }

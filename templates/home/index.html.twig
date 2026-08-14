@@ -1,13 +1,52 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}GlitchWorlds - Accueil{% endblock %}
+{% block meta_description %}Découvre les fangames, hacks et créations de la communauté GlitchWorlds.{% endblock %}
 
 {% block body %}
-<div class="gw-panel p-4">
-    <h1 class="h3 mb-2">Bienvenue sur GlitchWorlds</h1>
-    <p class="text-secondary mb-3">
-        Le contenu de l'accueil arrivera avec les fiches de jeux.
-    </p>
-    <a class="btn btn-gw" href="{{ path('app_jeux') }}">Voir les jeux</a>
-</div>
+<section class="gw-game-hero mb-4">
+    <div class="gw-game-hero__content">
+        <span class="gw-game-hero__category">GlitchWorlds</span>
+        <h1>Play. Hack. Rewrite Reality.</h1>
+        <p class="gw-game-hero__lead">Explore des fangames, partage tes découvertes et construis ta collection avec la communauté.</p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <a class="btn btn-light btn-lg" href="{{ path('app_jeux') }}"><i class="bi bi-controller me-2" aria-hidden="true"></i>Découvrir les jeux</a>
+            {% if not app.user %}<a class="btn btn-outline-light btn-lg" href="{{ path('app_inscription') }}">Rejoindre la communauté</a>{% endif %}
+        </div>
+    </div>
+    <i class="bi bi-globe2 gw-game-hero__icon" aria-hidden="true"></i>
+</section>
+
+<section class="row row-cols-1 row-cols-md-3 g-3 mb-4" aria-label="Statistiques GlitchWorlds">
+    <div class="col"><div class="gw-panel p-3 h-100"><i class="bi bi-controller text-primary fs-3" aria-hidden="true"></i><strong class="d-block fs-3">{{ totalJeux }}</strong><span class="text-secondary">Jeux approuvés</span></div></div>
+    <div class="col"><div class="gw-panel p-3 h-100"><i class="bi bi-people-fill text-primary fs-3" aria-hidden="true"></i><strong class="d-block fs-3">{{ totalMembres }}</strong><span class="text-secondary">Membres</span></div></div>
+    <div class="col"><div class="gw-panel p-3 h-100"><i class="bi bi-chat-dots-fill text-primary fs-3" aria-hidden="true"></i><strong class="d-block fs-3">{{ totalCommentaires }}</strong><span class="text-secondary">Commentaires</span></div></div>
+</section>
+
+{% macro listeJeux(titre, icone, jeux) %}
+    {% if jeux is not empty %}
+        <section class="gw-panel p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-{{ icone }} text-primary me-2" aria-hidden="true"></i>{{ titre }}</h2>
+                <a href="{{ path('app_jeux') }}">Voir tout</a>
+            </div>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">
+                {% for jeu in jeux %}
+                    <div class="col">
+                        <article class="gw-similar-card h-100">
+                            <a class="gw-similar-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}"><i class="bi bi-controller" aria-hidden="true"></i></a>
+                            <div class="p-3">
+                                <h3 class="h6 mb-1"><a class="text-decoration-none text-body" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3>
+                                {% if jeu.categorie %}<span class="gw-tag">{{ jeu.categorie.nom }}</span>{% endif %}
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+{% endmacro %}
+
+{{ _self.listeJeux('Jeux populaires', 'star-fill', populaires) }}
+{{ _self.listeJeux('Nouveautés', 'stars', nouveautes) }}
 {% endblock %}
