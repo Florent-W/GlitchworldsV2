@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Jeu;
 use App\Enum\StatutJeu;
+use App\Enum\TriJeu;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,7 +19,7 @@ class JeuRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array{jeux: list<Jeu>, total: int, page: int, pages: int, parPage: int, recherche: string, categorie: string, plateforme: string, genre: string}
+     * @return array{jeux: list<Jeu>, total: int, page: int, pages: int, parPage: int, recherche: string, categorie: string, plateforme: string, genre: string, langue: string, tri: TriJeu}
      */
     public function trouverApprouvesPagines(
         int $page = 1,
@@ -27,6 +28,8 @@ class JeuRepository extends ServiceEntityRepository
         string $categorie = '',
         string $plateforme = '',
         string $genre = '',
+        string $langue = '',
+        TriJeu $tri = TriJeu::Recent,
     ): array {
         $page = max(1, $page);
         $parPage = max(1, min(50, $parPage));
@@ -34,6 +37,7 @@ class JeuRepository extends ServiceEntityRepository
         $categorie = trim($categorie);
         $plateforme = trim($plateforme);
         $genre = trim($genre);
+        $langue = trim($langue);
 
         $qb = $this->createQueryBuilder('j')
             ->leftJoin('j.categorie', 'c')
@@ -67,6 +71,13 @@ class JeuRepository extends ServiceEntityRepository
                 ->setParameter('genre', $genre);
         }
 
+        if ($langue !== '') {
+            $qb
+                ->innerJoin('j.langues', 'l')
+                ->andWhere('l.slug = :langue')
+                ->setParameter('langue', $langue);
+        }
+
         $total = (clone $qb)
             ->select('COUNT(DISTINCT j.id)')
             ->getQuery()
@@ -77,15 +88,36 @@ class JeuRepository extends ServiceEntityRepository
             $page = $pages;
         }
 
+        $qb->distinct();
+
+        match ($tri) {
+            TriJeu::Recent => $qb->orderBy('j.dateSortie', 'DESC')->addOrderBy('j.id', 'DESC'),
+            TriJeu::Nom => $qb->orderBy('j.nom', 'ASC'),
+            TriJeu::Ancien => $qb->orderBy('j.dateSortie', 'ASC')->addOrderBy('j.id', 'ASC'),
+        };
+
         /** @var list<Jeu> $jeux */
         $jeux = $qb
-            ->distinct()
-            ->orderBy('j.dateSortie', 'DESC')
-            ->addOrderBy('j.id', 'DESC')
             ->setFirstResult(($page - 1) * $parPage)
             ->setMaxResults($parPage)
             ->getQuery()
             ->getResult();
+
+        if ($jeux !== []) {
+            $ids = array_map(static fn (Jeu $jeu) => $jeu->getId(), $jeux);
+
+            $this->createQueryBuilder('details')
+                ->leftJoin('details.plateformes', 'plateforme')
+                ->addSelect('plateforme')
+                ->leftJoin('details.genres', 'genre')
+                ->addSelect('genre')
+                ->leftJoin('details.langues', 'langue')
+                ->addSelect('langue')
+                ->andWhere('details.id IN (:ids)')
+                ->setParameter('ids', $ids)
+                ->getQuery()
+                ->getResult();
+        }
 
         return [
             'jeux' => $jeux,
@@ -97,6 +129,31 @@ class JeuRepository extends ServiceEntityRepository
             'categorie' => $categorie,
             'plateforme' => $plateforme,
             'genre' => $genre,
+            'langue' => $langue,
+            'tri' => $tri,
         ];
+    }
+
+    /**
+     * @return list<Jeu>
+     */
+    public function trouverSimilaires(Jeu $jeu, int $limite = 4): array
+    {
+        $qb = $this->createQueryBuilder('j')
+            ->andWhere('j.id != :jeu')
+            ->andWhere('j.statut = :statut')
+            ->setParameter('jeu', $jeu->getId())
+            ->setParameter('statut', StatutJeu::Approuve)
+            ->orderBy('j.dateSortie', 'DESC')
+            ->addOrderBy('j.id', 'DESC')
+            ->setMaxResults($limite);
+
+        if ($jeu->getCategorie() !== null) {
+            $qb
+                ->andWhere('j.categorie = :categorie')
+                ->setParameter('categorie', $jeu->getCategorie());
+        }
+
+        return $qb->getQuery()->getResult();
     }
 }

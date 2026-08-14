@@ -26,7 +26,9 @@
         recherche: recherche ?: null,
         categorie: categorie ?: null,
         plateforme: plateforme ?: null,
-        genre: genre ?: null
+        genre: genre ?: null,
+        langue: langue ?: null,
+        tri: tri.value != 'recent' ? tri.value : null
     } %}
 
     <header class="gw-page-heading mb-4">
@@ -70,9 +72,7 @@
                             <article class="gw-game-card h-100">
                                 <a class="gw-game-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" aria-label="Voir {{ jeu.nom }}">
                                     <i class="bi bi-controller" aria-hidden="true"></i>
-                                    {% if jeu.categorie %}
-                                        <span>{{ jeu.categorie.nom }}</span>
-                                    {% endif %}
+                                    <span>Voir la fiche</span>
                                 </a>
 
                                 <div class="gw-game-card__body">
@@ -85,11 +85,16 @@
                                     {% endif %}
 
                                     <div class="gw-game-card__tags">
+                                        {% if jeu.categorie %}
+                                            <a href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}" class="gw-tag">
+                                                {{ jeu.categorie.nom }}
+                                            </a>
+                                        {% endif %}
                                         {% for item in jeu.genres|slice(0, 2) %}
-                                            <span class="gw-tag">{{ item.nom }}</span>
+                                            <a href="{{ path('app_jeux', { genre: item.slug }) }}" class="gw-tag">{{ item.nom }}</a>
                                         {% endfor %}
                                         {% for item in jeu.plateformes|slice(0, 1) %}
-                                            <span class="gw-tag gw-tag--plateforme">{{ item.nom }}</span>
+                                            <a href="{{ path('app_jeux', { plateforme: item.slug }) }}" class="gw-tag gw-tag--plateforme">{{ item.nom }}</a>
                                         {% endfor %}
                                         {% set restant = jeu.genres|length + jeu.plateformes|length - 3 %}
                                         {% if restant > 0 %}
@@ -166,8 +171,27 @@
                     </select>
                 </div>
 
+                <div class="mb-4">
+                    <label class="form-label" for="jeux-langue">Langue</label>
+                    <select id="jeux-langue" class="form-select" name="langue">
+                        <option value="">Toutes les langues</option>
+                        {% for item in langues %}
+                            <option value="{{ item.slug }}" {{ langue == item.slug ? 'selected' : '' }}>{{ item.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="jeux-tri">Trier par</label>
+                    <select id="jeux-tri" class="form-select" name="tri">
+                        {% for option in tris %}
+                            <option value="{{ option.value }}" {{ tri == option ? 'selected' : '' }}>{{ option.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <button type="submit" class="btn btn-gw w-100">Appliquer les filtres</button>
-                {% if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty %}
+                {% if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty or langue is not empty %}
                     <a class="btn btn-link w-100 mt-2" href="{{ path('app_jeux') }}">
                         <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                         Effacer les filtres

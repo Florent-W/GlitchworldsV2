@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[AsCommand(
     name: 'app:import-legacy-jeux',
@@ -69,6 +70,14 @@ final class ImportLegacyJeuxCommand extends Command
 
         $liaisonsGenres = $legacy->fetchAllAssociative(
             'SELECT id_jeu, id_genre FROM jeu_lier_genres ORDER BY id_jeu ASC, id_genre ASC'
+        );
+
+        $langues = $legacy->fetchAllAssociative(
+            'SELECT id, langue, nom_image FROM langues ORDER BY id ASC'
+        );
+
+        $liaisonsLangues = $legacy->fetchAllAssociative(
+            'SELECT id_jeu, id_langue FROM jeu_lier_langues ORDER BY id_jeu ASC, id_langue ASC'
         );
 
         $rows = $legacy->fetchAllAssociative(
@@ -128,9 +137,11 @@ final class ImportLegacyJeuxCommand extends Command
         }
 
         if ($purge) {
+            $this->connection->executeStatement('DELETE FROM jeu_langue');
             $this->connection->executeStatement('DELETE FROM jeu_genre');
             $this->connection->executeStatement('DELETE FROM jeu_plateforme');
             $this->connection->executeStatement('DELETE FROM jeu');
+            $this->connection->executeStatement('DELETE FROM langue');
             $this->connection->executeStatement('DELETE FROM genre');
             $this->connection->executeStatement('DELETE FROM plateforme');
             $this->connection->executeStatement('DELETE FROM categorie_jeu');
@@ -142,6 +153,7 @@ final class ImportLegacyJeuxCommand extends Command
 
         $this->importerPlateformes($plateformes);
         $this->importerGenres($genres);
+        $this->importerLangues($langues);
         $io->writeln(sprintf('%d plateformes synchronisées.', \count($plateformes)));
 
         $inserted = 0;
@@ -182,6 +194,7 @@ final class ImportLegacyJeuxCommand extends Command
 
         $nbLiaisons = $this->importerLiaisonsPlateformes($liaisonsPlateformes);
         $nbLiaisonsGenres = $this->importerLiaisonsGenres($liaisonsGenres);
+        $nbLiaisonsLangues = $this->importerLiaisonsLangues($liaisonsLangues);
         $io->writeln(sprintf('%d liaisons jeu/plateforme synchronisées.', $nbLiaisons));
 
         $io->success(sprintf(
@@ -431,6 +444,68 @@ final class ImportLegacyJeuxCommand extends Command
         return $inserted;
     }
 
+    /**
+     * @param list<array{id: int|string, langue: string, nom_image: ?string}> $langues
+     */
+    private function importerLangues(array $langues): void
+    {
+        foreach ($langues as $langue) {
+            $id = (int) $langue['id'];
+            $nom = match ($id) {
+                1 => 'Français',
+                9 => 'Coréen',
+                default => (string) $langue['langue'],
+            };
+            $payload = [
+                'id' => $id,
+                'nom' => $nom,
+                'slug' => $this->normaliserSlug($nom),
+                'image' => $this->chaineOuNull($langue['nom_image'] ?? null),
+            ];
+
+            $exists = (bool) $this->connection->fetchOne('SELECT 1 FROM langue WHERE id = ?', [$id]);
+            if ($exists) {
+                unset($payload['id']);
+                $this->connection->update('langue', $payload, ['id' => $id]);
+            } else {
+                $this->connection->insert('langue', $payload);
+            }
+        }
+
+        $maxId = (int) $this->connection->fetchOne('SELECT MAX(id) FROM langue');
+        if ($maxId > 0) {
+            $this->connection->executeStatement('ALTER TABLE langue AUTO_INCREMENT = '.($maxId + 1));
+        }
+    }
+
+    /**
+     * @param list<array{id_jeu: int|string, id_langue: int|string}> $liaisons
+     */
+    private function importerLiaisonsLangues(array $liaisons): int
+    {
+        $this->connection->executeStatement('DELETE FROM jeu_langue');
+
+        $inserted = 0;
+        foreach ($liaisons as $liaison) {
+            $jeuId = (int) $liaison['id_jeu'];
+            $langueId = (int) $liaison['id_langue'];
+
+            $jeuExiste = (bool) $this->connection->fetchOne('SELECT 1 FROM jeu WHERE id = ?', [$jeuId]);
+            $langueExiste = (bool) $this->connection->fetchOne('SELECT 1 FROM langue WHERE id = ?', [$langueId]);
+            if (!$jeuExiste || !$langueExiste) {
+                continue;
+            }
+
+            $this->connection->insert('jeu_langue', [
+                'jeu_id' => $jeuId,
+                'langue_id' => $langueId,
+            ]);
+            ++$inserted;
+        }
+
+        return $inserted;
+    }
+
     private function convertirStatut(string $legacy): StatutJeu
     {
         $normalise = mb_strtolower(trim($legacy));
@@ -452,9 +527,7 @@ final class ImportLegacyJeuxCommand extends Command
 
     private function normaliserSlug(string $slug): string
     {
-        $slug = trim(mb_strtolower($slug));
-        $slug = preg_replace('/[^a-z0-9\-]+/', '-', $slug) ?? $slug;
-        $slug = trim($slug, '-');
+        $slug = (new AsciiSlugger('fr'))->slug($slug)->lower()->toString();
 
         return mb_substr($slug !== '' ? $slug : 'jeu', 0, 180);
     }

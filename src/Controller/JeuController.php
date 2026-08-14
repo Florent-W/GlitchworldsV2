@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Jeu;
+use App\Enum\StatutJeu;
+use App\Enum\TriJeu;
 use App\Repository\CategorieJeuRepository;
 use App\Repository\GenreRepository;
 use App\Repository\JeuRepository;
+use App\Repository\LangueRepository;
 use App\Repository\PlateformeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,19 +24,24 @@ final class JeuController extends AbstractController
         CategorieJeuRepository $categorieJeuRepository,
         PlateformeRepository $plateformeRepository,
         GenreRepository $genreRepository,
+        LangueRepository $langueRepository,
     ): Response {
         $page = $request->query->getInt('page', 1);
         $recherche = trim((string) $request->query->get('recherche', ''));
         $categorie = trim((string) $request->query->get('categorie', ''));
         $plateforme = trim((string) $request->query->get('plateforme', ''));
         $genre = trim((string) $request->query->get('genre', ''));
-        $pagination = $jeuRepository->trouverApprouvesPagines($page, 20, $recherche, $categorie, $plateforme, $genre);
+        $langue = trim((string) $request->query->get('langue', ''));
+        $tri = TriJeu::tryFrom((string) $request->query->get('tri', 'recent')) ?? TriJeu::Recent;
+        $pagination = $jeuRepository->trouverApprouvesPagines($page, 20, $recherche, $categorie, $plateforme, $genre, $langue, $tri);
 
         return $this->render('jeu/index.html.twig', [
             ...$pagination,
             'categories' => $categorieJeuRepository->trouverToutes(),
             'plateformes' => $plateformeRepository->trouverToutes(),
             'genres' => $genreRepository->trouverTous(),
+            'langues' => $langueRepository->trouverToutes(),
+            'tris' => TriJeu::cases(),
         ]);
     }
 
@@ -42,7 +50,7 @@ final class JeuController extends AbstractController
     {
         $jeu = $jeuRepository->find($id);
 
-        if (!$jeu instanceof Jeu) {
+        if (!$jeu instanceof Jeu || $jeu->getStatut() !== StatutJeu::Approuve) {
             throw $this->createNotFoundException('Ce jeu n\'existe pas.');
         }
 
@@ -55,6 +63,7 @@ final class JeuController extends AbstractController
 
         return $this->render('jeu/show.html.twig', [
             'jeu' => $jeu,
+            'jeuxSimilaires' => $jeuRepository->trouverSimilaires($jeu),
         ]);
     }
 }

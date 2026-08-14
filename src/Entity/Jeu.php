@@ -56,6 +56,14 @@ class Jeu
     #[ORM\OrderBy(['nom' => 'ASC'])]
     private Collection $genres;
 
+    /**
+     * @var Collection<int, Langue>
+     */
+    #[ORM\ManyToMany(targetEntity: Langue::class)]
+    #[ORM\JoinTable(name: 'jeu_langue')]
+    #[ORM\OrderBy(['nom' => 'ASC'])]
+    private Collection $langues;
+
     #[ORM\Column(enumType: StatutJeu::class)]
     private StatutJeu $statut = StatutJeu::Brouillon;
 
@@ -75,6 +83,7 @@ class Jeu
     {
         $this->plateformes = new ArrayCollection();
         $this->genres = new ArrayCollection();
+        $this->langues = new ArrayCollection();
         $this->creeLe = new \DateTimeImmutable();
         $this->modifieLe = new \DateTimeImmutable();
     }
@@ -225,6 +234,30 @@ class Jeu
     public function removeGenre(Genre $genre): static
     {
         $this->genres->removeElement($genre);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Langue>
+     */
+    public function getLangues(): Collection
+    {
+        return $this->langues;
+    }
+
+    public function addLangue(Langue $langue): static
+    {
+        if (!$this->langues->contains($langue)) {
+            $this->langues->add($langue);
+        }
+
+        return $this;
+    }
+
+    public function removeLangue(Langue $langue): static
+    {
+        $this->langues->removeElement($langue);
 
         return $this;
     }

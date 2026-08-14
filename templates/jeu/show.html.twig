@@ -13,44 +13,152 @@
 {% endblock %}
 
 {% block body %}
-<article class="gw-panel p-4">
+<article>
     <nav class="mb-3" aria-label="Fil d'Ariane">
-        <a href="{{ path('app_jeux') }}">Jeux</a>
-        <span class="text-secondary"> / </span>
-        <span>{{ jeu.nom }}</span>
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ path('app_jeux') }}">Jeux</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ jeu.nom }}</li>
+        </ol>
     </nav>
 
-    <header class="mb-4">
-        <h1 class="h2 mb-2">{{ jeu.nom }}</h1>
+    <div class="row g-4 align-items-stretch">
+        <div class="col-xl-9">
+            <header class="gw-game-hero h-100">
+                <div class="gw-game-hero__content">
+                    {% if jeu.categorie %}
+                        <a class="gw-game-hero__category" href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}">
+                            {{ jeu.categorie.nom }}
+                        </a>
+                    {% endif %}
 
-        <div class="d-flex flex-wrap gap-2 align-items-center text-secondary">
-            <span class="badge text-bg-secondary">{{ jeu.statut.label }}</span>
-            {% if jeu.categorie %}
-                <a class="gw-tag" href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}">{{ jeu.categorie.nom }}</a>
-            {% endif %}
-            {% for plat in jeu.plateformes %}
-                <a class="gw-tag gw-tag--plateforme" href="{{ path('app_jeux', { plateforme: plat.slug }) }}">{{ plat.nom }}</a>
-            {% endfor %}
-            {% for item in jeu.genres %}
-                <a class="gw-tag" href="{{ path('app_jeux', { genre: item.slug }) }}">{{ item.nom }}</a>
-            {% endfor %}
-            {% if jeu.dateSortie %}
-                <span>Sortie : {{ jeu.dateSortie|format_datetime('none', 'none', 'd MMMM y', locale='fr') }}</span>
-            {% endif %}
-            {% if jeu.developpeur %}
-                <span>Par {{ jeu.developpeur }}</span>
-            {% endif %}
+                    <h1>{{ jeu.nom }}</h1>
+
+                    {% if jeu.description is not empty %}
+                        <p class="gw-game-hero__lead">{{ jeu.description }}</p>
+                    {% endif %}
+
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for item in jeu.genres %}
+                            <a class="gw-game-hero__tag" href="{{ path('app_jeux', { genre: item.slug }) }}">{{ item.nom }}</a>
+                        {% endfor %}
+                        {% for item in jeu.plateformes %}
+                            <a class="gw-game-hero__tag" href="{{ path('app_jeux', { plateforme: item.slug }) }}">{{ item.nom }}</a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <a class="btn btn-light btn-lg" href="#a-propos">
+                            <i class="bi bi-info-circle me-2" aria-hidden="true"></i>Plus d'infos
+                        </a>
+                        <button class="btn btn-outline-light btn-lg" type="button" disabled title="Fonctionnalité à venir">
+                            <i class="bi bi-heart me-2" aria-hidden="true"></i>Ajouter aux favoris
+                        </button>
+                    </div>
+                </div>
+                <i class="bi bi-controller gw-game-hero__icon" aria-hidden="true"></i>
+            </header>
         </div>
-    </header>
 
-    {% if jeu.description is not empty %}
-        <p class="lead">{{ jeu.description }}</p>
-    {% endif %}
+        <aside class="col-xl-3">
+            <section class="gw-quick-info h-100" aria-labelledby="infos-jeu-title">
+                <h2 id="infos-jeu-title" class="h5 mb-3">Infos du jeu</h2>
 
-    {% if jeu.contenu is not empty %}
-        <div class="jeu-contenu">
-            {{ jeu.contenu|bbcode }}
+                {% if jeu.developpeur %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-person-fill" aria-hidden="true"></i>
+                        <div><span>Développeur</span><strong>{{ jeu.developpeur }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.dateSortie %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                        <div><span>Date de sortie</span><strong>{{ jeu.dateSortie|format_datetime('none', 'none', 'd MMMM y', locale='fr') }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.plateformes is not empty %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-display" aria-hidden="true"></i>
+                        <div><span>Plateformes</span><strong>{{ jeu.plateformes|map(item => item.nom)|join(', ') }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.langues is not empty %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-translate" aria-hidden="true"></i>
+                        <div><span>Langues</span><strong>{{ jeu.langues|map(item => item.nom)|join(', ') }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.categorie %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-tag-fill" aria-hidden="true"></i>
+                        <div><span>Catégorie</span><strong>{{ jeu.categorie.nom }}</strong></div>
+                    </div>
+                {% endif %}
+
+                <div class="gw-quick-info__item">
+                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                    <div><span>Statut</span><strong>{{ jeu.statut.label }}</strong></div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <section id="a-propos" class="gw-panel p-4 mt-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i>
+            <h2 class="h4 mb-0">À propos de ce jeu</h2>
         </div>
+
+        {% if jeu.contenu is not empty %}
+            <div class="jeu-contenu">
+                {{ jeu.contenu|bbcode }}
+            </div>
+        {% elseif jeu.description is not empty %}
+            <p class="mb-0">{{ jeu.description }}</p>
+        {% else %}
+            <p class="text-secondary mb-0">Aucune présentation disponible pour le moment.</p>
+        {% endif %}
+    </section>
+
+    {% if jeuxSimilaires is not empty %}
+        <section class="gw-panel p-4 mt-4" aria-labelledby="jeux-similaires-title">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-grid-fill text-primary fs-4" aria-hidden="true"></i>
+                    <h2 id="jeux-similaires-title" class="h4 mb-0">Jeux similaires</h2>
+                </div>
+                <a href="{{ path('app_jeux', { categorie: jeu.categorie ? jeu.categorie.slug : null }) }}">Voir tous</a>
+            </div>
+
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3">
+                {% for similaire in jeuxSimilaires %}
+                    <div class="col">
+                        <article class="gw-similar-card h-100">
+                            <a class="gw-similar-card__visual" href="{{ path('app_jeu_show', { slug: similaire.slug, id: similaire.id }) }}">
+                                <i class="bi bi-controller" aria-hidden="true"></i>
+                            </a>
+                            <div class="p-3">
+                                <h3 class="h6 mb-1">
+                                    <a class="text-decoration-none text-body" href="{{ path('app_jeu_show', { slug: similaire.slug, id: similaire.id }) }}">
+                                        {{ similaire.nom }}
+                                    </a>
+                                </h3>
+                                {% if similaire.dateSortie %}
+                                    <p class="small text-secondary mb-0">{{ similaire.dateSortie|date('d/m/Y') }}</p>
+                                {% endif %}
+
+                                {% if similaire.developpeur %}
+                                    <p class="small text-secondary mb-0">{{ similaire.developpeur }}</p>
+                                {% endif %}
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
     {% endif %}
 </article>
 {% endblock %}
