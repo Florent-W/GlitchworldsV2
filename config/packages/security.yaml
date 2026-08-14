@@ -1,4 +1,7 @@
 security:
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_MODERATEUR
+        ROLE_MODERATEUR: ROLE_USER
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
@@ -8,7 +11,6 @@ security:
         utilisateurs:
             entity:
                 class: App\Entity\Utilisateur
-                property: email
 
     firewalls:
         dev:
@@ -21,7 +23,7 @@ security:
             form_login:
                 login_path: app_connexion
                 check_path: app_connexion
-                username_parameter: email
+                username_parameter: identifiant
                 password_parameter: mot_de_passe
                 enable_csrf: true
                 default_target_path: app_home
@@ -39,8 +41,11 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
+        - { path: ^/administration, roles: ROLE_ADMIN }
+        - { path: ^/moderation, roles: ROLE_MODERATEUR }
         - { path: ^/mon-compte, roles: ROLE_USER }
         - { path: ^/favoris, roles: ROLE_USER }
+        - { path: ^/jeu/proposer, roles: ROLE_USER }
 
 when@test:
     security:

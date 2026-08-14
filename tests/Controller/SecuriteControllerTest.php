@@ -70,6 +70,36 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertResponseRedirects('/connexion');
     }
 
+    public function testUnAncienMembrePeutSeConnecterAvecSonPseudo(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $hasher = self::getContainer()->get(UserPasswordHasherInterface::class);
+        $pseudo = 'Legacy'.bin2hex(random_bytes(5));
+        $utilisateur = (new Utilisateur())->setPseudo($pseudo);
+        $utilisateur->setPassword($hasher->hashPassword($utilisateur, 'ancien-mot-de-passe-2026'));
+        $entityManager->persist($utilisateur);
+        $entityManager->flush();
+        $utilisateurId = $utilisateur->getId();
+
+        $crawler = $client->request('GET', '/connexion');
+        $client->submit($crawler->selectButton('Se connecter')->form([
+            'identifiant' => $pseudo,
+            'mot_de_passe' => 'ancien-mot-de-passe-2026',
+        ]));
+
+        self::assertResponseRedirects('/');
+
+        $client->request('GET', '/mon-compte');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.alert-warning', 'Compte legacy récupéré');
+        self::assertSelectorExists('a[href="/mon-compte/modifier"]');
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->remove($entityManager->find(Utilisateur::class, $utilisateurId));
+        $entityManager->flush();
+    }
+
     public function testUnMembreConnectePeutVoirSonCompte(): void
     {
         $client = self::createClient();

@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Actualités - GlitchWorlds{% endblock %}
+{% block meta_description %}Retrouve les actualités, mods, glitchs et tutoriels sélectionnés par GlitchWorlds.{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-lg-5">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <i class="bi bi-newspaper text-primary fs-1" aria-hidden="true"></i>
+        <div><h1 class="h2 mb-1">Actualités</h1><p class="text-secondary mb-0">{{ total }} publication{{ total > 1 ? 's' : '' }} disponible{{ total > 1 ? 's' : '' }}.</p></div>
+    </div>
+
+    <nav class="d-flex flex-wrap gap-2 mb-4" aria-label="Catégories d’actualités">
+        <a class="btn {{ categorieSelectionnee is null ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ path('app_actualites') }}">Toutes</a>
+        {% for categorie in categories %}
+            <a class="btn {{ categorieSelectionnee == categorie ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ path('app_actualites', { categorie: categorie.value }) }}">{{ categorie.label }}</a>
+        {% endfor %}
+    </nav>
+
+    {% if actualites is empty %}
+        <div class="alert alert-info mb-0">Aucune actualité dans cette catégorie.</div>
+    {% else %}
+        <div class="row g-4">
+            {% for actualite in actualites %}
+                <div class="col-md-6 col-xl-4">
+                    <article class="card h-100 border-0 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <span class="badge text-bg-primary align-self-start mb-2">{{ actualite.categorie.label }}</span>
+                            <h2 class="h5 card-title"><a class="stretched-link text-decoration-none" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h2>
+                            <p class="card-text text-secondary">{{ actualite.description }}</p>
+                            <p class="small text-secondary mt-auto mb-0">{{ actualite.publieeLe|date('d/m/Y') }}{% if actualite.auteur %} · {{ actualite.auteur.pseudo }}{% endif %}</p>
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if pages > 1 %}
+            <nav class="mt-4" aria-label="Pagination des actualités"><ul class="pagination justify-content-center mb-0">
+                {% for numero in 1..pages %}
+                    <li class="page-item {{ numero == page ? 'active' : '' }}"><a class="page-link" href="{{ path('app_actualites', { page: numero, categorie: categorieSelectionnee ? categorieSelectionnee.value : null }) }}">{{ numero }}</a></li>
+                {% endfor %}
+            </ul></nav>
+        {% endif %}
+    {% endif %}
+</section>
+{% endblock %}

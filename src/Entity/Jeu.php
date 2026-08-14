@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: JeuRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -19,12 +20,16 @@ class Jeu
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(normalizer: 'trim')]
+    #[Assert\Length(max: 255, normalizer: 'trim')]
     private ?string $nom = null;
 
     #[ORM\Column(length: 180, unique: true)]
     private ?string $slug = null;
 
     #[ORM\Column(length: 160)]
+    #[Assert\NotBlank(normalizer: 'trim')]
+    #[Assert\Length(max: 160, normalizer: 'trim')]
     private string $description = '';
 
     #[ORM\Column(type: Types::TEXT)]
@@ -39,6 +44,10 @@ class Jeu
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true)]
     private ?CategorieJeu $categorie = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $createur = null;
 
     /**
      * @var Collection<int, Plateforme>
@@ -191,6 +200,18 @@ class Jeu
     public function setCategorie(?CategorieJeu $categorie): static
     {
         $this->categorie = $categorie;
+
+        return $this;
+    }
+
+    public function getCreateur(): ?Utilisateur
+    {
+        return $this->createur;
+    }
+
+    public function setCreateur(?Utilisateur $createur): static
+    {
+        $this->createur = $createur;
 
         return $this;
     }

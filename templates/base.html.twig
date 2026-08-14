@@ -28,10 +28,16 @@
             { label: 'Jeux',       icon: 'controller',      route: 'app_jeux' },
             { label: 'Favoris',    icon: 'heart-fill',      route: 'app_favoris' },
             { label: 'Communauté', icon: 'people-fill',     route: null },
-            { label: 'Actualités', icon: 'newspaper',     route: null },
+            { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' },
             { label: 'Paramètres', icon: 'gear-fill',       route: null },
             { label: 'Boutique',   icon: 'bag-fill',        route: null, badge: 'New' }
         ] %}
+        {% if is_granted('ROLE_MODERATEUR') %}
+            {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_jeux' }]) %}
+        {% endif %}
+        {% if is_granted('ROLE_ADMIN') %}
+            {% set nav_items = nav_items|merge([{ label: 'Gérer les actus', icon: 'journal-text', route: 'app_administration_actualites_liste' }]) %}
+        {% endif %}
 
         <div class="gw-app">
             <header class="gw-topbar">

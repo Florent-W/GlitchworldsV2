@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Examiner {{ jeu.nom }} - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-lg-5">
+    <nav aria-label="Fil d’Ariane">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_moderation_jeux') }}">Modération</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ jeu.nom }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-4">
+        <div>
+            <span class="badge text-bg-warning mb-2">{{ jeu.statut.label }}</span>
+            <h1 class="h2">{{ jeu.nom }}</h1>
+            <p class="lead">{{ jeu.description }}</p>
+        </div>
+        <div class="d-flex align-items-start gap-2">
+            <form method="post" action="{{ path('app_moderation_jeu_decider', { id: jeu.id, decision: 'refuser' }) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('moderation-jeu-' ~ jeu.id) }}">
+                <button class="btn btn-outline-danger" type="submit"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Refuser</button>
+            </form>
+            <form method="post" action="{{ path('app_moderation_jeu_decider', { id: jeu.id, decision: 'approuver' }) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('moderation-jeu-' ~ jeu.id) }}">
+                <button class="btn btn-success" type="submit"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Approuver</button>
+            </form>
+        </div>
+    </div>
+
+    <hr>
+
+    <dl class="row mb-4">
+        <dt class="col-sm-4 col-lg-3">Proposé par</dt>
+        <dd class="col-sm-8 col-lg-9">{{ jeu.createur ? jeu.createur.pseudo : 'Membre supprimé' }}</dd>
+        <dt class="col-sm-4 col-lg-3">Développeur</dt>
+        <dd class="col-sm-8 col-lg-9">{{ jeu.developpeur ?? 'Non renseigné' }}</dd>
+        <dt class="col-sm-4 col-lg-3">Date de sortie</dt>
+        <dd class="col-sm-8 col-lg-9">{{ jeu.dateSortie ? jeu.dateSortie|date('d/m/Y') : 'Non renseignée' }}</dd>
+        <dt class="col-sm-4 col-lg-3">Catégorie</dt>
+        <dd class="col-sm-8 col-lg-9">{{ jeu.categorie ? jeu.categorie.nom : 'Non renseignée' }}</dd>
+    </dl>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4"><h2 class="h6">Genres</h2><div class="d-flex flex-wrap gap-2">{% for genre in jeu.genres %}<span class="gw-tag">{{ genre.nom }}</span>{% endfor %}</div></div>
+        <div class="col-md-4"><h2 class="h6">Plateformes</h2><div class="d-flex flex-wrap gap-2">{% for plateforme in jeu.plateformes %}<span class="gw-tag">{{ plateforme.nom }}</span>{% endfor %}</div></div>
+        <div class="col-md-4"><h2 class="h6">Langues</h2><div class="d-flex flex-wrap gap-2">{% for langue in jeu.langues %}<span class="gw-tag">{{ langue.nom }}</span>{% endfor %}</div></div>
+    </div>
+
+    <h2 class="h4">Présentation complète</h2>
+    <div class="text-body-secondary">{{ jeu.contenu ? jeu.contenu|nl2br : 'Aucune présentation complète.' }}</div>
+</section>
+{% endblock %}

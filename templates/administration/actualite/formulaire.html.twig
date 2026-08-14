@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ titre }} - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 920px">
+    <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_administration_actualites_liste') }}">Actualités</a></li><li class="breadcrumb-item active" aria-current="page">{{ titre }}</li></ol></nav>
+    <h1 class="h2 mb-4">{{ titre }}</h1>
+
+    {{ form_start(formulaire) }}
+        {{ form_row(formulaire.titre) }}
+        {{ form_row(formulaire.description) }}
+        {{ form_row(formulaire.contenu) }}
+        <div class="row"><div class="col-md-6">{{ form_row(formulaire.categorie) }}</div><div class="col-md-6">{{ form_row(formulaire.statut) }}</div></div>
+        <div class="d-flex gap-2">{{ form_widget(formulaire.enregistrer) }}<a class="btn btn-outline-secondary" href="{{ path('app_administration_actualites_liste') }}">Annuler</a></div>
+    {{ form_end(formulaire) }}
+</section>
+{% endblock %}

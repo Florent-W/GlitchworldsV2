@@ -27,6 +27,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(message: 'Cette adresse e-mail n\'est pas valide.')]
     private ?string $email = null;
 
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $emailLegacy = null;
+
     #[ORM\Column(nullable: true)]
     private ?string $motDePasse = null;
 
@@ -83,9 +86,14 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getEmailLegacy(): ?string
+    {
+        return $this->emailLegacy;
+    }
+
     public function getUserIdentifier(): string
     {
-        return $this->email ?? '';
+        return $this->email ?? $this->pseudo;
     }
 
     /** @return list<string> */

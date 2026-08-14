@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ actualite.titre }} - GlitchWorlds{% endblock %}
+{% block meta_description %}{{ actualite.description }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block canonical %}{{ url('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}{% endblock %}
+{% block structured_data %}<script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Article', headline: actualite.titre, description: actualite.description, datePublished: actualite.publieeLe|date('c'), author: { '@type': 'Person', name: actualite.auteur ? actualite.auteur.pseudo : 'GlitchWorlds' } }|json_encode|raw }}</script>{% endblock %}
+
+{% block body %}
+<article class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 980px">
+    <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_actualites') }}">Actualités</a></li><li class="breadcrumb-item active" aria-current="page">{{ actualite.categorie.label }}</li></ol></nav>
+    <span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span>
+    <h1 class="display-6">{{ actualite.titre }}</h1>
+    <p class="lead text-secondary">{{ actualite.description }}</p>
+    <p class="small text-secondary">Publié le {{ actualite.publieeLe|format_datetime('long', 'none', locale='fr') }}{% if actualite.auteur %} par {{ actualite.auteur.pseudo }}{% endif %}</p>
+    <hr>
+    <div class="gw-article-content">{{ actualite.contenu|nl2br }}</div>
+</article>
+{% endblock %}

@@ -24,6 +24,11 @@ final class CompteType extends AbstractType
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Adresse e-mail',
+                'help' => 'Elle servira aussi d’identifiant de connexion.',
+                'constraints' => [
+                    new Assert\NotBlank(message: 'Ajoute une adresse e-mail.'),
+                    new Assert\Email(message: 'Cette adresse e-mail n’est pas valide.'),
+                ],
             ])
             ->add('enregistrer', SubmitType::class, [
                 'label' => 'Enregistrer les modifications',

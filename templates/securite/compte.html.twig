@@ -10,7 +10,7 @@
             <div class="gw-comment__avatar fs-4" aria-hidden="true">{{ app.user.pseudo|first|upper }}</div>
             <div>
                 <h1 class="h2 mb-1">{{ app.user.pseudo }}</h1>
-                <p class="text-secondary mb-0">{{ app.user.email }}</p>
+                <p class="text-secondary mb-0">{{ app.user.email ?? 'Aucune adresse e-mail' }}</p>
             </div>
         </div>
         <div class="d-flex flex-wrap gap-2">
@@ -25,6 +25,16 @@
             </a>
         </div>
     </div>
+
+    {% if app.user.email is null %}
+        <div class="alert alert-warning d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mt-4 mb-0" role="alert">
+            <div>
+                <strong>Compte legacy récupéré.</strong>
+                Ajoute une adresse e-mail unique pour sécuriser ton accès.
+            </div>
+            <a class="btn btn-warning text-nowrap" href="{{ path('app_compte_modifier') }}">Ajouter mon e-mail</a>
+        </div>
+    {% endif %}
 
     <hr class="my-4">
 
@@ -43,6 +53,25 @@
         <div class="d-flex flex-wrap gap-2">
             {% for jeu in app.user.jeuxFavoris %}
                 <a class="gw-tag" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center gap-3 mt-4 mb-3">
+        <h2 class="h5 mb-0">Mes propositions</h2>
+        <a class="btn btn-sm btn-primary" href="{{ path('app_jeu_proposer') }}">Proposer un jeu</a>
+    </div>
+    {% if propositions is empty %}
+        <p class="text-secondary mb-0">Tu n’as envoyé aucune proposition.</p>
+    {% else %}
+        <div class="list-group">
+            {% for jeu in propositions %}
+                <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div><strong>{{ jeu.nom }}</strong><span class="badge text-bg-secondary ms-2">{{ jeu.statut.label }}</span></div>
+                    {% if is_granted('PROPOSITION_JEU_MODIFIER', jeu) %}
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_jeu_proposition_modifier', { id: jeu.id }) }}">Modifier la proposition</a>
+                    {% endif %}
+                </div>
             {% endfor %}
         </div>
     {% endif %}

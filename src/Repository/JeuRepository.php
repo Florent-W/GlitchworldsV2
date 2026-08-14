@@ -229,6 +229,31 @@ class JeuRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return list<Jeu> */
+    public function trouverPropositions(Utilisateur $utilisateur): array
+    {
+        return $this->createQueryBuilder('j')
+            ->andWhere('j.createur = :utilisateur')
+            ->setParameter('utilisateur', $utilisateur)
+            ->orderBy('j.creeLe', 'DESC')
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return list<Jeu> */
+    public function trouverEnAttente(): array
+    {
+        return $this->createQueryBuilder('j')
+            ->leftJoin('j.createur', 'createur')->addSelect('createur')
+            ->leftJoin('j.categorie', 'categorie')->addSelect('categorie')
+            ->andWhere('j.statut = :statut')
+            ->setParameter('statut', StatutJeu::EnAttente)
+            ->orderBy('j.creeLe', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * @return list<Jeu>
      */

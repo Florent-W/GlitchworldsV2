@@ -6,6 +6,7 @@ use App\Entity\Utilisateur;
 use App\Form\InscriptionType;
 use App\Form\CompteType;
 use App\Form\MotDePasseType;
+use App\Repository\JeuRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,11 +53,18 @@ final class SecuriteController extends AbstractController
     }
 
     #[Route('/mon-compte', name: 'app_compte')]
-    public function compte(): Response
+    public function compte(JeuRepository $jeuRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
-        return $this->render('securite/compte.html.twig');
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $this->render('securite/compte.html.twig', [
+            'propositions' => $jeuRepository->trouverPropositions($utilisateur),
+        ]);
     }
 
     #[Route('/mon-compte/modifier', name: 'app_compte_modifier')]

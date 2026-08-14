@@ -9,13 +9,13 @@
     <p class="text-secondary">Connecte-toi pour retrouver la communauté GlitchWorlds.</p>
 
     {% if erreur %}
-        <div class="alert alert-danger">Adresse e-mail ou mot de passe incorrect.</div>
+        <div class="alert alert-danger">E-mail, pseudo ou mot de passe incorrect.</div>
     {% endif %}
 
     <form method="post" action="{{ path('app_connexion') }}">
         <div class="mb-3">
-            <label class="form-label" for="connexion-email">Adresse e-mail</label>
-            <input class="form-control form-control-lg" id="connexion-email" name="email" type="email" value="{{ derniereAdresse }}" autocomplete="email" required autofocus>
+            <label class="form-label" for="connexion-identifiant">Adresse e-mail ou pseudo</label>
+            <input class="form-control form-control-lg" id="connexion-identifiant" name="identifiant" type="text" value="{{ derniereAdresse }}" autocomplete="username" required autofocus>
         </div>
         <div class="mb-3">
             <label class="form-label" for="connexion-mot-de-passe">Mot de passe</label>

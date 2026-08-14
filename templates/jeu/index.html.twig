@@ -47,7 +47,10 @@
             <h1 class="h2 mb-1">Jeux</h1>
             <p class="text-secondary mb-0">Découvre des fangames, rom hacks et jeux officiels.</p>
         </div>
-        <span class="gw-result-count">{{ total }} résultat{{ total > 1 ? 's' : '' }}</span>
+        <div class="d-flex align-items-center gap-2">
+            {% if app.user %}<a class="btn btn-primary" href="{{ path('app_jeu_proposer') }}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Proposer un jeu</a>{% endif %}
+            <span class="gw-result-count">{{ total }} résultat{{ total > 1 ? 's' : '' }}</span>
+        </div>
     </header>
 
     <form method="get" action="{{ path('app_jeux') }}" role="search">
