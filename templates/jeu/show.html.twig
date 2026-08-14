@@ -12,6 +12,41 @@
     {%- endif -%}
 {% endblock %}
 
+{% block canonical %}{{ url('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}{% endblock %}
+{% block og_type %}article{% endblock %}
+
+{% block structured_data %}
+    {% set descriptionStructuree = jeu.description is not empty
+        ? jeu.description
+        : jeu.contenu|bbcode_texte|slice(0, 160) %}
+    {% set schema = {
+        '@context': 'https://schema.org',
+        '@type': 'VideoGame',
+        name: jeu.nom,
+        url: url('app_jeu_show', { slug: jeu.slug, id: jeu.id }),
+        description: descriptionStructuree,
+        genre: jeu.genres|map(item => item.nom),
+        gamePlatform: jeu.plateformes|map(item => item.nom),
+        inLanguage: jeu.langues|map(item => item.nom)
+    } %}
+    {% if jeu.dateSortie %}
+        {% set schema = schema|merge({ datePublished: jeu.dateSortie|date('Y-m-d') }) %}
+    {% endif %}
+    {% if jeu.developpeur %}
+        {% set schema = schema|merge({ author: { '@type': 'Organization', name: jeu.developpeur } }) %}
+    {% endif %}
+    {% if resumeAvis.moyenne is not null %}
+        {% set schema = schema|merge({ aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: resumeAvis.moyenne,
+            ratingCount: resumeAvis.total,
+            bestRating: 5,
+            worstRating: 1
+        } }) %}
+    {% endif %}
+    <script type="application/ld+json">{{ schema|json_encode|raw }}</script>
+{% endblock %}
+
 {% block body %}
 <article>
     <nav class="mb-3" aria-label="Fil d'Ariane">
@@ -131,8 +166,7 @@
         {% endif %}
     </section>
 
-    {% if commentaires is not empty %}
-        <section class="gw-panel p-4 mt-4" aria-labelledby="commentaires-title">
+    <section id="commentaires" class="gw-panel p-4 mt-4" aria-labelledby="commentaires-title">
             <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-chat-dots-fill text-primary fs-4" aria-hidden="true"></i>
@@ -141,7 +175,8 @@
                 <span class="gw-result-count">{{ totalCommentaires }}</span>
             </div>
 
-            <div class="vstack gap-3">
+            {% if commentaires is not empty %}
+            <div class="vstack gap-3 mb-4">
                 {% for commentaire in commentaires %}
                     <article class="gw-comment">
                         <div class="gw-comment__avatar" aria-hidden="true">
@@ -159,8 +194,24 @@
                     </article>
                 {% endfor %}
             </div>
+            {% else %}
+                <p class="text-secondary">Aucun commentaire pour le moment.</p>
+            {% endif %}
+
+            <div class="border-top pt-4">
+                {{ form_start(formulaireCommentaire) }}
+                    {{ form_row(formulaireCommentaire.contenu) }}
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        {% if app.user %}
+                            <small class="text-secondary">Entre 3 et 1 000 caractères.</small>
+                        {% else %}
+                            <small class="text-secondary"><i class="bi bi-lock-fill me-1" aria-hidden="true"></i><a href="{{ path('app_connexion') }}">Connecte-toi</a> pour commenter.</small>
+                        {% endif %}
+                        {{ form_widget(formulaireCommentaire.publier) }}
+                    </div>
+                {{ form_end(formulaireCommentaire) }}
+            </div>
         </section>
-    {% endif %}
 
     {% if jeuxSimilaires is not empty %}
         <section class="gw-panel p-4 mt-4" aria-labelledby="jeux-similaires-title">

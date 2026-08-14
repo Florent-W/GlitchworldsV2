@@ -21,6 +21,16 @@
 
 {% block meta_description %}Découvre les fangames, rom hacks et jeux référencés par la communauté GlitchWorlds.{% endblock %}
 
+{% block canonical %}{{ url('app_jeux', page > 1 ? { page: page } : {}) }}{% endblock %}
+
+{% block robots_meta %}
+    {%- if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty or langue is not empty -%}
+        noindex,follow
+    {%- else -%}
+        index,follow
+    {%- endif -%}
+{% endblock %}
+
 {% block body %}
     {% set filtres = {
         recherche: recherche ?: null,

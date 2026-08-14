@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\CommentaireJeu;
 use App\Entity\Jeu;
+use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
 use App\Enum\TriJeu;
+use App\Form\CommentaireJeuType;
 use App\Repository\CategorieJeuRepository;
 use App\Repository\AvisRepository;
 use App\Repository\CommentaireJeuRepository;
@@ -12,6 +15,7 @@ use App\Repository\GenreRepository;
 use App\Repository\JeuRepository;
 use App\Repository\LangueRepository;
 use App\Repository\PlateformeRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -54,6 +58,7 @@ final class JeuController extends AbstractController
         JeuRepository $jeuRepository,
         AvisRepository $avisRepository,
         CommentaireJeuRepository $commentaireJeuRepository,
+        EntityManagerInterface $entityManager,
     ): Response
     {
         $jeu = $jeuRepository->find($id);
@@ -69,12 +74,36 @@ final class JeuController extends AbstractController
             ], 301);
         }
 
+        $commentaire = new CommentaireJeu();
+        $formulaireCommentaire = $this->createForm(CommentaireJeuType::class, $commentaire, [
+            'disabled' => !$this->getUser() instanceof Utilisateur,
+        ]);
+        $formulaireCommentaire->handleRequest($request);
+
+        if ($formulaireCommentaire->isSubmitted() && $formulaireCommentaire->isValid()) {
+            $auteur = $this->getUser();
+            if (!$auteur instanceof Utilisateur) {
+                throw $this->createAccessDeniedException('Connecte-toi pour publier un commentaire.');
+            }
+
+            $commentaire->setJeu($jeu)->setAuteur($auteur);
+            $entityManager->persist($commentaire);
+            $entityManager->flush();
+            $this->addFlash('success', 'Ton commentaire a été publié.');
+
+            return $this->redirect($this->generateUrl('app_jeu_show', [
+                'slug' => $jeu->getSlug(),
+                'id' => $jeu->getId(),
+            ]).'#commentaires');
+        }
+
         return $this->render('jeu/show.html.twig', [
             'jeu' => $jeu,
             'jeuxSimilaires' => $jeuRepository->trouverSimilaires($jeu),
             'resumeAvis' => $avisRepository->trouverResume($jeu),
             'commentaires' => $commentaireJeuRepository->trouverRecents($jeu),
             'totalCommentaires' => $commentaireJeuRepository->compterPourJeu($jeu),
+            'formulaireCommentaire' => $formulaireCommentaire,
         ]);
     }
 }

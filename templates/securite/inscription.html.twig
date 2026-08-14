@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width: 760px">
+    <h1 class="h2">Créer un compte</h1>
+    <p class="text-secondary">Rejoins la communauté et prépare ta collection de jeux.</p>
+
+    {{ form_start(formulaire) }}
+        {{ form_row(formulaire.pseudo) }}
+        {{ form_row(formulaire.email) }}
+        <div class="row g-3">
+            <div class="col-md-6">{{ form_row(formulaire.motDePasseClair.first) }}</div>
+            <div class="col-md-6">{{ form_row(formulaire.motDePasseClair.second) }}</div>
+        </div>
+        {{ form_row(formulaire.creer) }}
+    {{ form_end(formulaire) }}
+
+    <p class="text-center mt-3 mb-0">Déjà membre ? <a href="{{ path('app_connexion') }}">Se connecter</a></p>
+</section>
+{% endblock %}
