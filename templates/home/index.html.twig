@@ -49,4 +49,23 @@
 
 {{ _self.listeJeux('Jeux populaires', 'star-fill', populaires) }}
 {{ _self.listeJeux('Nouveautés', 'stars', nouveautes) }}
+
+{% if dernieresActualites is not empty %}
+    <section class="gw-panel p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+            <h2 class="h4 mb-0"><i class="bi bi-newspaper text-primary me-2" aria-hidden="true"></i>Dernières actualités</h2>
+            <a href="{{ path('app_actualites') }}">Voir tout</a>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+            {% for actualite in dernieresActualites %}
+                <div class="col">
+                    <article class="card border-0 shadow-sm h-100 overflow-hidden">
+                        {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="card-img-top object-fit-cover" style="height: 180px" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="" loading="lazy">{% endif %}
+                        <div class="card-body"><span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span><h3 class="h5"><a class="stretched-link text-decoration-none" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h3><p class="text-secondary mb-2">{{ actualite.description }}</p><small class="text-secondary">{{ actualite.publieeLe|date('d/m/Y') }}</small></div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
 {% endblock %}

@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Enum\StatutJeu;
 use App\Repository\CommentaireJeuRepository;
+use App\Repository\ActualiteRepository;
+use App\Repository\CommentaireActualiteRepository;
 use App\Repository\JeuRepository;
 use App\Repository\UtilisateurRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,14 +19,17 @@ final class HomeController extends AbstractController
         JeuRepository $jeuRepository,
         UtilisateurRepository $utilisateurRepository,
         CommentaireJeuRepository $commentaireJeuRepository,
+        ActualiteRepository $actualiteRepository,
+        CommentaireActualiteRepository $commentaireActualiteRepository,
     ): Response
     {
         return $this->render('home/index.html.twig', [
             'nouveautes' => $jeuRepository->trouverNouveautes(),
             'populaires' => $jeuRepository->trouverPopulaires(),
+            'dernieresActualites' => $actualiteRepository->trouverDernieres(),
             'totalJeux' => $jeuRepository->count(['statut' => StatutJeu::Approuve]),
             'totalMembres' => $utilisateurRepository->count([]),
-            'totalCommentaires' => $commentaireJeuRepository->count([]),
+            'totalCommentaires' => $commentaireJeuRepository->count([]) + $commentaireActualiteRepository->count([]),
         ]);
     }
 }

@@ -22,3 +22,5 @@
 ###< symfony/asset-mapper ###
 
 /Jeux/
+/Articles/
+/public/

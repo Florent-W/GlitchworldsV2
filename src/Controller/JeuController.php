@@ -11,6 +11,7 @@ use App\Form\CommentaireJeuType;
 use App\Form\NoteJeuType;
 use App\Repository\CategorieJeuRepository;
 use App\Repository\AvisRepository;
+use App\Repository\ActualiteRepository;
 use App\Repository\CommentaireJeuRepository;
 use App\Repository\GenreRepository;
 use App\Repository\JeuRepository;
@@ -61,6 +62,7 @@ final class JeuController extends AbstractController
         AvisRepository $avisRepository,
         CommentaireJeuRepository $commentaireJeuRepository,
         EntityManagerInterface $entityManager,
+        ActualiteRepository $actualiteRepository,
     ): Response
     {
         $jeu = $jeuRepository->find($id);
@@ -117,6 +119,7 @@ final class JeuController extends AbstractController
             'formulaireCommentaire' => $formulaireCommentaire,
             'formulaireNote' => $formulaireNote,
             'avisUtilisateur' => $avisUtilisateur,
+            'actualitesLiees' => $actualiteRepository->trouverPourJeu($jeu),
         ]);
     }
 }

@@ -77,6 +77,10 @@ class Jeu
     #[ORM\ManyToMany(targetEntity: Utilisateur::class, mappedBy: 'jeuxFavoris')]
     private Collection $ajouteAuxFavorisPar;
 
+    /** @var Collection<int, Actualite> */
+    #[ORM\ManyToMany(targetEntity: Actualite::class, mappedBy: 'jeux')]
+    private Collection $actualites;
+
     #[ORM\Column(enumType: StatutJeu::class)]
     private StatutJeu $statut = StatutJeu::Brouillon;
 
@@ -98,6 +102,7 @@ class Jeu
         $this->genres = new ArrayCollection();
         $this->langues = new ArrayCollection();
         $this->ajouteAuxFavorisPar = new ArrayCollection();
+        $this->actualites = new ArrayCollection();
         $this->creeLe = new \DateTimeImmutable();
         $this->modifieLe = new \DateTimeImmutable();
     }
@@ -111,6 +116,12 @@ class Jeu
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /** @return Collection<int, Actualite> */
+    public function getActualites(): Collection
+    {
+        return $this->actualites;
     }
 
     public function setId(int $id): static

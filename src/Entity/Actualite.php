@@ -6,6 +6,8 @@ use App\Enum\CategorieActualite;
 use App\Enum\StatutActualite;
 use App\Repository\ActualiteRepository;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -48,12 +50,18 @@ class Actualite
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Utilisateur $auteur = null;
 
+    /** @var Collection<int, Jeu> */
+    #[ORM\ManyToMany(targetEntity: Jeu::class, inversedBy: 'actualites')]
+    #[ORM\JoinTable(name: 'actualite_jeu')]
+    private Collection $jeux;
+
     #[ORM\Column]
     private \DateTimeImmutable $publieeLe;
 
     public function __construct()
     {
         $this->publieeLe = new \DateTimeImmutable();
+        $this->jeux = new ArrayCollection();
     }
 
     public function getId(): ?int { return $this->id; }
@@ -74,6 +82,10 @@ class Actualite
     public function setMiniature(?string $miniature): static { $this->miniature = $miniature; return $this; }
     public function getAuteur(): ?Utilisateur { return $this->auteur; }
     public function setAuteur(?Utilisateur $auteur): static { $this->auteur = $auteur; return $this; }
+    /** @return Collection<int, Jeu> */
+    public function getJeux(): Collection { return $this->jeux; }
+    public function ajouterJeu(Jeu $jeu): static { if (!$this->jeux->contains($jeu)) { $this->jeux->add($jeu); } return $this; }
+    public function retirerJeu(Jeu $jeu): static { $this->jeux->removeElement($jeu); return $this; }
     public function getPublieeLe(): \DateTimeImmutable { return $this->publieeLe; }
     public function setPublieeLe(\DateTimeImmutable $publieeLe): static { $this->publieeLe = $publieeLe; return $this; }
 }

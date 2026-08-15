@@ -12,6 +12,8 @@
         {{ form_row(formulaire.titre) }}
         {{ form_row(formulaire.description) }}
         {{ form_row(formulaire.contenu) }}
+        {{ form_row(formulaire.image) }}
+        {{ form_row(formulaire.jeux) }}
         <div class="row"><div class="col-md-6">{{ form_row(formulaire.categorie) }}</div><div class="col-md-6">{{ form_row(formulaire.statut) }}</div></div>
         <div class="d-flex gap-2">{{ form_widget(formulaire.enregistrer) }}<a class="btn btn-outline-secondary" href="{{ path('app_administration_actualites_liste') }}">Annuler</a></div>
     {{ form_end(formulaire) }}

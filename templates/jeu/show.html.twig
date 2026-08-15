@@ -187,6 +187,17 @@
         {% endif %}
     </section>
 
+    {% if actualitesLiees is not empty %}
+        <section class="gw-panel p-4 mt-4">
+            <div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-newspaper text-primary fs-4" aria-hidden="true"></i><h2 class="h4 mb-0">Actualités liées</h2></div>
+            <div class="row g-3">
+                {% for actualite in actualitesLiees %}
+                    <div class="col-md-6"><article class="border rounded-4 p-3 h-100"><span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span><h3 class="h6"><a href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h3><p class="small text-secondary mb-0">{{ actualite.description }}</p></article></div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
     <section id="commentaires" class="gw-panel p-4 mt-4" aria-labelledby="commentaires-title">
             <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
                 <div class="d-flex align-items-center gap-2">

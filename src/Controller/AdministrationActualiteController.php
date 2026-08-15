@@ -7,10 +7,12 @@ use App\Entity\Utilisateur;
 use App\Enum\StatutActualite;
 use App\Form\ActualiteType;
 use App\Repository\ActualiteRepository;
+use App\Service\ActualiteImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
@@ -26,13 +28,14 @@ final class AdministrationActualiteController extends AbstractController
     }
 
     #[Route('/creer', name: 'creer')]
-    public function creer(Request $request, SluggerInterface $slugger, ActualiteRepository $actualiteRepository, EntityManagerInterface $entityManager): Response
+    public function creer(Request $request, SluggerInterface $slugger, ActualiteRepository $actualiteRepository, ActualiteImageUploader $imageUploader, EntityManagerInterface $entityManager): Response
     {
         $actualite = new Actualite();
         $formulaire = $this->createForm(ActualiteType::class, $actualite, ['bouton_libelle' => 'Créer l’actualité']);
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $image = $formulaire->get('image')->getData();
             $actualite->setSlug($this->creerSlugUnique($actualite->getTitre(), $slugger, $actualiteRepository));
             $auteur = $this->getUser();
             if ($auteur instanceof Utilisateur) {
@@ -40,6 +43,10 @@ final class AdministrationActualiteController extends AbstractController
             }
             $entityManager->persist($actualite);
             $entityManager->flush();
+            if ($image instanceof UploadedFile) {
+                $actualite->setMiniature($imageUploader->enregistrer($image, (int) $actualite->getId()));
+                $entityManager->flush();
+            }
             $this->addFlash('success', 'L’actualité a été créée.');
 
             return $this->redirectToRoute('app_administration_actualites_liste');
@@ -49,13 +56,17 @@ final class AdministrationActualiteController extends AbstractController
     }
 
     #[Route('/{id}/modifier', name: 'modifier', requirements: ['id' => '\d+'])]
-    public function modifier(Actualite $actualite, Request $request, EntityManagerInterface $entityManager): Response
+    public function modifier(Actualite $actualite, Request $request, ActualiteImageUploader $imageUploader, EntityManagerInterface $entityManager): Response
     {
         $ancienStatut = $actualite->getStatut();
         $formulaire = $this->createForm(ActualiteType::class, $actualite);
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $image = $formulaire->get('image')->getData();
+            if ($image instanceof UploadedFile) {
+                $actualite->setMiniature($imageUploader->enregistrer($image, (int) $actualite->getId()));
+            }
             if ($ancienStatut !== StatutActualite::Publiee && $actualite->getStatut() === StatutActualite::Publiee) {
                 $actualite->setPublieeLe(new \DateTimeImmutable());
             }

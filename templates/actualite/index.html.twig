@@ -24,6 +24,9 @@
             {% for actualite in actualites %}
                 <div class="col-md-6 col-xl-4">
                     <article class="card h-100 border-0 shadow-sm">
+                        {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}
+                            <img class="card-img-top object-fit-cover" style="height: 190px" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="" loading="lazy">
+                        {% endif %}
                         <div class="card-body d-flex flex-column">
                             <span class="badge text-bg-primary align-self-start mb-2">{{ actualite.categorie.label }}</span>
                             <h2 class="h5 card-title"><a class="stretched-link text-decoration-none" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h2>

@@ -20,7 +20,7 @@
                     <td>{{ actualite.categorie.label }}</td>
                     <td><span class="badge {{ actualite.statut.value == 'publiee' ? 'text-bg-success' : (actualite.statut.value == 'en_attente' ? 'text-bg-warning' : 'text-bg-secondary') }}">{{ actualite.statut.value == 'publiee' ? 'Publiée' : (actualite.statut.value == 'en_attente' ? 'En attente' : 'Brouillon') }}</span></td>
                     <td>{{ actualite.publieeLe|date('d/m/Y') }}</td>
-                    <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ path('app_administration_actualites_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Modifier</a></td>
+                    <td class="text-end"><div class="d-inline-flex gap-1">{% if actualite.statut.value == 'publiee' %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}" aria-label="Voir"><i class="bi bi-eye" aria-hidden="true"></i></a>{% endif %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_administration_actualites_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Modifier</a></div></td>
                 </tr>
             {% else %}
                 <tr><td colspan="5" class="text-center text-secondary py-4">Aucune actualité.</td></tr>

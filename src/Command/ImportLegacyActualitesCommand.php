@@ -21,6 +21,8 @@ final class ImportLegacyActualitesCommand extends Command
 {
     public function __construct(
         private readonly Connection $connection,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
         #[Autowire('%env(default::LEGACY_DATABASE_URL)%')]
         private readonly ?string $legacyDatabaseUrl = null,
     ) {
@@ -42,8 +44,11 @@ final class ImportLegacyActualitesCommand extends Command
 
         $legacy = DriverManager::getConnection((new DsnParser(['mysql' => 'pdo_mysql', 'mysqli' => 'mysqli']))->parse($this->legacyDatabaseUrl));
         $articles = $legacy->fetchAllAssociative('SELECT id, titre, contenu, nom_categorie, nom_miniature, date_creation, url, id_auteur, approuver, description FROM article ORDER BY id ASC');
+        $commentaires = $legacy->fetchAllAssociative('SELECT id, id_utilisateur, contenu, id_news, date_commentaire FROM commentaire ORDER BY id ASC');
+        $liaisonsJeux = $legacy->fetchAllAssociative('SELECT id_article, id_jeu FROM article_lier_jeu ORDER BY id_article, id_jeu');
         $slugger = new AsciiSlugger('fr');
         $slugs = [];
+        $miniaturesDetectees = 0;
         $statuts = array_fill_keys(array_map(static fn (StatutActualite $statut): string => $statut->value, StatutActualite::cases()), 0);
 
         $this->connection->beginTransaction();
@@ -57,6 +62,10 @@ final class ImportLegacyActualitesCommand extends Command
                 }
                 $slugs[$slug] = true;
                 $statut = $this->convertirStatut((string) $article['approuver']);
+                $miniature = $this->trouverMiniature($id, (string) $article['nom_miniature']);
+                if ($miniature !== null && !str_starts_with($miniature, 'legacy:')) {
+                    ++$miniaturesDetectees;
+                }
                 ++$statuts[$statut->value];
 
                 if (!(bool) $input->getOption('dry-run')) {
@@ -73,8 +82,31 @@ final class ImportLegacyActualitesCommand extends Command
                             'contenu' => (string) $article['contenu'],
                             'categorie' => $this->convertirCategorie((string) $article['nom_categorie'])->value,
                             'statut' => $statut->value,
-                            'miniature' => trim((string) $article['nom_miniature']) ?: null,
+                            'miniature' => $miniature,
                             'publiee_le' => (string) $article['date_creation'],
+                        ],
+                    );
+                }
+            }
+
+            if (!(bool) $input->getOption('dry-run')) {
+                foreach ($liaisonsJeux as $liaison) {
+                    $this->connection->executeStatement(
+                        'INSERT IGNORE INTO actualite_jeu (actualite_id, jeu_id) VALUES (:actualite, :jeu)',
+                        ['actualite' => (int) $liaison['id_article'], 'jeu' => (int) $liaison['id_jeu']],
+                    );
+                }
+                foreach ($commentaires as $commentaire) {
+                    $this->connection->executeStatement(
+                        'INSERT INTO commentaire_actualite (id, actualite_id, auteur_id, contenu, date_commentaire)
+                         VALUES (:id, :actualite, :auteur, :contenu, :date)
+                         ON DUPLICATE KEY UPDATE actualite_id = VALUES(actualite_id), auteur_id = VALUES(auteur_id), contenu = VALUES(contenu), date_commentaire = VALUES(date_commentaire)',
+                        [
+                            'id' => (int) $commentaire['id'],
+                            'actualite' => (int) $commentaire['id_news'],
+                            'auteur' => (int) $commentaire['id_utilisateur'],
+                            'contenu' => (string) $commentaire['contenu'],
+                            'date' => (string) $commentaire['date_commentaire'],
                         ],
                     );
                 }
@@ -91,6 +123,9 @@ final class ImportLegacyActualitesCommand extends Command
             ['En attente', $statuts[StatutActualite::EnAttente->value]],
             ['Brouillons', $statuts[StatutActualite::Brouillon->value]],
         ]);
+        $io->writeln(sprintf('Miniatures déjà présentes dans la V2 : %d', $miniaturesDetectees));
+        $io->writeln(sprintf('Commentaires associés : %d', \count($commentaires)));
+        $io->writeln(sprintf('Liaisons avec des jeux : %d', \count($liaisonsJeux)));
         $io->success(sprintf('%d actualités %s.', \count($articles), (bool) $input->getOption('dry-run') ? 'analysées' : 'importées'));
 
         return Command::SUCCESS;
@@ -109,5 +144,20 @@ final class ImportLegacyActualitesCommand extends Command
     private function convertirCategorie(string $categorie): CategorieActualite
     {
         return CategorieActualite::tryFrom(mb_strtolower(trim($categorie))) ?? CategorieActualite::News;
+    }
+
+    private function trouverMiniature(int $actualiteId, string $nomLegacy): ?string
+    {
+        $dossier = $this->projectDir.'/public/uploads/actualites/'.$actualiteId;
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $extension) {
+            $nom = 'miniature.'.$extension;
+            if (is_file($dossier.'/'.$nom)) {
+                return $nom;
+            }
+        }
+
+        $nomLegacy = trim($nomLegacy);
+
+        return '' !== $nomLegacy ? 'legacy:'.$nomLegacy : null;
     }
 }
