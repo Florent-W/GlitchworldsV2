@@ -84,8 +84,12 @@
                             <div class="col">
                             <article class="gw-game-card h-100">
                                 <a class="gw-game-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" aria-label="Voir {{ jeu.nom }}">
-                                    <i class="bi bi-controller" aria-hidden="true"></i>
-                                    <span>Voir la fiche</span>
+                                    {% if jeu.miniature starts with 'miniature.' %}
+                                        <img class="w-100 h-100 object-fit-cover" src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Miniature de {{ jeu.nom }}" loading="lazy">
+                                    {% else %}
+                                        <i class="bi bi-controller" aria-hidden="true"></i>
+                                        <span>Voir la fiche</span>
+                                    {% endif %}
                                 </a>
 
                                 <div class="gw-game-card__body">

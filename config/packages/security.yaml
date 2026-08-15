@@ -46,6 +46,7 @@ security:
         - { path: ^/mon-compte, roles: ROLE_USER }
         - { path: ^/favoris, roles: ROLE_USER }
         - { path: ^/jeu/proposer, roles: ROLE_USER }
+        - { path: ^/communaute/publication, roles: ROLE_USER }
 
 when@test:
     security:

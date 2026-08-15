@@ -22,11 +22,13 @@ final class ActualiteController extends AbstractController
     public function liste(Request $request, ActualiteRepository $actualiteRepository): Response
     {
         $categorie = CategorieActualite::tryFrom((string) $request->query->get('categorie'));
+        $recherche = trim((string) $request->query->get('recherche', ''));
 
         return $this->render('actualite/index.html.twig', [
-            ...$actualiteRepository->trouverPubliees($request->query->getInt('page', 1), 12, $categorie),
+            ...$actualiteRepository->trouverPubliees($request->query->getInt('page', 1), 12, $categorie, $recherche),
             'categorieSelectionnee' => $categorie,
             'categories' => CategorieActualite::cases(),
+            'recherche' => $recherche,
         ]);
     }
 

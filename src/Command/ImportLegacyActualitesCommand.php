@@ -46,6 +46,7 @@ final class ImportLegacyActualitesCommand extends Command
         $articles = $legacy->fetchAllAssociative('SELECT id, titre, contenu, nom_categorie, nom_miniature, date_creation, url, id_auteur, approuver, description FROM article ORDER BY id ASC');
         $commentaires = $legacy->fetchAllAssociative('SELECT id, id_utilisateur, contenu, id_news, date_commentaire FROM commentaire ORDER BY id ASC');
         $liaisonsJeux = $legacy->fetchAllAssociative('SELECT id_article, id_jeu FROM article_lier_jeu ORDER BY id_article, id_jeu');
+        $mentionsJaime = $legacy->fetchAllAssociative('SELECT DISTINCT id_commentaire, id_pseudo_utilisateur_qui_aime AS id_utilisateur FROM aime_commentaire ORDER BY id_commentaire, id_pseudo_utilisateur_qui_aime');
         $slugger = new AsciiSlugger('fr');
         $slugs = [];
         $miniaturesDetectees = 0;
@@ -110,6 +111,12 @@ final class ImportLegacyActualitesCommand extends Command
                         ],
                     );
                 }
+                foreach ($mentionsJaime as $mention) {
+                    $this->connection->executeStatement(
+                        'INSERT IGNORE INTO commentaire_actualite_aime (commentaire_actualite_id, utilisateur_id) VALUES (:commentaire, :utilisateur)',
+                        ['commentaire' => (int) $mention['id_commentaire'], 'utilisateur' => (int) $mention['id_utilisateur']],
+                    );
+                }
             }
 
             (bool) $input->getOption('dry-run') ? $this->connection->rollBack() : $this->connection->commit();
@@ -126,6 +133,7 @@ final class ImportLegacyActualitesCommand extends Command
         $io->writeln(sprintf('Miniatures déjà présentes dans la V2 : %d', $miniaturesDetectees));
         $io->writeln(sprintf('Commentaires associés : %d', \count($commentaires)));
         $io->writeln(sprintf('Liaisons avec des jeux : %d', \count($liaisonsJeux)));
+        $io->writeln(sprintf('Mentions J’aime uniques : %d', \count($mentionsJaime)));
         $io->success(sprintf('%d actualités %s.', \count($articles), (bool) $input->getOption('dry-run') ? 'analysées' : 'importées'));
 
         return Command::SUCCESS;

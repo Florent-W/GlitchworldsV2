@@ -48,7 +48,7 @@ class JeuRepository extends ServiceEntityRepository
 
         if ($recherche !== '') {
             $qb
-                ->andWhere('j.nom LIKE :recherche OR j.description LIKE :recherche OR j.slug LIKE :recherche OR j.developpeur LIKE :recherche')
+                ->andWhere('(j.nom LIKE :recherche OR j.description LIKE :recherche OR j.slug LIKE :recherche OR j.developpeur LIKE :recherche)')
                 ->setParameter('recherche', '%'.$recherche.'%');
         }
 
@@ -133,6 +133,18 @@ class JeuRepository extends ServiceEntityRepository
             'langue' => $langue,
             'tri' => $tri,
         ];
+    }
+
+    /** @return list<Jeu> */
+    public function rechercherPourApercu(string $recherche, int $limite = 6): array
+    {
+        return $this->createQueryBuilder('jeu')
+            ->leftJoin('jeu.categorie', 'categorie')->addSelect('categorie')
+            ->andWhere('jeu.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
+            ->andWhere('(jeu.nom LIKE :recherche OR jeu.description LIKE :recherche OR jeu.developpeur LIKE :recherche)')
+            ->setParameter('recherche', '%'.trim($recherche).'%')
+            ->orderBy('jeu.nom', 'ASC')->setMaxResults($limite)
+            ->getQuery()->getResult();
     }
 
     /**

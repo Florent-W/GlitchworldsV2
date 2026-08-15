@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Communauté - GlitchWorlds{% endblock %}
+{% block meta_description %}Retrouve les dernières contributions de la communauté GlitchWorlds.{% endblock %}
+
+{% block body %}
+<div class="gw-community">
+    <header class="gw-community__header">
+        <div class="d-flex align-items-center gap-3">
+            <span class="gw-community__heading-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
+            <div><h1 class="h2 mb-0">Communauté</h1><p class="text-secondary mb-0">Échange, partage et progresse avec la communauté GlitchWorlds.</p></div>
+        </div>
+        {% if app.user %}<a class="btn btn-primary rounded-pill px-4" href="{{ path('app_jeu_proposer') }}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Nouvelle création</a>{% endif %}
+    </header>
+
+    <nav class="nav nav-pills gw-community__tabs" aria-label="Sections de la communauté">
+        <a class="nav-link active" href="#fil">Fil d'activité</a>
+        <a class="nav-link" href="#discussions">Discussions</a>
+        <a class="nav-link" href="#creations">Créations</a>
+        <a class="nav-link" href="#actualites">Actualités</a>
+    </nav>
+
+    <div class="row g-4 mt-1">
+        <main class="col-xl-9" id="fil">
+            <section class="gw-community__composer mb-3">
+                <span class="gw-community__avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
+                <div class="flex-grow-1">
+                    {% if formulairePublication %}
+                        {{ form_start(formulairePublication) }}
+                            {{ form_widget(formulairePublication.contenu, { attr: { class: 'form-control mb-2' } }) }}
+                            <div class="text-end"><button class="btn btn-sm btn-primary rounded-pill px-4" type="submit">Publier</button></div>
+                        {{ form_end(formulairePublication) }}
+                    {% else %}
+                        <p class="form-control text-secondary mb-2">Connecte-toi pour partager quelque chose avec la communauté.</p>
+                        <div class="text-end"><a class="btn btn-sm btn-primary rounded-pill px-4" href="{{ path('app_connexion') }}">Se connecter</a></div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <div class="vstack gap-3" id="discussions">
+                {% for publication in publications %}
+                    <article class="gw-community__post">
+                        <span class="gw-community__avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
+                        <div class="flex-grow-1 min-w-0"><div class="d-flex flex-wrap align-items-center gap-2"><strong>{{ publication.auteur ? publication.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-success-subtle text-success-emphasis">Publication</span><time class="small text-secondary ms-auto" datetime="{{ publication.publieeLe|date('c') }}">{{ publication.publieeLe|format_datetime('medium', 'short', locale='fr') }}</time></div><p class="mt-2 mb-0">{{ publication.contenu|nl2br }}</p></div>
+                    </article>
+                {% endfor %}
+                {% for commentaire in commentairesJeux %}
+                    <article class="gw-community__post">
+                        <span class="gw-community__avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex flex-wrap align-items-center gap-2"><strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-primary-subtle text-primary">Jeu</span><time class="small text-secondary ms-auto" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div>
+                            <h2 class="h5 mt-2 mb-1">{{ commentaire.jeu.nom }}</h2>
+                            <p class="mb-3">{{ commentaire.contenu|slice(0, 320) }}</p>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ path('app_jeu_show', { slug: commentaire.jeu.slug, id: commentaire.jeu.id }) }}#commentaires"><i class="bi bi-chat-dots me-1"></i>Voir la discussion</a>
+                        </div>
+                    </article>
+                {% endfor %}
+                {% for commentaire in commentairesActualites %}
+                    <article class="gw-community__post">
+                        <span class="gw-community__avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex flex-wrap align-items-center gap-2"><strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-info-subtle text-info-emphasis">Actualité</span><time class="small text-secondary ms-auto" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div>
+                            <h2 class="h5 mt-2 mb-1">{{ commentaire.actualite.titre }}</h2>
+                            <p class="mb-3">{{ commentaire.contenu|slice(0, 320) }}</p>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_voir', { slug: commentaire.actualite.slug, id: commentaire.actualite.id }) }}#commentaires"><i class="bi bi-chat-dots me-1"></i>Voir la discussion</a>
+                        </div>
+                    </article>
+                {% else %}
+                    {% if commentairesJeux is empty %}<div class="gw-panel p-5 text-center text-secondary">Aucune activité publique pour le moment.</div>{% endif %}
+                {% endfor %}
+            </div>
+        </main>
+
+        <aside class="col-xl-3">
+            <section class="gw-community__side mb-3" id="creations">
+                <h2 class="h6 text-uppercase mb-3">Créations récentes</h2>
+                <div class="list-group list-group-flush">{% for jeu in nouveauxJeux %}<a class="list-group-item list-group-item-action px-0" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}"><i class="bi bi-controller text-primary me-2"></i>{{ jeu.nom }}</a>{% endfor %}</div>
+            </section>
+            <section class="gw-community__side mb-3">
+                <h2 class="h6 text-uppercase mb-3">Statistiques</h2>
+                <div class="row g-2 text-center">
+                    <div class="col-4"><i class="bi bi-chat-fill text-primary"></i><strong class="d-block">{{ statistiques.commentaires }}</strong><small>Messages</small></div>
+                    <div class="col-4"><i class="bi bi-people-fill text-primary"></i><strong class="d-block">{{ statistiques.membres }}</strong><small>Membres</small></div>
+                    <div class="col-4"><i class="bi bi-controller text-primary"></i><strong class="d-block">{{ statistiques.jeux }}</strong><small>Jeux</small></div>
+                </div>
+            </section>
+            <section class="gw-community__side" id="actualites">
+                <h2 class="h6 text-uppercase mb-3">Actualités</h2>
+                <div class="list-group list-group-flush">{% for actualite in dernieresActualites %}<a class="list-group-item list-group-item-action px-0" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}"><i class="bi bi-newspaper text-primary me-2"></i>{{ actualite.titre }}</a>{% endfor %}</div>
+            </section>
+        </aside>
+    </div>
+</div>
+{% endblock %}

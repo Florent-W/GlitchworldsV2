@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\CommentaireJeu;
+use App\Entity\Utilisateur;
 use App\Form\CommentaireJeuType;
 use App\Security\CommentaireJeuVoter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -64,5 +65,23 @@ final class CommentaireJeuController extends AbstractController
             'slug' => $jeu?->getSlug(),
             'id' => $jeu?->getId(),
         ]).'#commentaires');
+    }
+
+    #[Route('/commentaire/{id}/aimer', name: 'app_commentaire_aimer', methods: ['POST'])]
+    public function aimer(CommentaireJeu $commentaire, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Connecte-toi pour aimer un commentaire.');
+        }
+        if (!$this->isCsrfTokenValid('aimer-commentaire-'.$commentaire->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $commentaire->estAimePar($utilisateur) ? $commentaire->retirerAime($utilisateur) : $commentaire->ajouterAime($utilisateur);
+        $entityManager->flush();
+        $jeu = $commentaire->getJeu();
+
+        return $this->redirect($this->generateUrl('app_jeu_show', ['slug' => $jeu?->getSlug(), 'id' => $jeu?->getId()]).'#commentaires');
     }
 }

@@ -30,4 +30,26 @@ final class ActualiteControllerTest extends WebTestCase
         $entityManager->remove($brouillon);
         $entityManager->flush();
     }
+
+    public function testLaRechercheFiltreLesActualitesEnSql(): void
+    {
+        $client = self::createClient();
+        $suffixe = bin2hex(random_bytes(5));
+        $actualite = (new Actualite())->setTitre('Résultat '.$suffixe)->setSlug('recherche-'.$suffixe)->setDescription('Une actualité consacrée à Symfony.')->setContenu('Contenu.')->setCategorie(CategorieActualite::Tutoriels)->setStatut(StatutActualite::Publiee);
+        $brouillon = (new Actualite())->setTitre('Résultat privé')->setSlug('recherche-privee-'.$suffixe)->setDescription('Brouillon '.$suffixe)->setContenu('Contenu privé.')->setCategorie(CategorieActualite::Tutoriels)->setStatut(StatutActualite::Brouillon);
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($actualite);
+        $entityManager->persist($brouillon);
+        $entityManager->flush();
+
+        $client->request('GET', '/actualites?recherche='.$suffixe);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Résultat '.$suffixe);
+        self::assertSelectorTextNotContains('body', 'Résultat privé');
+        self::assertSelectorExists('input[name="recherche"][value="'.$suffixe.'"]');
+
+        $entityManager->remove($actualite);
+        $entityManager->remove($brouillon);
+        $entityManager->flush();
+    }
 }

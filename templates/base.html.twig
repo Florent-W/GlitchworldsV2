@@ -27,7 +27,7 @@
             { label: 'Accueil',    icon: 'house-door-fill', route: 'app_home' },
             { label: 'Jeux',       icon: 'controller',      route: 'app_jeux' },
             { label: 'Favoris',    icon: 'heart-fill',      route: 'app_favoris' },
-            { label: 'Communauté', icon: 'people-fill',     route: null },
+            { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute' },
             { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' },
             { label: 'Paramètres', icon: 'gear-fill',       route: null },
             { label: 'Boutique',   icon: 'bag-fill',        route: null, badge: 'New' }
@@ -47,10 +47,10 @@
                 </a>
 
                 <search class="gw-search">
-                    <form role="search" action="{{ path('app_jeux') }}" method="get">
+                    <form role="search" action="{{ path('app_recherche') }}" method="get">
                         <label class="visually-hidden" for="gw-search-input">Rechercher</label>
                         <i class="bi bi-search gw-search__icon" aria-hidden="true"></i>
-                        <input id="gw-search-input" class="gw-search__input" type="search" name="recherche"
+                        <input id="gw-search-input" class="gw-search__input" type="search" name="recherche" value="{{ current_route == 'app_recherche' ? app.request.query.get('recherche') : '' }}"
                                placeholder="Rechercher un fangame, un univers..." autocomplete="off">
                     </form>
                 </search>

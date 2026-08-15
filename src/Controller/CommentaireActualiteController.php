@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\CommentaireActualite;
+use App\Entity\Utilisateur;
 use App\Form\CommentaireActualiteType;
 use App\Security\CommentaireActualiteVoter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,6 +45,23 @@ final class CommentaireActualiteController extends AbstractController
         $this->addFlash('success', 'Le commentaire a été supprimé.');
 
         return $this->redirect($this->generateUrl('app_actualite_voir', ['slug' => $actualite?->getSlug(), 'id' => $actualite?->getId()]).'#commentaires');
+    }
+
+    #[Route('/actualite/commentaire/{id}/aimer', name: 'app_actualite_commentaire_aimer', methods: ['POST'])]
+    public function aimer(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Connecte-toi pour aimer un commentaire.');
+        }
+        if (!$this->isCsrfTokenValid('aimer-commentaire-actualite-'.$commentaire->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $commentaire->estAimePar($utilisateur) ? $commentaire->retirerAime($utilisateur) : $commentaire->ajouterAime($utilisateur);
+        $entityManager->flush();
+
+        return $this->redirigerVersActualite($commentaire);
     }
 
     private function redirigerVersActualite(CommentaireActualite $commentaire): Response

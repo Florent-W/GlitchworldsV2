@@ -19,7 +19,7 @@ final class ActualiteRepository extends ServiceEntityRepository
     }
 
     /** @return array{actualites: list<Actualite>, page: int, pages: int, total: int} */
-    public function trouverPubliees(int $page, int $limite, ?CategorieActualite $categorie): array
+    public function trouverPubliees(int $page, int $limite, ?CategorieActualite $categorie, string $recherche = ''): array
     {
         $page = max(1, $page);
         $requete = $this->createQueryBuilder('actualite')
@@ -29,6 +29,11 @@ final class ActualiteRepository extends ServiceEntityRepository
 
         if ($categorie !== null) {
             $requete->andWhere('actualite.categorie = :categorie')->setParameter('categorie', $categorie);
+        }
+        if ('' !== $recherche) {
+            $requete
+                ->andWhere('(LOWER(actualite.titre) LIKE :recherche OR LOWER(actualite.description) LIKE :recherche)')
+                ->setParameter('recherche', '%'.mb_strtolower($recherche).'%');
         }
 
         $pagination = new Paginator($requete->getQuery()->setFirstResult(($page - 1) * $limite)->setMaxResults($limite));
@@ -58,4 +63,26 @@ final class ActualiteRepository extends ServiceEntityRepository
             ->orderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
             ->getQuery()->getResult();
     }
+
+    /** @return list<Actualite> */
+    public function trouverPourSitemap(): array
+    {
+        return $this->createQueryBuilder('actualite')
+            ->select('partial actualite.{id, slug, publieeLe}')
+            ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->orderBy('actualite.publieeLe', 'DESC')
+            ->getQuery()->getResult();
+    }
+
+    /** @return list<Actualite> */
+    public function rechercherPourApercu(string $recherche, int $limite = 6): array
+    {
+        return $this->createQueryBuilder('actualite')
+            ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('(LOWER(actualite.titre) LIKE :recherche OR LOWER(actualite.description) LIKE :recherche)')
+            ->setParameter('recherche', '%'.mb_strtolower(trim($recherche)).'%')
+            ->orderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
+            ->getQuery()->getResult();
+    }
+
 }

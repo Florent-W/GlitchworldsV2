@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recherche{% if recherche %} : {{ recherche }}{% endif %} - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,follow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-lg-5">
+    <h1 class="h2"><i class="bi bi-search text-primary me-2" aria-hidden="true"></i>Recherche</h1>
+    {% if recherche is empty %}
+        <p class="text-secondary mb-0">Saisis le nom d’un jeu, d’un développeur ou un sujet d’actualité.</p>
+    {% else %}
+        <p class="text-secondary">Résultats pour « {{ recherche }} »</p>
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3"><h2 class="h4 mb-0">Jeux</h2><a href="{{ path('app_jeux', { recherche: recherche }) }}">Voir tous les jeux</a></div>
+        <div class="row g-3">{% for jeu in jeux %}<div class="col-md-6 col-xl-4"><article class="border rounded-4 p-3 h-100"><h3 class="h6"><a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3><p class="small text-secondary mb-0">{{ jeu.description }}</p></article></div>{% else %}<p class="text-secondary">Aucun jeu trouvé.</p>{% endfor %}</div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3"><h2 class="h4 mb-0">Actualités</h2><a href="{{ path('app_actualites', { recherche: recherche }) }}">Voir toutes les actualités</a></div>
+        <div class="list-group">{% for actualite in actualites %}<a class="list-group-item list-group-item-action" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}"><span class="badge text-bg-primary me-2">{{ actualite.categorie.label }}</span><strong>{{ actualite.titre }}</strong><span class="d-block small text-secondary mt-1">{{ actualite.description }}</span></a>{% else %}<p class="text-secondary">Aucune actualité trouvée.</p>{% endfor %}</div>
+    {% endif %}
+</section>
+{% endblock %}

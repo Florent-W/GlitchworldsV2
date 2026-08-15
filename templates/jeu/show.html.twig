@@ -58,7 +58,7 @@
 
     <div class="row g-4 align-items-stretch">
         <div class="col-xl-9">
-            <header class="gw-game-hero h-100">
+            <header class="gw-game-hero h-100"{% if jeu.banniere starts with 'banniere.' %} style="background-image: linear-gradient(90deg, rgba(7, 25, 52, .96), rgba(7, 25, 52, .45)), url('{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.banniere) }}'); background-size: cover; background-position: center;"{% endif %}>
                 <div class="gw-game-hero__content">
                     {% if jeu.categorie %}
                         <a class="gw-game-hero__category" href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}">
@@ -100,7 +100,11 @@
                         {% endif %}
                     </div>
                 </div>
-                <i class="bi bi-controller gw-game-hero__icon" aria-hidden="true"></i>
+                {% if jeu.miniature starts with 'miniature.' %}
+                    <img class="gw-game-hero__icon object-fit-cover rounded-4" src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Miniature de {{ jeu.nom }}">
+                {% else %}
+                    <i class="bi bi-controller gw-game-hero__icon" aria-hidden="true"></i>
+                {% endif %}
             </header>
         </div>
 
@@ -220,8 +224,16 @@
                                 <time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">
                                     {{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}
                                 </time>
+                                {% if app.user %}
+                                    <form class="ms-auto" method="post" action="{{ path('app_commentaire_aimer', { id: commentaire.id }) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('aimer-commentaire-' ~ commentaire.id) }}">
+                                        <button class="btn btn-sm {{ commentaire.aimePar.contains(app.user) ? 'btn-primary' : 'btn-outline-primary' }}" type="submit" aria-label="Aimer"><i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i> {{ commentaire.aimePar|length }}</button>
+                                    </form>
+                                {% else %}
+                                    <span class="ms-auto small text-secondary"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> {{ commentaire.aimePar|length }}</span>
+                                {% endif %}
                                 {% if is_granted('COMMENTAIRE_SUPPRIMER', commentaire) %}
-                                    <a class="btn btn-sm btn-outline-primary ms-auto" href="{{ path('app_commentaire_modifier', { id: commentaire.id }) }}">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ path('app_commentaire_modifier', { id: commentaire.id }) }}">
                                         <i class="bi bi-pencil-fill" aria-hidden="true"></i>
                                         <span class="visually-hidden">Modifier</span>
                                     </a>
