@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier mon commentaire - GlitchWorlds{% endblock %}
+{% block title %}Modifier un commentaire - GlitchWorlds{% endblock %}
 {% block robots_meta %}noindex,nofollow{% endblock %}
 
 {% block body %}
@@ -12,13 +12,13 @@
         </ol>
     </nav>
 
-    <h1 class="h2">Modifier mon commentaire</h1>
+    <h1 class="h2">Modifier un commentaire</h1>
 
     {{ form_start(formulaire) }}
         {{ form_row(formulaire.contenu) }}
         <div class="d-flex flex-wrap gap-2">
             {{ form_widget(formulaire.publier) }}
-            <a class="btn btn-outline-secondary" href="{{ path('app_jeu_show', { slug: commentaire.jeu.slug, id: commentaire.jeu.id }) }}#commentaires">Annuler</a>
+            <a class="btn btn-outline-secondary" href="{{ app.request.query.get('retour') == 'moderation' ? path('app_moderation_commentaires') : path('app_jeu_show', { slug: commentaire.jeu.slug, id: commentaire.jeu.id }) ~ '#commentaires' }}">Annuler</a>
         </div>
     {{ form_end(formulaire) }}
 </section>

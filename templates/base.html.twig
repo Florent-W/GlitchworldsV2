@@ -15,6 +15,17 @@
         <meta property="og:description" content="{{ block('meta_description')|striptags|trim }}">
         <meta property="og:url" content="{{ block('canonical')|trim }}">
         {% block structured_data %}{% endblock %}
+        <script>
+            (() => {
+                try {
+                    const theme = localStorage.getItem('glitchworlds-theme');
+                    const sombre = theme ? theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.dataset.bsTheme = sombre ? 'dark' : 'light';
+                } catch (e) {
+                    document.documentElement.dataset.bsTheme = 'light';
+                }
+            })();
+        </script>
         {% block stylesheets %}{% endblock %}
 
         {% block javascripts %}
@@ -34,7 +45,7 @@
             { label: 'Boutique',   icon: 'bag-fill',        route: null, badge: 'New' }
         ] %}
         {% if is_granted('ROLE_MODERATEUR') %}
-            {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_jeux' }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_commentaires' }]) %}
         {% endif %}
         {% if is_granted('ROLE_ADMIN') %}
             {% set nav_items = nav_items|merge([{ label: 'Gérer les actus', icon: 'journal-text', route: 'app_administration_actualites_liste' }]) %}
@@ -62,8 +73,8 @@
                     <button type="button" class="gw-icon-btn" aria-label="Activer ou couper les sons d'interface">
                         <i class="bi bi-volume-up-fill" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="gw-icon-btn" aria-label="Changer de thème">
-                        <i class="bi bi-brightness-high-fill" aria-hidden="true"></i>
+                    <button type="button" class="gw-icon-btn" aria-label="Activer le thème sombre" title="Activer le thème sombre" aria-pressed="false" data-controller="theme" data-action="click->theme#basculer">
+                        <i class="bi bi-moon-stars-fill" aria-hidden="true" data-theme-target="icone"></i>
                     </button>
                     <a class="gw-icon-btn gw-icon-btn--avatar" href="{{ app.user ? path('app_profil', {id: app.user.id}) : path('app_connexion') }}" aria-label="{{ app.user ? 'Mon profil' : 'Se connecter' }}" title="{{ app.user ? app.user.userIdentifier : 'Se connecter' }}">
                         {% if app.user and app.user.avatar starts with 'avatar.' %}<img class="w-100 h-100 rounded-circle object-fit-cover" src="{{ asset('uploads/utilisateurs/' ~ app.user.id ~ '/' ~ app.user.avatar) }}" alt="">{% else %}<i class="bi bi-person-fill" aria-hidden="true"></i>{% endif %}

@@ -11,9 +11,50 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class CommentaireJeuController extends AbstractController
 {
+    #[Route('/commentaire/{id}/repondre', name: 'app_commentaire_repondre', methods: ['POST'])]
+    public function repondre(
+        CommentaireJeu $commentaire,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator,
+    ): Response {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Connecte-toi pour répondre.');
+        }
+
+        $parent = $commentaire->getParent() ?? $commentaire;
+        if (!$this->isCsrfTokenValid('repondre-commentaire-'.$parent->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $reponse = (new CommentaireJeu())
+            ->setJeu($parent->getJeu())
+            ->setAuteur($utilisateur)
+            ->setParent($parent)
+            ->setContenu($request->request->getString('contenu'));
+        $erreurs = $validator->validate($reponse);
+
+        if ($erreurs->count() > 0) {
+            $this->addFlash('danger', $erreurs[0]->getMessage());
+        } else {
+            $entityManager->persist($reponse);
+            $entityManager->flush();
+            $this->addFlash('success', 'Ta réponse a été publiée.');
+        }
+
+        $jeu = $parent->getJeu();
+
+        return $this->redirect($this->generateUrl('app_jeu_show', [
+            'slug' => $jeu?->getSlug(),
+            'id' => $jeu?->getId(),
+        ]).'#commentaire-'.$parent->getId());
+    }
+
     #[Route('/commentaire/{id}/modifier', name: 'app_commentaire_modifier')]
     public function modifier(
         CommentaireJeu $commentaire,
@@ -30,6 +71,9 @@ final class CommentaireJeuController extends AbstractController
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $entityManager->flush();
             $this->addFlash('success', 'Ton commentaire a été modifié.');
+            if ('moderation' === $request->query->getString('retour')) {
+                return $this->redirectToRoute('app_moderation_commentaires');
+            }
             $jeu = $commentaire->getJeu();
 
             return $this->redirect($this->generateUrl('app_jeu_show', [
@@ -60,6 +104,10 @@ final class CommentaireJeuController extends AbstractController
         $entityManager->remove($commentaire);
         $entityManager->flush();
         $this->addFlash('success', 'Ton commentaire a été supprimé.');
+
+        if ('moderation' === $request->request->getString('_retour')) {
+            return $this->redirectToRoute('app_moderation_commentaires');
+        }
 
         return $this->redirect($this->generateUrl('app_jeu_show', [
             'slug' => $jeu?->getSlug(),

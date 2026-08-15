@@ -1,20 +1,36 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}Recherche{% if recherche %} : {{ recherche }}{% endif %} - GlitchWorlds{% endblock %}
 {% block robots_meta %}noindex,follow{% endblock %}
 
 {% block body %}
 <section class="gw-panel p-4 p-lg-5">
-    <h1 class="h2"><i class="bi bi-search text-primary me-2" aria-hidden="true"></i>Recherche</h1>
-    {% if recherche is empty %}
-        <p class="text-secondary mb-0">Saisis le nom d’un jeu, d’un développeur ou un sujet d’actualité.</p>
-    {% else %}
-        <p class="text-secondary">Résultats pour « {{ recherche }} »</p>
-        <div class="d-flex justify-content-between align-items-center mt-4 mb-3"><h2 class="h4 mb-0">Jeux</h2><a href="{{ path('app_jeux', { recherche: recherche }) }}">Voir tous les jeux</a></div>
-        <div class="row g-3">{% for jeu in jeux %}<div class="col-md-6 col-xl-4"><article class="border rounded-4 p-3 h-100"><h3 class="h6"><a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3><p class="small text-secondary mb-0">{{ jeu.description }}</p></article></div>{% else %}<p class="text-secondary">Aucun jeu trouvé.</p>{% endfor %}</div>
+    <h1 class="h2"><i class="bi bi-search text-primary me-2"></i>Recherche</h1>
+    <p class="text-secondary">{{ recherche ? totalResultats ~ ' résultat' ~ (totalResultats > 1 ? 's') ~ ' pour « ' ~ recherche ~ ' »' : 'Trouve un jeu, une actualité ou un membre.' }}</p>
 
-        <div class="d-flex justify-content-between align-items-center mt-4 mb-3"><h2 class="h4 mb-0">Actualités</h2><a href="{{ path('app_actualites', { recherche: recherche }) }}">Voir toutes les actualités</a></div>
-        <div class="list-group">{% for actualite in actualites %}<a class="list-group-item list-group-item-action" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}"><span class="badge text-bg-primary me-2">{{ actualite.categorie.label }}</span><strong>{{ actualite.titre }}</strong><span class="d-block small text-secondary mt-1">{{ actualite.description }}</span></a>{% else %}<p class="text-secondary">Aucune actualité trouvée.</p>{% endfor %}</div>
+    <form class="row g-3 mb-4" action="{{ path('app_recherche') }}" method="get">
+        <div class="col-12"><div class="input-group input-group-lg"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" type="search" name="recherche" value="{{ recherche }}" placeholder="Que recherches-tu ?" aria-label="Recherche" required><button class="btn btn-primary">Rechercher</button></div></div>
+        <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-type">Type</label><select class="form-select" id="filtre-type" name="type"><option value="">Tout</option><option value="jeu" {{ type == 'jeu' ? 'selected' }}>Jeux</option><option value="actualite" {{ type == 'actualite' ? 'selected' }}>Actualités</option><option value="membre" {{ type == 'membre' ? 'selected' }}>Membres</option></select></div>
+        <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-categorie">Catégorie</label><select class="form-select" id="filtre-categorie" name="categorie"><option value="">Toutes</option>{% for item in categories %}<option value="{{ item.slug }}" {{ categorie == item.slug ? 'selected' }}>{{ item.nom }}</option>{% endfor %}</select></div>
+        <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-plateforme">Plateforme</label><select class="form-select" id="filtre-plateforme" name="plateforme"><option value="">Toutes</option>{% for item in plateformes %}<option value="{{ item.slug }}" {{ plateforme == item.slug ? 'selected' }}>{{ item.nom }}</option>{% endfor %}</select></div>
+        <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-genre">Genre</label><select class="form-select" id="filtre-genre" name="genre"><option value="">Tous</option>{% for item in genres %}<option value="{{ item.slug }}" {{ genre == item.slug ? 'selected' }}>{{ item.nom }}</option>{% endfor %}</select></div>
+        <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-langue">Langue</label><select class="form-select" id="filtre-langue" name="langue"><option value="">Toutes</option>{% for item in langues %}<option value="{{ item.slug }}" {{ langue == item.slug ? 'selected' }}>{{ item.nom }}</option>{% endfor %}</select></div>
+        <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-tri">Tri des jeux</label><select class="form-select" id="filtre-tri" name="tri">{% for item in tris %}<option value="{{ item.value }}" {{ tri == item ? 'selected' }}>{{ item.label }}</option>{% endfor %}</select></div>
+        <div class="col-sm-6 col-xl-auto d-flex align-items-end"><a class="btn btn-outline-secondary" href="{{ path('app_recherche', {recherche: recherche ?: null}) }}"><i class="bi bi-arrow-counterclockwise me-1"></i>Effacer</a></div>
+    </form>
+
+    {% if recherche and type in ['', 'jeu'] %}
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3"><h2 class="h4 mb-0">Jeux <span class="badge text-bg-secondary">{{ totalJeux }}</span></h2><a href="{{ path('app_jeux', {recherche: recherche, categorie: categorie ?: null, plateforme: plateforme ?: null, genre: genre ?: null, langue: langue ?: null, tri: tri.value}) }}">Voir tout</a></div>
+        <div class="row g-3">{% for jeu in jeux %}<div class="col-md-6 col-xl-4"><article class="gw-game-card h-100"><a class="gw-game-card__visual" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id}) }}">{% if jeu.miniature starts with 'miniature.' %}<img class="w-100 h-100 object-fit-cover" src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="" loading="lazy">{% else %}<i class="bi bi-controller"></i>{% endif %}</a><div class="gw-game-card__body"><h3 class="gw-game-card__title"><a href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id}) }}">{{ jeu.nom }}</a></h3><p class="gw-game-card__description">{{ jeu.description|slice(0, 120) }}</p></div></article></div>{% else %}<p class="text-secondary">Aucun jeu trouvé avec ces filtres.</p>{% endfor %}</div>
+    {% endif %}
+
+    {% if recherche and type in ['', 'actualite'] %}
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3"><h2 class="h4 mb-0">Actualités <span class="badge text-bg-secondary">{{ actualites|length }}</span></h2><a href="{{ path('app_actualites', {recherche: recherche}) }}">Voir tout</a></div>
+        <div class="list-group">{% for actualite in actualites %}<a class="list-group-item list-group-item-action d-flex align-items-center gap-3" href="{{ path('app_actualite_voir', {slug: actualite.slug, id: actualite.id}) }}">{% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="rounded object-fit-cover" width="72" height="52" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="" loading="lazy">{% endif %}<span><span class="badge text-bg-primary me-2">{{ actualite.categorie.label }}</span><strong>{{ actualite.titre }}</strong><small class="d-block text-secondary mt-1">{{ actualite.description }}</small></span></a>{% else %}<p class="text-secondary">Aucune actualité trouvée.</p>{% endfor %}</div>
+    {% endif %}
+
+    {% if recherche and type in ['', 'membre'] %}
+        <h2 class="h4 mt-4 mb-3">Membres <span class="badge text-bg-secondary">{{ membres|length }}</span></h2>
+        <div class="row g-3">{% for membre in membres %}<div class="col-md-6 col-xl-4"><a class="gw-panel d-flex align-items-center gap-3 p-3 text-decoration-none text-body h-100" href="{{ path('app_profil', {id: membre.id}) }}"><span class="gw-community__avatar">{% if membre.avatar starts with 'avatar.' %}<img class="w-100 h-100 rounded-circle object-fit-cover" src="{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.avatar) }}" alt="">{% else %}{{ membre.pseudo|first|upper }}{% endif %}</span><span><strong class="d-block">{{ membre.pseudo }}</strong><small class="text-secondary">Voir le profil</small></span></a></div>{% else %}<p class="text-secondary">Aucun membre trouvé.</p>{% endfor %}</div>
     {% endif %}
 </section>
 {% endblock %}

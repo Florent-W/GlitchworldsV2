@@ -38,7 +38,16 @@ class CommentaireActualite
     #[ORM\JoinTable(name: 'commentaire_actualite_aime')]
     private Collection $aimePar;
 
-    public function __construct() { $this->dateCommentaire = new \DateTimeImmutable(); $this->aimePar = new ArrayCollection(); }
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'reponses')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    private ?self $parent = null;
+
+    /** @var Collection<int, self> */
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['dateCommentaire' => 'ASC'])]
+    private Collection $reponses;
+
+    public function __construct() { $this->dateCommentaire = new \DateTimeImmutable(); $this->aimePar = new ArrayCollection(); $this->reponses = new ArrayCollection(); }
     public function getId(): ?int { return $this->id; }
     public function getActualite(): ?Actualite { return $this->actualite; }
     public function setActualite(Actualite $actualite): static { $this->actualite = $actualite; return $this; }
@@ -53,4 +62,8 @@ class CommentaireActualite
     public function ajouterAime(Utilisateur $utilisateur): static { if (!$this->aimePar->contains($utilisateur)) { $this->aimePar->add($utilisateur); } return $this; }
     public function retirerAime(Utilisateur $utilisateur): static { $this->aimePar->removeElement($utilisateur); return $this; }
     public function estAimePar(Utilisateur $utilisateur): bool { return $this->aimePar->contains($utilisateur); }
+    public function getParent(): ?self { return $this->parent; }
+    public function setParent(?self $parent): static { $this->parent = $parent; return $this; }
+    /** @return Collection<int, self> */
+    public function getReponses(): Collection { return $this->reponses; }
 }

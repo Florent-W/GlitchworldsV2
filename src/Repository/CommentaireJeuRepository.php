@@ -23,15 +23,31 @@ class CommentaireJeuRepository extends ServiceEntityRepository
      */
     public function trouverRecents(Jeu $jeu, int $limite = 5): array
     {
+        $identifiants = $this->createQueryBuilder('racine')
+            ->select('racine.id')
+            ->andWhere('racine.jeu = :jeu')
+            ->andWhere('racine.parent IS NULL')
+            ->setParameter('jeu', $jeu)
+            ->orderBy('racine.dateCommentaire', 'DESC')
+            ->setMaxResults($limite)
+            ->getQuery()->getSingleColumnResult();
+
+        if ([] === $identifiants) {
+            return [];
+        }
+
         return $this->createQueryBuilder('c')
             ->leftJoin('c.auteur', 'auteur')
             ->addSelect('auteur')
             ->leftJoin('c.aimePar', 'aimePar')
             ->addSelect('aimePar')
-            ->andWhere('c.jeu = :jeu')
-            ->setParameter('jeu', $jeu)
+            ->leftJoin('c.reponses', 'reponse')->addSelect('reponse')
+            ->leftJoin('reponse.auteur', 'auteurReponse')->addSelect('auteurReponse')
+            ->leftJoin('reponse.aimePar', 'aimeParReponse')->addSelect('aimeParReponse')
+            ->andWhere('c.id IN (:identifiants)')
+            ->setParameter('identifiants', $identifiants)
             ->orderBy('c.dateCommentaire', 'DESC')
-            ->setMaxResults($limite)
+            ->addOrderBy('reponse.dateCommentaire', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -59,5 +75,17 @@ class CommentaireJeuRepository extends ServiceEntityRepository
             ->innerJoin('commentaire.jeu', 'jeu')
             ->andWhere('jeu.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
             ->getQuery()->getSingleScalarResult();
+    }
+
+    /** @return list<CommentaireJeu> */
+    public function trouverPourModeration(int $limite = 50): array
+    {
+        return $this->createQueryBuilder('commentaire')
+            ->leftJoin('commentaire.auteur', 'auteur')->addSelect('auteur')
+            ->leftJoin('commentaire.parent', 'parent')->addSelect('parent')
+            ->innerJoin('commentaire.jeu', 'jeu')->addSelect('jeu')
+            ->orderBy('commentaire.dateCommentaire', 'DESC')
+            ->setMaxResults(max(1, min(100, $limite)))
+            ->getQuery()->getResult();
     }
 }

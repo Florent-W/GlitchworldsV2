@@ -24,7 +24,11 @@ final class CommentaireJeuVoter extends Voter
     {
         $utilisateur = $token->getUser();
 
-        return $utilisateur instanceof Utilisateur
-            && $subject->getAuteur() === $utilisateur;
+        if (!$utilisateur instanceof Utilisateur) {
+            return false;
+        }
+
+        return $subject->getAuteur() === $utilisateur
+            || array_intersect(['ROLE_MODERATEUR', 'ROLE_ADMIN'], $utilisateur->getRoles()) !== [];
     }
 }

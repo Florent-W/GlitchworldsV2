@@ -30,6 +30,42 @@
     --gw-rail-width: 104px;
 }
 
+[data-bs-theme="dark"] {
+    color-scheme: dark;
+    --gw-primary: #60a5fa;
+    --gw-primary-rgb: 96, 165, 250;
+    --gw-primary-dark: #93c5fd;
+    --gw-secondary: #a78bfa;
+    --gw-secondary-rgb: 167, 139, 250;
+    --gw-background: #07101f;
+    --gw-background-accent: #101d35;
+    --gw-surface: rgba(15, 27, 48, 0.88);
+    --gw-surface-solid: #111d31;
+    --gw-text: #e5eefc;
+    --gw-muted: #9cabc1;
+    --gw-border: rgba(148, 180, 225, 0.2);
+    --gw-shadow: 0 12px 34px rgba(0, 0, 0, 0.42);
+    --gw-shadow-soft: 0 4px 18px rgba(0, 0, 0, 0.3);
+    --gw-glow: 0 0 0 3px rgba(var(--gw-primary-rgb), 0.24);
+    --bs-body-color: var(--gw-text);
+    --bs-body-bg: var(--gw-background);
+    --bs-secondary-color: var(--gw-muted);
+    --bs-tertiary-bg: #17243a;
+    --bs-border-color: var(--gw-border);
+}
+
+[data-bs-theme="dark"] body {
+    background-image:
+        radial-gradient(circle at top left, rgba(var(--gw-primary-rgb), 0.17), transparent 42%),
+        radial-gradient(circle at top right, rgba(var(--gw-secondary-rgb), 0.12), transparent 38%),
+        linear-gradient(180deg, var(--gw-background) 0%, var(--gw-background-accent) 100%);
+}
+
+[data-bs-theme="dark"] .gw-message:not(.gw-message--mine) { background: #1d2a40; }
+[data-bs-theme="dark"] .gw-profile__avatar { border-color: #1d2a40; background: linear-gradient(145deg, #172a48, #111d31); }
+[data-bs-theme="dark"] .gw-profile-game > span { background: linear-gradient(145deg, #172a48, #1d2340); }
+[data-bs-theme="dark"] .text-secondary { color: var(--gw-muted) !important; }
+
 /* ===============================================================
    2. Pont vers Bootstrap
    Nos tokens pilotent les variables Bootstrap : on ne réécrit pas
@@ -857,6 +893,32 @@ a.gw-tag--plateforme:hover {
     background: rgba(255, 255, 255, 0.62);
 }
 
+.gw-comment-replies {
+    margin-top: .9rem;
+    padding-left: 1rem;
+    border-left: 2px solid color-mix(in srgb, var(--gw-primary) 35%, transparent);
+}
+
+.gw-comment--reply {
+    padding: .75rem;
+    background: color-mix(in srgb, var(--gw-surface) 88%, var(--gw-primary) 12%);
+}
+
+.gw-comment--reply .gw-comment__avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: .9rem;
+}
+
+.gw-reply-form summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.gw-reply-form summary::-webkit-details-marker {
+    display: none;
+}
+
 .gw-comment__avatar {
     display: grid;
     width: 2.75rem;
@@ -878,8 +940,9 @@ a.gw-tag--plateforme:hover {
     padding: 1.25rem;
     border: 1px solid var(--gw-border);
     border-radius: var(--gw-radius-lg);
-    background: rgba(255, 255, 255, 0.42);
+    background: var(--gw-surface);
     box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(14px);
 }
 
 .gw-community__header,
@@ -928,6 +991,24 @@ a.gw-tag--plateforme:hover {
 .gw-community__post { align-items: flex-start; }
 .gw-community__side .list-group-item { background: transparent; }
 .min-w-0 { min-width: 0; }
+
+[data-bs-theme="dark"] .gw-community {
+    background: rgba(8, 20, 38, 0.72);
+    border-color: rgba(var(--gw-primary-rgb), 0.2);
+}
+
+[data-bs-theme="dark"] .gw-community__composer,
+[data-bs-theme="dark"] .gw-community__post,
+[data-bs-theme="dark"] .gw-community__side {
+    background: rgba(17, 29, 49, 0.94);
+    border-color: rgba(148, 180, 225, 0.16);
+}
+
+[data-bs-theme="dark"] .gw-community__tabs .nav-link:not(.active) { color: #b8c8df; }
+[data-bs-theme="dark"] .gw-community__tabs .nav-link:not(.active):hover { color: #fff; background: rgba(var(--gw-primary-rgb), 0.12); }
+[data-bs-theme="dark"] .gw-community__side .list-group-item { color: var(--gw-text); border-color: var(--gw-border); }
+[data-bs-theme="dark"] .gw-community__side .list-group-item:hover { background: rgba(var(--gw-primary-rgb), 0.1); }
+[data-bs-theme="dark"] .gw-community .form-control { color: var(--gw-text); background-color: #0b1729; border-color: rgba(148, 180, 225, 0.25); }
 
 .gw-messenger {
     display: grid;

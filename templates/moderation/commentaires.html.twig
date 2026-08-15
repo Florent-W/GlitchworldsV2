@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modération des commentaires - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-chat-square-dots-fill text-primary fs-1" aria-hidden="true"></i>
+            <div><h1 class="h2 mb-1">Modération des commentaires</h1><p class="text-secondary mb-0">Modifie ou supprime les commentaires et leurs réponses.</p></div>
+        </div>
+        <a class="btn btn-outline-primary" href="{{ path('app_moderation_jeux') }}"><i class="bi bi-controller me-1" aria-hidden="true"></i>Jeux en attente</a>
+    </div>
+
+    <ul class="nav nav-pills mb-4" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link active" id="jeux-tab" data-bs-toggle="tab" data-bs-target="#commentaires-jeux" type="button" role="tab">Jeux <span class="badge text-bg-light ms-1">{{ commentairesJeux|length }}</span></button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" id="actualites-tab" data-bs-toggle="tab" data-bs-target="#commentaires-actualites" type="button" role="tab">Actualités <span class="badge text-bg-light ms-1">{{ commentairesActualites|length }}</span></button></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="commentaires-jeux" role="tabpanel" aria-labelledby="jeux-tab" tabindex="0">
+            <div class="vstack gap-3">
+                {% for commentaire in commentairesJeux %}
+                    <article class="border rounded-4 p-3">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2"><strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Membre supprimé' }}</strong>{% if commentaire.parent %}<span class="badge text-bg-info">Réponse</span>{% endif %}<time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div>
+                                <p class="mb-2">{{ commentaire.contenu|nl2br }}</p>
+                                <a class="small" href="{{ path('app_jeu_show', { slug: commentaire.jeu.slug, id: commentaire.jeu.id }) }}#commentaire-{{ commentaire.parent ? commentaire.parent.id : commentaire.id }}"><i class="bi bi-controller me-1" aria-hidden="true"></i>{{ commentaire.jeu.nom }}</a>
+                            </div>
+                            <div class="d-flex align-items-start gap-2">
+                                <a class="btn btn-sm btn-outline-primary" href="{{ path('app_commentaire_modifier', { id: commentaire.id, retour: 'moderation' }) }}"><i class="bi bi-pencil-fill me-1" aria-hidden="true"></i>Modifier</a>
+                                <form method="post" action="{{ path('app_commentaire_supprimer', { id: commentaire.id }) }}" onsubmit="return confirm('Supprimer ce commentaire ?')"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-' ~ commentaire.id) }}"><input type="hidden" name="_retour" value="moderation"><button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash-fill me-1" aria-hidden="true"></i>Supprimer</button></form>
+                            </div>
+                        </div>
+                    </article>
+                {% else %}<div class="alert alert-success mb-0">Aucun commentaire de jeu.</div>{% endfor %}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="commentaires-actualites" role="tabpanel" aria-labelledby="actualites-tab" tabindex="0">
+            <div class="vstack gap-3">
+                {% for commentaire in commentairesActualites %}
+                    <article class="border rounded-4 p-3">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2"><strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Membre supprimé' }}</strong>{% if commentaire.parent %}<span class="badge text-bg-info">Réponse</span>{% endif %}<time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div>
+                                <p class="mb-2">{{ commentaire.contenu|nl2br }}</p>
+                                <a class="small" href="{{ path('app_actualite_voir', { slug: commentaire.actualite.slug, id: commentaire.actualite.id }) }}#commentaire-{{ commentaire.parent ? commentaire.parent.id : commentaire.id }}"><i class="bi bi-newspaper me-1" aria-hidden="true"></i>{{ commentaire.actualite.titre }}</a>
+                            </div>
+                            <div class="d-flex align-items-start gap-2">
+                                <a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_commentaire_modifier', { id: commentaire.id, retour: 'moderation' }) }}"><i class="bi bi-pencil-fill me-1" aria-hidden="true"></i>Modifier</a>
+                                <form method="post" action="{{ path('app_actualite_commentaire_supprimer', { id: commentaire.id }) }}" onsubmit="return confirm('Supprimer ce commentaire ?')"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-actualite-' ~ commentaire.id) }}"><input type="hidden" name="_retour" value="moderation"><button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash-fill me-1" aria-hidden="true"></i>Supprimer</button></form>
+                            </div>
+                        </div>
+                    </article>
+                {% else %}<div class="alert alert-success mb-0">Aucun commentaire d’actualité.</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Jeu;
 use App\Enum\StatutJeu;
+use App\Repository\CommentaireActualiteRepository;
+use App\Repository\CommentaireJeuRepository;
 use App\Repository\JeuRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +16,17 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/moderation', name: 'app_moderation_')]
 final class ModerationController extends AbstractController
 {
+    #[Route('/commentaires', name: 'commentaires', methods: ['GET'])]
+    public function commentaires(
+        CommentaireJeuRepository $commentaireJeuRepository,
+        CommentaireActualiteRepository $commentaireActualiteRepository,
+    ): Response {
+        return $this->render('moderation/commentaires.html.twig', [
+            'commentairesJeux' => $commentaireJeuRepository->trouverPourModeration(),
+            'commentairesActualites' => $commentaireActualiteRepository->trouverPourModeration(),
+        ]);
+    }
+
     #[Route('/jeux', name: 'jeux', methods: ['GET'])]
     public function jeux(JeuRepository $jeuRepository): Response
     {

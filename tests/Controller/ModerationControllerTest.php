@@ -2,6 +2,9 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\Actualite;
+use App\Entity\CommentaireActualite;
+use App\Entity\CommentaireJeu;
 use App\Entity\Jeu;
 use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
@@ -10,6 +13,52 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class ModerationControllerTest extends WebTestCase
 {
+    public function testUnModerateurPeutModifierEtSupprimerDesCommentaires(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $moderateur = (new Utilisateur())->setPseudo('ModerateurCommentaires')->setEmail('moderateur-commentaires-'.$suffixe.'@glitchworlds.local')->setRoles(['ROLE_MODERATEUR']);
+        $auteur = (new Utilisateur())->setPseudo('AuteurCommentaires')->setEmail('auteur-commentaires-'.$suffixe.'@glitchworlds.local');
+        $jeu = (new Jeu())->setNom('Jeu commenté')->setSlug('jeu-commente-'.$suffixe)->setDescription('Jeu utilisé pour tester la modération.')->setStatut(StatutJeu::Approuve);
+        $actualite = (new Actualite())->setTitre('Actualité commentée')->setSlug('actualite-commentee-'.$suffixe)->setDescription('Actualité utilisée pour tester la modération.')->setContenu('Contenu de test.');
+        $commentaireJeu = (new CommentaireJeu())->setJeu($jeu)->setAuteur($auteur)->setContenu('Commentaire de jeu à modérer.');
+        $commentaireActualite = (new CommentaireActualite())->setActualite($actualite)->setAuteur($auteur)->setContenu('Commentaire d’actualité à supprimer.');
+        foreach ([$moderateur, $auteur, $jeu, $actualite, $commentaireJeu, $commentaireActualite] as $entite) { $entityManager->persist($entite); }
+        $entityManager->flush();
+        $commentaireJeuId = $commentaireJeu->getId();
+        $commentaireActualiteId = $commentaireActualite->getId();
+        $jeuId = $jeu->getId();
+        $actualiteId = $actualite->getId();
+        $moderateurId = $moderateur->getId();
+        $auteurId = $auteur->getId();
+
+        $client->loginUser($moderateur);
+        $crawler = $client->request('GET', '/moderation/commentaires');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Commentaire de jeu à modérer.');
+        self::assertSelectorTextContains('body', 'Commentaire d’actualité à supprimer.');
+
+        $crawler = $client->click($crawler->filter(sprintf('a[href="/commentaire/%d/modifier?retour=moderation"]', $commentaireJeuId))->link());
+        $client->submit($crawler->selectButton('Enregistrer')->form(['commentaire_jeu[contenu]' => 'Commentaire corrigé par la modération.']));
+        self::assertResponseRedirects('/moderation/commentaires');
+
+        $crawler = $client->followRedirect();
+        $client->submit($crawler->filter(sprintf('form[action="/actualite/commentaire/%d/supprimer"]', $commentaireActualiteId))->form());
+        self::assertResponseRedirects('/moderation/commentaires');
+
+        $entityManager->clear();
+        self::assertSame('Commentaire corrigé par la modération.', $entityManager->find(CommentaireJeu::class, $commentaireJeuId)?->getContenu());
+        self::assertNull($entityManager->find(CommentaireActualite::class, $commentaireActualiteId));
+
+        $entityManager->remove($entityManager->find(CommentaireJeu::class, $commentaireJeuId));
+        $entityManager->remove($entityManager->find(Jeu::class, $jeuId));
+        $entityManager->remove($entityManager->find(Actualite::class, $actualiteId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $auteurId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $moderateurId));
+        $entityManager->flush();
+    }
+
     public function testUnMembreSimpleNePeutPasAccederALaModeration(): void
     {
         $client = self::createClient();

@@ -49,6 +49,20 @@ final class JeuCommentaireControllerTest extends WebTestCase
         $commentaireId = $commentaire->getId();
 
         $crawler = $client->followRedirect();
+        $client->submit($crawler->selectButton('Publier la réponse')->form([
+            'contenu' => 'Réponse créée par le test Symfony.',
+        ]));
+        self::assertResponseRedirects(sprintf('/jeu/%s-%d#commentaire-%d', $jeu->getSlug(), $jeu->getId(), $commentaireId));
+
+        $reponse = $entityManager->getRepository(CommentaireJeu::class)->findOneBy([
+            'parent' => $commentaire,
+        ]);
+        self::assertInstanceOf(CommentaireJeu::class, $reponse);
+        self::assertSame($jeu->getId(), $reponse->getJeu()?->getId());
+        self::assertSame('Réponse créée par le test Symfony.', $reponse->getContenu());
+
+        $crawler = $client->followRedirect();
+        self::assertSelectorTextContains('.gw-comment-replies', 'Réponse créée par le test Symfony.');
         $crawler = $client->click($crawler->selectLink('Modifier')->link());
         $client->submit($crawler->selectButton('Enregistrer')->form([
             'commentaire_jeu[contenu]' => 'Commentaire modifié par le test Symfony.',

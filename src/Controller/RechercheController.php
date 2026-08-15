@@ -5,6 +5,11 @@ namespace App\Controller;
 use App\Repository\ActualiteRepository;
 use App\Repository\JeuRepository;
 use App\Repository\UtilisateurRepository;
+use App\Repository\CategorieJeuRepository;
+use App\Repository\PlateformeRepository;
+use App\Repository\LangueRepository;
+use App\Repository\GenreRepository;
+use App\Enum\TriJeu;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Asset\Packages;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,14 +20,26 @@ use Symfony\Component\Routing\Attribute\Route;
 final class RechercheController extends AbstractController
 {
     #[Route('/recherche', name: 'app_recherche', methods: ['GET'])]
-    public function rechercher(Request $request, JeuRepository $jeuRepository, ActualiteRepository $actualiteRepository): Response
+    public function rechercher(Request $request, JeuRepository $jeuRepository, ActualiteRepository $actualiteRepository, UtilisateurRepository $utilisateurRepository, CategorieJeuRepository $categorieRepository, PlateformeRepository $plateformeRepository, GenreRepository $genreRepository, LangueRepository $langueRepository): Response
     {
-        $recherche = trim((string) $request->query->get('recherche', ''));
+        $recherche = trim($request->query->getString('recherche'));
+        $type = $request->query->getString('type');
+        if (!in_array($type, ['', 'jeu', 'actualite', 'membre'], true)) { $type = ''; }
+        $categorie = $request->query->getString('categorie');
+        $plateforme = $request->query->getString('plateforme');
+        $genre = $request->query->getString('genre');
+        $langue = $request->query->getString('langue');
+        $tri = TriJeu::tryFrom($request->query->getString('tri', 'recent')) ?? TriJeu::Recent;
+        $paginationJeux = '' !== $recherche && in_array($type, ['', 'jeu'], true) ? $jeuRepository->trouverApprouvesPagines(1, 12, $recherche, $categorie, $plateforme, $genre, $langue, $tri) : ['jeux' => [], 'total' => 0];
+        $actualites = '' !== $recherche && in_array($type, ['', 'actualite'], true) ? $actualiteRepository->rechercherPourApercu($recherche, 12) : [];
+        $membres = '' !== $recherche && in_array($type, ['', 'membre'], true) ? $utilisateurRepository->rechercherParPseudo($recherche, 12) : [];
 
         return $this->render('recherche/index.html.twig', [
             'recherche' => $recherche,
-            'jeux' => '' !== $recherche ? $jeuRepository->rechercherPourApercu($recherche) : [],
-            'actualites' => '' !== $recherche ? $actualiteRepository->rechercherPourApercu($recherche) : [],
+            'type' => $type, 'categorie' => $categorie, 'plateforme' => $plateforme, 'genre' => $genre, 'langue' => $langue, 'tri' => $tri,
+            'jeux' => $paginationJeux['jeux'], 'totalJeux' => $paginationJeux['total'], 'actualites' => $actualites, 'membres' => $membres,
+            'categories' => $categorieRepository->trouverToutes(), 'plateformes' => $plateformeRepository->trouverToutes(), 'genres' => $genreRepository->trouverTous(), 'langues' => $langueRepository->trouverToutes(), 'tris' => TriJeu::cases(),
+            'totalResultats' => $paginationJeux['total'] + count($actualites) + count($membres),
         ]);
     }
 

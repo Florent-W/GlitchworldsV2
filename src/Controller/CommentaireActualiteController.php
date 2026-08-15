@@ -11,9 +11,45 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class CommentaireActualiteController extends AbstractController
 {
+    #[Route('/actualite/commentaire/{id}/repondre', name: 'app_actualite_commentaire_repondre', methods: ['POST'])]
+    public function repondre(
+        CommentaireActualite $commentaire,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator,
+    ): Response {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Connecte-toi pour répondre.');
+        }
+
+        $parent = $commentaire->getParent() ?? $commentaire;
+        if (!$this->isCsrfTokenValid('repondre-commentaire-actualite-'.$parent->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $reponse = (new CommentaireActualite())
+            ->setActualite($parent->getActualite())
+            ->setAuteur($utilisateur)
+            ->setParent($parent)
+            ->setContenu($request->request->getString('contenu'));
+        $erreurs = $validator->validate($reponse);
+
+        if ($erreurs->count() > 0) {
+            $this->addFlash('danger', $erreurs[0]->getMessage());
+        } else {
+            $entityManager->persist($reponse);
+            $entityManager->flush();
+            $this->addFlash('success', 'Ta réponse a été publiée.');
+        }
+
+        return $this->redirigerVersActualite($parent, '#commentaire-'.$parent->getId());
+    }
+
     #[Route('/actualite/commentaire/{id}/modifier', name: 'app_actualite_commentaire_modifier')]
     public function modifier(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -24,6 +60,10 @@ final class CommentaireActualiteController extends AbstractController
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $entityManager->flush();
             $this->addFlash('success', 'Ton commentaire a été modifié.');
+
+            if ('moderation' === $request->query->getString('retour')) {
+                return $this->redirectToRoute('app_moderation_commentaires');
+            }
 
             return $this->redirigerVersActualite($commentaire);
         }
@@ -43,6 +83,10 @@ final class CommentaireActualiteController extends AbstractController
         $entityManager->remove($commentaire);
         $entityManager->flush();
         $this->addFlash('success', 'Le commentaire a été supprimé.');
+
+        if ('moderation' === $request->request->getString('_retour')) {
+            return $this->redirectToRoute('app_moderation_commentaires');
+        }
 
         return $this->redirect($this->generateUrl('app_actualite_voir', ['slug' => $actualite?->getSlug(), 'id' => $actualite?->getId()]).'#commentaires');
     }
@@ -64,10 +108,10 @@ final class CommentaireActualiteController extends AbstractController
         return $this->redirigerVersActualite($commentaire);
     }
 
-    private function redirigerVersActualite(CommentaireActualite $commentaire): Response
+    private function redirigerVersActualite(CommentaireActualite $commentaire, string $ancre = '#commentaires'): Response
     {
         $actualite = $commentaire->getActualite();
 
-        return $this->redirect($this->generateUrl('app_actualite_voir', ['slug' => $actualite?->getSlug(), 'id' => $actualite?->getId()]).'#commentaires');
+        return $this->redirect($this->generateUrl('app_actualite_voir', ['slug' => $actualite?->getSlug(), 'id' => $actualite?->getId()]).$ancre);
     }
 }

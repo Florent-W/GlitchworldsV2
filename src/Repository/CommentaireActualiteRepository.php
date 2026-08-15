@@ -16,11 +16,28 @@ final class CommentaireActualiteRepository extends ServiceEntityRepository
     /** @return list<CommentaireActualite> */
     public function trouverRecents(Actualite $actualite, int $limite = 20): array
     {
+        $identifiants = $this->createQueryBuilder('racine')
+            ->select('racine.id')
+            ->andWhere('racine.actualite = :actualite')
+            ->andWhere('racine.parent IS NULL')
+            ->setParameter('actualite', $actualite)
+            ->orderBy('racine.dateCommentaire', 'DESC')
+            ->setMaxResults($limite)
+            ->getQuery()->getSingleColumnResult();
+
+        if ([] === $identifiants) {
+            return [];
+        }
+
         return $this->createQueryBuilder('commentaire')
             ->leftJoin('commentaire.auteur', 'auteur')->addSelect('auteur')
             ->leftJoin('commentaire.aimePar', 'aimePar')->addSelect('aimePar')
-            ->andWhere('commentaire.actualite = :actualite')->setParameter('actualite', $actualite)
-            ->orderBy('commentaire.dateCommentaire', 'DESC')->setMaxResults($limite)
+            ->leftJoin('commentaire.reponses', 'reponse')->addSelect('reponse')
+            ->leftJoin('reponse.auteur', 'auteurReponse')->addSelect('auteurReponse')
+            ->leftJoin('reponse.aimePar', 'aimeParReponse')->addSelect('aimeParReponse')
+            ->andWhere('commentaire.id IN (:identifiants)')->setParameter('identifiants', $identifiants)
+            ->orderBy('commentaire.dateCommentaire', 'DESC')
+            ->addOrderBy('reponse.dateCommentaire', 'ASC')
             ->getQuery()->getResult();
     }
 
@@ -42,5 +59,17 @@ final class CommentaireActualiteRepository extends ServiceEntityRepository
             ->innerJoin('commentaire.actualite', 'actualite')
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
             ->getQuery()->getSingleScalarResult();
+    }
+
+    /** @return list<CommentaireActualite> */
+    public function trouverPourModeration(int $limite = 50): array
+    {
+        return $this->createQueryBuilder('commentaire')
+            ->leftJoin('commentaire.auteur', 'auteur')->addSelect('auteur')
+            ->leftJoin('commentaire.parent', 'parent')->addSelect('parent')
+            ->innerJoin('commentaire.actualite', 'actualite')->addSelect('actualite')
+            ->orderBy('commentaire.dateCommentaire', 'DESC')
+            ->setMaxResults(max(1, min(100, $limite)))
+            ->getQuery()->getResult();
     }
 }

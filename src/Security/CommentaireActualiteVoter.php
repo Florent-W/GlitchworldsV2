@@ -31,7 +31,6 @@ final class CommentaireActualiteVoter extends Voter
             return true;
         }
 
-        return self::SUPPRIMER === $attribute
-            && array_intersect(['ROLE_MODERATEUR', 'ROLE_ADMIN'], $utilisateur->getRoles()) !== [];
+        return array_intersect(['ROLE_MODERATEUR', 'ROLE_ADMIN'], $utilisateur->getRoles()) !== [];
     }
 }
