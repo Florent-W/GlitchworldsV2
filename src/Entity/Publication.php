@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PublicationRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -28,9 +30,15 @@ class Publication
     #[ORM\Column]
     private \DateTimeImmutable $publieeLe;
 
+    /** @var Collection<int, Utilisateur> */
+    #[ORM\ManyToMany(targetEntity: Utilisateur::class)]
+    #[ORM\JoinTable(name: 'publication_aime')]
+    private Collection $aimePar;
+
     public function __construct()
     {
         $this->publieeLe = new \DateTimeImmutable();
+        $this->aimePar = new ArrayCollection();
     }
 
     public function getId(): ?int { return $this->id; }
@@ -39,4 +47,9 @@ class Publication
     public function getContenu(): string { return $this->contenu; }
     public function setContenu(string $contenu): static { $this->contenu = trim($contenu); return $this; }
     public function getPublieeLe(): \DateTimeImmutable { return $this->publieeLe; }
+    /** @return Collection<int, Utilisateur> */
+    public function getAimePar(): Collection { return $this->aimePar; }
+    public function ajouterAime(Utilisateur $utilisateur): static { if (!$this->aimePar->contains($utilisateur)) { $this->aimePar->add($utilisateur); } return $this; }
+    public function retirerAime(Utilisateur $utilisateur): static { $this->aimePar->removeElement($utilisateur); return $this; }
+    public function estAimePar(Utilisateur $utilisateur): bool { return $this->aimePar->contains($utilisateur); }
 }

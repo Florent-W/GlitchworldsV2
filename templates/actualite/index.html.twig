@@ -10,11 +10,12 @@
         <div><h1 class="h2 mb-1">Actualités</h1><p class="text-secondary mb-0">{{ total }} publication{{ total > 1 ? 's' : '' }} disponible{{ total > 1 ? 's' : '' }}.</p></div>
     </div>
 
-    <form class="input-group mb-4" action="{{ path('app_actualites') }}" method="get" role="search">
+    <form class="input-group mb-4 position-relative" action="{{ path('app_actualites') }}" method="get" role="search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion', {type: 'actualite'}) }}" data-recherche-autocomplete-target="formulaire">
         <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
-        <input class="form-control" type="search" name="recherche" value="{{ recherche }}" placeholder="Rechercher une actualité..." aria-label="Rechercher une actualité">
+        <input class="form-control" type="search" name="recherche" value="{{ recherche }}" placeholder="Rechercher une actualité..." aria-label="Rechercher une actualité" autocomplete="off" aria-autocomplete="list" aria-controls="actualites-recherche-resultats" aria-expanded="false" data-recherche-autocomplete-target="champ" data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#rechercher">
         {% if categorieSelectionnee %}<input type="hidden" name="categorie" value="{{ categorieSelectionnee.value }}">{% endif %}
         <button class="btn btn-primary" type="submit">Rechercher</button>
+        <div id="actualites-recherche-resultats" class="gw-autocomplete d-none" role="listbox" data-recherche-autocomplete-target="resultats"></div>
     </form>
 
     <nav class="d-flex flex-wrap gap-2 mb-4" aria-label="Catégories d’actualités">

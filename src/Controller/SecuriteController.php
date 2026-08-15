@@ -7,7 +7,9 @@ use App\Form\InscriptionType;
 use App\Form\CompteType;
 use App\Form\MotDePasseType;
 use App\Repository\JeuRepository;
+use App\Service\ImageProfilUploader;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,7 +70,7 @@ final class SecuriteController extends AbstractController
     }
 
     #[Route('/mon-compte/modifier', name: 'app_compte_modifier')]
-    public function modifierCompte(Request $request, EntityManagerInterface $entityManager): Response
+    public function modifierCompte(Request $request, EntityManagerInterface $entityManager, ImageProfilUploader $uploader): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -79,6 +81,14 @@ final class SecuriteController extends AbstractController
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $avatar = $formulaire->get('avatarFichier')->getData();
+            if ($avatar instanceof UploadedFile) {
+                $utilisateur->setAvatar($uploader->enregistrer($avatar, $utilisateur, 'avatar'));
+            }
+            $banniere = $formulaire->get('banniereFichier')->getData();
+            if ($banniere instanceof UploadedFile) {
+                $utilisateur->setBanniere($uploader->enregistrer($banniere, $utilisateur, 'banniere'));
+            }
             $entityManager->flush();
             $this->addFlash('success', 'Ton profil a été mis à jour.');
 

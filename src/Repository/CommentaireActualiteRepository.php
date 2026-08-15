@@ -35,4 +35,12 @@ final class CommentaireActualiteRepository extends ServiceEntityRepository
             ->setMaxResults(max(1, min(20, $limite)))
             ->getQuery()->getResult();
     }
+
+    public function compterPublics(): int
+    {
+        return (int) $this->createQueryBuilder('commentaire')->select('COUNT(commentaire.id)')
+            ->innerJoin('commentaire.actualite', 'actualite')
+            ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->getQuery()->getSingleScalarResult();
+    }
 }

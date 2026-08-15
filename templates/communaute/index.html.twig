@@ -14,10 +14,9 @@
     </header>
 
     <nav class="nav nav-pills gw-community__tabs" aria-label="Sections de la communauté">
-        <a class="nav-link active" href="#fil">Fil d'activité</a>
-        <a class="nav-link" href="#discussions">Discussions</a>
-        <a class="nav-link" href="#creations">Créations</a>
-        <a class="nav-link" href="#actualites">Actualités</a>
+        {% for cle, libelle in { fil: "Fil d'activité", discussions: 'Discussions', creations: 'Créations', actualites: 'Actualités' } %}
+            <a class="nav-link{{ section == cle ? ' active' : '' }}" href="{{ path('app_communaute', { section: cle }) }}" {{ section == cle ? 'aria-current="page"' : '' }}>{{ libelle }}</a>
+        {% endfor %}
     </nav>
 
     <div class="row g-4 mt-1">
@@ -38,37 +37,29 @@
             </section>
 
             <div class="vstack gap-3" id="discussions">
-                {% for publication in publications %}
-                    <article class="gw-community__post">
-                        <span class="gw-community__avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
-                        <div class="flex-grow-1 min-w-0"><div class="d-flex flex-wrap align-items-center gap-2"><strong>{{ publication.auteur ? publication.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-success-subtle text-success-emphasis">Publication</span><time class="small text-secondary ms-auto" datetime="{{ publication.publieeLe|date('c') }}">{{ publication.publieeLe|format_datetime('medium', 'short', locale='fr') }}</time></div><p class="mt-2 mb-0">{{ publication.contenu|nl2br }}</p></div>
-                    </article>
-                {% endfor %}
-                {% for commentaire in commentairesJeux %}
-                    <article class="gw-community__post">
-                        <span class="gw-community__avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
+                {% for activite in activites %}
+                    {% set element = activite.element %}
+                    <article id="{{ activite.type == 'publication' ? 'publication-' ~ element.id : '' }}" class="gw-community__post">
+                        <span class="gw-community__avatar"><i class="bi bi-{{ activite.type == 'jeu' ? 'controller' : (activite.type == 'actualite' ? 'newspaper' : 'person-fill') }}" aria-hidden="true"></i></span>
                         <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex flex-wrap align-items-center gap-2"><strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-primary-subtle text-primary">Jeu</span><time class="small text-secondary ms-auto" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div>
-                            <h2 class="h5 mt-2 mb-1">{{ commentaire.jeu.nom }}</h2>
-                            <p class="mb-3">{{ commentaire.contenu|slice(0, 320) }}</p>
-                            <a class="btn btn-sm btn-outline-primary" href="{{ path('app_jeu_show', { slug: commentaire.jeu.slug, id: commentaire.jeu.id }) }}#commentaires"><i class="bi bi-chat-dots me-1"></i>Voir la discussion</a>
+                            {% if activite.type == 'publication' %}
+                                <div class="d-flex flex-wrap align-items-center gap-2"><strong>{{ element.auteur ? element.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-success-subtle text-success-emphasis">Publication</span><time class="small text-secondary ms-auto" datetime="{{ element.publieeLe|date('c') }}">{{ element.publieeLe|format_datetime('medium', 'short', locale='fr') }}</time></div>
+                                <p class="mt-2 mb-2">{{ element.contenu|nl2br }}</p>
+                                <div class="d-flex flex-wrap gap-2">{% if app.user %}<form method="post" action="{{ path('app_publication_aimer', { id: element.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('aimer-publication-' ~ element.id) }}"><button class="btn btn-sm {{ element.aimePar.contains(app.user) ? 'btn-primary' : 'btn-outline-primary' }}" type="submit"><i class="bi bi-heart{{ element.aimePar.contains(app.user) ? '-fill' : '' }} me-1"></i>{{ element.aimePar|length }}</button></form>{% else %}<span class="btn btn-sm btn-outline-secondary disabled"><i class="bi bi-heart me-1"></i>{{ element.aimePar|length }}</span>{% endif %}{% if is_granted('PUBLICATION_MODIFIER', element) %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_publication_modifier', { id: element.id }) }}"><i class="bi bi-pencil me-1"></i>Modifier</a>{% endif %}{% if is_granted('PUBLICATION_SUPPRIMER', element) %}<form method="post" action="{{ path('app_publication_supprimer', { id: element.id }) }}" onsubmit="return confirm('Supprimer cette publication ?')"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-publication-' ~ element.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash me-1"></i>Supprimer</button></form>{% endif %}</div>
+                            {% elseif activite.type == 'commentaire_jeu' %}
+                                <div class="d-flex flex-wrap gap-2"><strong>{{ element.auteur ? element.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-primary-subtle text-primary">Discussion</span><time class="small text-secondary ms-auto">{{ element.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div><h2 class="h5 mt-2">{{ element.jeu.nom }}</h2><p>{{ element.contenu|slice(0, 320) }}</p><a class="btn btn-sm btn-outline-primary" href="{{ path('app_jeu_show', { slug: element.jeu.slug, id: element.jeu.id }) }}#commentaires">Voir la discussion</a>
+                            {% elseif activite.type == 'commentaire_actualite' %}
+                                <div class="d-flex flex-wrap gap-2"><strong>{{ element.auteur ? element.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-info-subtle text-info-emphasis">Discussion</span><time class="small text-secondary ms-auto">{{ element.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div><h2 class="h5 mt-2">{{ element.actualite.titre }}</h2><p>{{ element.contenu|slice(0, 320) }}</p><a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_voir', { slug: element.actualite.slug, id: element.actualite.id }) }}#commentaires">Voir la discussion</a>
+                            {% elseif activite.type == 'jeu' %}
+                                <span class="badge text-bg-primary-subtle text-primary">Nouvelle création</span><h2 class="h5 mt-2">{{ element.nom }}</h2><p>{{ element.description }}</p><a class="btn btn-sm btn-primary" href="{{ path('app_jeu_show', { slug: element.slug, id: element.id }) }}">Voir la fiche</a>
+                            {% else %}
+                                <span class="badge text-bg-info-subtle text-info-emphasis">Actualité</span><h2 class="h5 mt-2">{{ element.titre }}</h2><p>{{ element.description }}</p><a class="btn btn-sm btn-primary" href="{{ path('app_actualite_voir', { slug: element.slug, id: element.id }) }}">Lire l'article</a>
+                            {% endif %}
                         </div>
                     </article>
-                {% endfor %}
-                {% for commentaire in commentairesActualites %}
-                    <article class="gw-community__post">
-                        <span class="gw-community__avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex flex-wrap align-items-center gap-2"><strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-info-subtle text-info-emphasis">Actualité</span><time class="small text-secondary ms-auto" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div>
-                            <h2 class="h5 mt-2 mb-1">{{ commentaire.actualite.titre }}</h2>
-                            <p class="mb-3">{{ commentaire.contenu|slice(0, 320) }}</p>
-                            <a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_voir', { slug: commentaire.actualite.slug, id: commentaire.actualite.id }) }}#commentaires"><i class="bi bi-chat-dots me-1"></i>Voir la discussion</a>
-                        </div>
-                    </article>
-                {% else %}
-                    {% if commentairesJeux is empty %}<div class="gw-panel p-5 text-center text-secondary">Aucune activité publique pour le moment.</div>{% endif %}
-                {% endfor %}
+                {% else %}<div class="gw-panel p-5 text-center text-secondary">Aucun contenu dans cette section pour le moment.</div>{% endfor %}
             </div>
+            {% if pages > 1 %}<nav class="mt-4" aria-label="Pagination du fil"><ul class="pagination justify-content-center"><li class="page-item{{ page == 1 ? ' disabled' : '' }}"><a class="page-link" href="{{ path('app_communaute', { section: section, page: page - 1 }) }}">Précédent</a></li><li class="page-item disabled"><span class="page-link">{{ page }} / {{ pages }}</span></li><li class="page-item{{ page == pages ? ' disabled' : '' }}"><a class="page-link" href="{{ path('app_communaute', { section: section, page: page + 1 }) }}">Suivant</a></li></ul></nav>{% endif %}
         </main>
 
         <aside class="col-xl-3">

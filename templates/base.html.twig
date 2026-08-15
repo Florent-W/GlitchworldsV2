@@ -29,6 +29,7 @@
             { label: 'Favoris',    icon: 'heart-fill',      route: 'app_favoris' },
             { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute' },
             { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' },
+            { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages' },
             { label: 'Paramètres', icon: 'gear-fill',       route: null },
             { label: 'Boutique',   icon: 'bag-fill',        route: null, badge: 'New' }
         ] %}
@@ -46,12 +47,14 @@
                     <span class="gw-logo__tagline">Play. Hack. Rewrite Reality.</span>
                 </a>
 
-                <search class="gw-search">
-                    <form role="search" action="{{ path('app_recherche') }}" method="get">
+                <search class="gw-search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion') }}">
+                    <form role="search" action="{{ path('app_recherche') }}" method="get" data-recherche-autocomplete-target="formulaire">
                         <label class="visually-hidden" for="gw-search-input">Rechercher</label>
                         <i class="bi bi-search gw-search__icon" aria-hidden="true"></i>
                         <input id="gw-search-input" class="gw-search__input" type="search" name="recherche" value="{{ current_route == 'app_recherche' ? app.request.query.get('recherche') : '' }}"
-                               placeholder="Rechercher un fangame, un univers..." autocomplete="off">
+                               placeholder="Rechercher un jeu, une actualité, un membre..." autocomplete="off" aria-autocomplete="list" aria-controls="gw-search-results" aria-expanded="false"
+                               data-recherche-autocomplete-target="champ" data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#rechercher">
+                        <div id="gw-search-results" class="gw-autocomplete d-none" role="listbox" data-recherche-autocomplete-target="resultats"></div>
                     </form>
                 </search>
 
@@ -62,8 +65,8 @@
                     <button type="button" class="gw-icon-btn" aria-label="Changer de thème">
                         <i class="bi bi-brightness-high-fill" aria-hidden="true"></i>
                     </button>
-                    <a class="gw-icon-btn gw-icon-btn--avatar" href="{{ path(app.user ? 'app_compte' : 'app_connexion') }}" aria-label="{{ app.user ? 'Mon compte' : 'Se connecter' }}" title="{{ app.user ? app.user.userIdentifier : 'Se connecter' }}">
-                        <i class="bi bi-person-fill" aria-hidden="true"></i>
+                    <a class="gw-icon-btn gw-icon-btn--avatar" href="{{ app.user ? path('app_profil', {id: app.user.id}) : path('app_connexion') }}" aria-label="{{ app.user ? 'Mon profil' : 'Se connecter' }}" title="{{ app.user ? app.user.userIdentifier : 'Se connecter' }}">
+                        {% if app.user and app.user.avatar starts with 'avatar.' %}<img class="w-100 h-100 rounded-circle object-fit-cover" src="{{ asset('uploads/utilisateurs/' ~ app.user.id ~ '/' ~ app.user.avatar) }}" alt="">{% else %}<i class="bi bi-person-fill" aria-hidden="true"></i>{% endif %}
                         <span class="gw-status-dot" aria-hidden="true"></span>
                     </a>
                 </div>
@@ -127,10 +130,9 @@
                 </div>
 
                 <div class="gw-bottombar__side gw-bottombar__side--end">
-                    <a class="gw-messages" href="#">
+                    <a class="gw-messages" href="{{ app.user ? path('app_messages') : path('app_connexion') }}">
                         <i class="bi bi-envelope-fill" aria-hidden="true"></i>
                         <span>Messages</span>
-                        <span class="gw-messages__count">3</span>
                     </a>
                 </div>
             </footer>

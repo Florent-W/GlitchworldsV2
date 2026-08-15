@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Publication;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,6 +20,18 @@ final class PublicationRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('publication')
             ->leftJoin('publication.auteur', 'auteur')->addSelect('auteur')
+            ->leftJoin('publication.aimePar', 'aimePar')->addSelect('aimePar')
+            ->orderBy('publication.publieeLe', 'DESC')
+            ->setMaxResults(max(1, min(50, $limite)))
+            ->getQuery()->getResult();
+    }
+
+    /** @return list<Publication> */
+    public function trouverPourAuteur(Utilisateur $auteur, int $limite = 20): array
+    {
+        return $this->createQueryBuilder('publication')
+            ->leftJoin('publication.aimePar', 'aimePar')->addSelect('aimePar')
+            ->andWhere('publication.auteur = :auteur')->setParameter('auteur', $auteur)
             ->orderBy('publication.publieeLe', 'DESC')
             ->setMaxResults(max(1, min(50, $limite)))
             ->getQuery()->getResult();

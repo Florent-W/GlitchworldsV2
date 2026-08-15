@@ -31,4 +31,15 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
         // n'est choisi arbitrairement.
         return 1 === \count($utilisateurs) ? $utilisateurs[0] : null;
     }
+
+    /** @return list<Utilisateur> */
+    public function rechercherParPseudo(string $recherche, int $limite = 5): array
+    {
+        return $this->createQueryBuilder('utilisateur')
+            ->andWhere('LOWER(utilisateur.pseudo) LIKE :recherche')
+            ->setParameter('recherche', '%'.mb_strtolower(trim($recherche)).'%')
+            ->orderBy('utilisateur.pseudo', 'ASC')
+            ->setMaxResults(max(1, min(10, $limite)))
+            ->getQuery()->getResult();
+    }
 }

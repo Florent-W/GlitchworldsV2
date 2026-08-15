@@ -278,4 +278,15 @@ class JeuRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /** @return list<Jeu> */
+    public function trouverApprouvesPar(Utilisateur $utilisateur, int $limite = 20): array
+    {
+        return $this->createQueryBuilder('j')
+            ->leftJoin('j.categorie', 'categorie')->addSelect('categorie')
+            ->andWhere('j.createur = :utilisateur')->setParameter('utilisateur', $utilisateur)
+            ->andWhere('j.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
+            ->orderBy('j.creeLe', 'DESC')->setMaxResults(max(1, min(50, $limite)))
+            ->getQuery()->getResult();
+    }
 }

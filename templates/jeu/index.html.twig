@@ -53,7 +53,7 @@
         </div>
     </header>
 
-    <form method="get" action="{{ path('app_jeux') }}" role="search">
+    <form method="get" action="{{ path('app_jeux') }}" role="search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion', {type: 'jeu'}) }}" data-recherche-autocomplete-target="formulaire">
         <div class="row g-4 align-items-start">
             <div class="col-xl-9">
                 <div class="gw-search-box mb-4">
@@ -67,8 +67,14 @@
                         value="{{ recherche }}"
                         placeholder="Rechercher un fangame, un univers..."
                         autocomplete="off"
+                        aria-autocomplete="list"
+                        aria-controls="jeux-recherche-resultats"
+                        aria-expanded="false"
+                        data-recherche-autocomplete-target="champ"
+                        data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#rechercher"
                     >
                     <button type="submit" class="btn btn-gw">Rechercher</button>
+                    <div id="jeux-recherche-resultats" class="gw-autocomplete d-none" role="listbox" data-recherche-autocomplete-target="resultats"></div>
                 </div>
 
                 {% if jeux is empty %}

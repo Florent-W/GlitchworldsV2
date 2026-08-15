@@ -52,4 +52,12 @@ class CommentaireJeuRepository extends ServiceEntityRepository
             ->setMaxResults(max(1, min(20, $limite)))
             ->getQuery()->getResult();
     }
+
+    public function compterPublics(): int
+    {
+        return (int) $this->createQueryBuilder('commentaire')->select('COUNT(commentaire.id)')
+            ->innerJoin('commentaire.jeu', 'jeu')
+            ->andWhere('jeu.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
+            ->getQuery()->getSingleScalarResult();
+    }
 }

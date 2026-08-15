@@ -41,8 +41,31 @@ final class CommunauteControllerTest extends WebTestCase
         $publication = $entityManager->getRepository(Publication::class)->findOneBy(['contenu' => $contenu]);
         self::assertInstanceOf(Publication::class, $publication);
         self::assertSame($utilisateurId, $publication->getAuteur()?->getId());
+        $publicationId = $publication->getId();
 
-        $entityManager->remove($publication);
+        $crawler = $client->followRedirect();
+        $formulaireAimer = $crawler->filter(sprintf('form[action="/communaute/publication/%d/aimer"]', $publicationId))->form();
+        $client->submit($formulaireAimer);
+        self::assertResponseRedirects('/communaute#publication-'.$publicationId);
+        $entityManager->clear();
+        self::assertCount(1, $entityManager->find(Publication::class, $publicationId)?->getAimePar());
+
+        $crawler = $client->followRedirect();
+        $crawler = $client->click($crawler->selectLink('Modifier')->link());
+        $contenuModifie = $contenu.' modifiée';
+        $client->submit($crawler->selectButton('Enregistrer')->form([
+            'publication[contenu]' => $contenuModifie,
+        ]));
+        self::assertResponseRedirects('/communaute#fil');
+
+        $entityManager->clear();
+        self::assertSame($contenuModifie, $entityManager->find(Publication::class, $publicationId)?->getContenu());
+        $crawler = $client->followRedirect();
+        $client->submit($crawler->selectButton('Supprimer')->form());
+        self::assertResponseRedirects('/communaute#fil');
+
+        $entityManager->clear();
+        self::assertNull($entityManager->find(Publication::class, $publicationId));
         $entityManager->remove($entityManager->find(Utilisateur::class, $utilisateurId));
         $entityManager->flush();
     }

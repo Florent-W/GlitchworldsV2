@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ membre.pseudo }} - Profil GlitchWorlds{% endblock %}
+{% block meta_description %}Découvre le profil, les jeux favoris et les publications de {{ membre.pseudo }} sur GlitchWorlds.{% endblock %}
+
+{% block body %}
+<div class="gw-profile">
+    <header class="gw-profile__hero gw-panel overflow-hidden">
+        <div class="gw-profile__banner"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}></div>
+        <div class="gw-profile__identity px-3 px-lg-4 pb-4">
+            <div class="gw-profile__avatar">
+                {% if membre.avatar starts with 'avatar.' %}
+                    <img src="{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.avatar) }}" alt="Avatar de {{ membre.pseudo }}">
+                {% else %}
+                    <span>{{ membre.pseudo|first|upper }}</span>
+                {% endif %}
+            </div>
+            <div class="flex-grow-1 pt-3">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <h1 class="h2 mb-0">{{ membre.pseudo }}</h1>
+                    {% if 'ROLE_ADMIN' in membre.roles %}<span class="badge text-bg-primary">Administrateur</span>{% elseif 'ROLE_MODERATEUR' in membre.roles %}<span class="badge text-bg-info">Modérateur</span>{% endif %}
+                </div>
+                <p class="text-secondary mb-1"><i class="bi bi-calendar3 me-1"></i>Membre depuis {{ membre.inscritLe|format_datetime('none', 'none', 'MMMM y', locale='fr') }}</p>
+                {% if membre.biographie %}<p class="mb-0 gw-profile__bio">{{ membre.biographie|nl2br }}</p>{% endif %}
+            </div>
+            <div class="gw-profile__numbers d-flex gap-4 text-center pt-3">
+                <div><strong>{{ publications|length }}</strong><span>Publications</span></div>
+                <div><strong>{{ membre.abonnes|length }}</strong><span>Abonnés</span></div>
+                <div><strong>{{ membre.abonnements|length }}</strong><span>Abonnements</span></div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 pt-3">
+                {% if app.user == membre %}
+                    <a class="btn btn-primary" href="{{ path('app_compte_modifier') }}"><i class="bi bi-pencil-fill me-2"></i>Modifier le profil</a>
+                    <a class="btn btn-outline-secondary" href="{{ path('app_compte') }}"><i class="bi bi-gear-fill me-2"></i>Mon compte</a>
+                {% elseif app.user %}
+                    <form method="post" action="{{ path('app_profil_suivre', {id: membre.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('suivre-' ~ membre.id) }}">
+                        <button class="btn {{ app.user.suit(membre) ? 'btn-outline-primary' : 'btn-primary' }}"><i class="bi bi-person-{{ app.user.suit(membre) ? 'dash' : 'plus' }}-fill me-2"></i>{{ app.user.suit(membre) ? 'Ne plus suivre' : 'Suivre' }}</button>
+                    </form>
+                    <a class="btn btn-outline-primary" href="{{ path('app_messages_nouveau', {destinataire: membre.id}) }}"><i class="bi bi-envelope-fill me-2"></i>Message</a>
+                {% else %}
+                    <a class="btn btn-primary" href="{{ path('app_connexion') }}">Se connecter pour suivre</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-8">
+            <nav class="nav nav-pills gw-panel p-2 mb-3" aria-label="Sections du profil">
+                {% for cle, libelle in {apropos: 'À propos', activite: 'Activité', jeux: 'Jeux', favoris: 'Favoris'} %}
+                    <a class="nav-link {{ section == cle ? 'active' }}" href="{{ path('app_profil', {id: membre.id, section: cle}) }}">{{ libelle }}</a>
+                {% endfor %}
+            </nav>
+
+            <section class="gw-panel p-4">
+                {% if section == 'apropos' %}
+                    <h2 class="h5">À propos de {{ membre.pseudo }}</h2>
+                    <p class="text-secondary">{{ membre.biographie ?: 'Ce membre n’a pas encore rédigé sa présentation.' }}</p>
+                    <div class="d-flex flex-wrap gap-4">
+                        {% if membre.localisation %}<span><i class="bi bi-geo-alt-fill text-primary me-2"></i>{{ membre.localisation }}</span>{% endif %}
+                        {% if membre.dateNaissance %}<span><i class="bi bi-cake2-fill text-primary me-2"></i>Né(e) le {{ membre.dateNaissance|format_date('long', locale='fr') }}</span>{% endif %}
+                    </div>
+                    <hr>
+                    <h2 class="h5">Jeux préférés</h2>
+                    {{ _self.jeux(membre.jeuxFavoris|slice(0, 5)) }}
+                {% elseif section == 'activite' %}
+                    <h2 class="h5">Publications récentes</h2>
+                    {% for publication in publications %}
+                        <article class="border-bottom py-3">
+                            <p class="mb-2">{{ publication.contenu|nl2br }}</p>
+                            <small class="text-secondary">{{ publication.publieeLe|format_datetime('medium', 'short', locale='fr') }} · <i class="bi bi-heart-fill text-danger"></i> {{ publication.aimePar|length }}</small>
+                        </article>
+                    {% else %}<p class="text-secondary mb-0">Aucune publication pour le moment.</p>{% endfor %}
+                {% elseif section == 'jeux' %}
+                    <h2 class="h5">Jeux publiés</h2>
+                    {{ _self.jeux(jeux) }}
+                {% else %}
+                    <h2 class="h5">Jeux favoris</h2>
+                    {{ _self.jeux(membre.jeuxFavoris) }}
+                {% endif %}
+            </section>
+        </div>
+        <aside class="col-lg-4">
+            <section class="gw-panel p-4 mb-3">
+                <h2 class="h6 text-uppercase">Statut</h2>
+                <p class="mb-0">{{ membre.statutProfil ?: 'Aucun statut renseigné.' }}</p>
+            </section>
+            <section class="gw-panel p-4">
+                <h2 class="h6 text-uppercase">Aperçu de l’activité</h2>
+                <div class="d-grid gap-3">
+                    <div><i class="bi bi-controller text-primary me-2"></i><strong>{{ jeux|length }}</strong> jeu{{ jeux|length > 1 ? 'x' }} publié{{ jeux|length > 1 ? 's' }}</div>
+                    <div><i class="bi bi-heart-fill text-danger me-2"></i><strong>{{ membre.jeuxFavoris|length }}</strong> favori{{ membre.jeuxFavoris|length > 1 ? 's' }}</div>
+                    <div><i class="bi bi-chat-square-text-fill text-primary me-2"></i><strong>{{ publications|length }}</strong> publication{{ publications|length > 1 ? 's' }}</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% macro jeux(jeux) %}
+    {% if jeux is empty %}<p class="text-secondary mb-0">Aucun jeu à afficher.</p>{% else %}
+        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3">
+            {% for jeu in jeux %}
+                <div class="col"><a class="gw-profile-game" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id}) }}">
+                    {% if jeu.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Miniature de {{ jeu.nom }}" loading="lazy">{% else %}<span><i class="bi bi-controller"></i></span>{% endif %}
+                    <strong>{{ jeu.nom }}</strong>
+                </a></div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}

@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier ma publication - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width: 760px">
+    <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_communaute') }}#fil">Communauté</a></li><li class="breadcrumb-item active" aria-current="page">Modifier la publication</li></ol></nav>
+    <h1 class="h2 mb-4">Modifier ma publication</h1>
+    {{ form_start(formulaire) }}
+        {{ form_row(formulaire.contenu) }}
+        <div class="d-flex gap-2"><button class="btn btn-primary" type="submit">Enregistrer</button><a class="btn btn-outline-secondary" href="{{ path('app_communaute') }}#fil">Annuler</a></div>
+    {{ form_end(formulaire) }}
+</section>
+{% endblock %}
