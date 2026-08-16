@@ -21,6 +21,9 @@ final class PublicationRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('publication')
             ->leftJoin('publication.auteur', 'auteur')->addSelect('auteur')
             ->leftJoin('publication.aimePar', 'aimePar')->addSelect('aimePar')
+            ->leftJoin('publication.reponses', 'reponses')->addSelect('reponses')
+            ->leftJoin('reponses.auteur', 'auteurReponse')->addSelect('auteurReponse')
+            ->leftJoin('publication.votes', 'votes')->addSelect('votes')
             ->orderBy('publication.publieeLe', 'DESC')
             ->setMaxResults(max(1, min(50, $limite)))
             ->getQuery()->getResult();

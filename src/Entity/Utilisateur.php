@@ -68,6 +68,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => 0])]
     private int $points = 0;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $derniereActivite = null;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?ArticleBoutique $titreEquipe = null;
@@ -200,6 +203,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setExperience(int $experience): static { $this->experience = max(0, $experience); return $this; }
     public function getPoints(): int { return $this->points; }
     public function setPoints(int $points): static { $this->points = max(0, $points); return $this; }
+    public function getDerniereActivite(): ?\DateTimeImmutable { return $this->derniereActivite; }
+    public function setDerniereActivite(?\DateTimeImmutable $date): static { $this->derniereActivite = $date; return $this; }
+    public function isEnLigne(): bool { return $this->derniereActivite !== null && $this->derniereActivite > new \DateTimeImmutable('-5 minutes'); }
     public function getTitreEquipe(): ?ArticleBoutique { return $this->titreEquipe; }
     public function setTitreEquipe(?ArticleBoutique $article): static { $this->titreEquipe = $article; return $this; }
 

@@ -67,6 +67,7 @@ final class CommunauteController extends AbstractController
                 'jeux' => $jeuRepository->count(['statut' => StatutJeu::Approuve]),
                 'commentaires' => $commentaireJeuRepository->compterPublics() + $commentaireActualiteRepository->compterPublics(),
             ],
+            'membresEnLigne' => $utilisateurRepository->trouverEnLigne(),
             'section' => $section,
             'activites' => $activites,
             'page' => $page,

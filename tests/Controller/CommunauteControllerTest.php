@@ -4,6 +4,8 @@ namespace App\Tests\Controller;
 
 use App\Entity\Publication;
 use App\Entity\Utilisateur;
+use App\Entity\ReponsePublication;
+use App\Entity\VotePublication;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -35,6 +37,9 @@ final class CommunauteControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/communaute');
         $client->submit($crawler->selectButton('Publier')->form([
             'publication[contenu]' => $contenu,
+            'publication[lien]' => 'https://example.com/projet',
+            'publication[questionSondage]' => 'Quel choix préférez-vous ?',
+            'publication[optionsSondageTexte]' => "Option A\nOption B",
         ]));
 
         self::assertResponseRedirects('/communaute#fil');
@@ -42,6 +47,18 @@ final class CommunauteControllerTest extends WebTestCase
         self::assertInstanceOf(Publication::class, $publication);
         self::assertSame($utilisateurId, $publication->getAuteur()?->getId());
         $publicationId = $publication->getId();
+        self::assertTrue($publication->isSondage());
+        self::assertSame('https://example.com/projet', $publication->getLien());
+
+        $crawler = $client->followRedirect();
+        self::assertSelectorTextContains('#publication-'.$publicationId, 'Quel choix préférez-vous ?');
+        $client->submit($crawler->filter(sprintf('form[action="/communaute/publication/%d/voter"]', $publicationId))->form(['option' => 0]));
+        self::assertResponseRedirects('/communaute#publication-'.$publicationId);
+        self::assertCount(1, $entityManager->getRepository(VotePublication::class)->findBy(['publication' => $publication]));
+        $crawler = $client->followRedirect();
+        $client->submit($crawler->filter(sprintf('form[action="/communaute/publication/%d/repondre"]', $publicationId))->form(['contenu' => 'Une réponse communautaire.']));
+        self::assertResponseRedirects('/communaute#publication-'.$publicationId);
+        self::assertCount(1, $entityManager->getRepository(ReponsePublication::class)->findBy(['publication' => $publication]));
 
         $crawler = $client->followRedirect();
         $formulaireAimer = $crawler->filter(sprintf('form[action="/communaute/publication/%d/aimer"]', $publicationId))->form();

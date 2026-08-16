@@ -58,4 +58,15 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
             ->setMaxResults(max(1, min(10, $limite)))
             ->getQuery()->getResult();
     }
+
+    /** @return list<Utilisateur> */
+    public function trouverEnLigne(int $limite = 8): array
+    {
+        return $this->createQueryBuilder('utilisateur')
+            ->andWhere('utilisateur.derniereActivite >= :limite')
+            ->setParameter('limite', new \DateTimeImmutable('-5 minutes'))
+            ->orderBy('utilisateur.derniereActivite', 'DESC')
+            ->setMaxResults(max(1, min(20, $limite)))
+            ->getQuery()->getResult();
+    }
 }
