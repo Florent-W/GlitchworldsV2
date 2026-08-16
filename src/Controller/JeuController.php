@@ -17,6 +17,7 @@ use App\Repository\GenreRepository;
 use App\Repository\JeuRepository;
 use App\Repository\LangueRepository;
 use App\Repository\PlateformeRepository;
+use App\Service\ProgressionUtilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -63,6 +64,7 @@ final class JeuController extends AbstractController
         CommentaireJeuRepository $commentaireJeuRepository,
         EntityManagerInterface $entityManager,
         ActualiteRepository $actualiteRepository,
+        ProgressionUtilisateur $progression,
     ): Response
     {
         $jeu = $jeuRepository->find($id);
@@ -92,8 +94,9 @@ final class JeuController extends AbstractController
 
             $commentaire->setJeu($jeu)->setAuteur($auteur);
             $entityManager->persist($commentaire);
+            $progression->recompenseCommentaire($auteur);
             $entityManager->flush();
-            $this->addFlash('success', 'Ton commentaire a été publié.');
+            $this->addFlash('success', 'Ton commentaire a été publié. +10 XP et +5 points.');
 
             return $this->redirect($this->generateUrl('app_jeu_show', [
                 'slug' => $jeu->getSlug(),

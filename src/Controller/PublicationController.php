@@ -12,12 +12,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Service\ProgressionUtilisateur;
 
 final class PublicationController extends AbstractController
 {
     #[Route('/communaute/publication', name: 'app_publication_creer', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function creer(Request $request, EntityManagerInterface $entityManager): Response
+    public function creer(Request $request, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression): Response
     {
         $publication = new Publication();
         $formulaire = $this->createForm(PublicationType::class, $publication);
@@ -27,10 +28,11 @@ final class PublicationController extends AbstractController
             $utilisateur = $this->getUser();
             if ($utilisateur instanceof Utilisateur) {
                 $publication->setAuteur($utilisateur);
+                $progression->recompensePublication($utilisateur);
             }
             $entityManager->persist($publication);
             $entityManager->flush();
-            $this->addFlash('success', 'Ta publication est en ligne.');
+            $this->addFlash('success', 'Ta publication est en ligne. +20 XP et +10 points.');
         } else {
             $this->addFlash('danger', 'La publication doit contenir entre 3 et 1 000 caractères.');
         }

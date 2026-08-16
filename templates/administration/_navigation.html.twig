@@ -5,7 +5,8 @@
         {route: 'app_moderation_jeux', prefixe: 'app_moderation_jeu', icon: 'controller', label: 'Jeux'},
         {route: 'app_administration_membres', prefixe: 'app_administration_membres', icon: 'people-fill', label: 'Membres'},
         {route: 'app_moderation_commentaires', prefixe: 'app_moderation_commentaires', icon: 'chat-dots-fill', label: 'Commentaires'},
-        {route: 'app_administration_actualites_liste', prefixe: 'app_administration_actualites', icon: 'newspaper', label: 'Actualités'}
+        {route: 'app_administration_actualites_liste', prefixe: 'app_administration_actualites', icon: 'newspaper', label: 'Actualités'},
+        {route: 'app_moderation_signalements', prefixe: 'app_moderation_signalement', icon: 'flag-fill', label: 'Signalements'}
     ] %}
     {% for lien in liens %}
         <a class="gw-admin-nav__link{{ route starts with lien.prefixe ? ' is-active' : '' }}" href="{{ path(lien.route) }}">

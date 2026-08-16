@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block body %}
-<article>
+<article data-controller="galerie">
     <nav class="mb-3" aria-label="Fil d'Ariane">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ path('app_jeux') }}">Jeux</a></li>
@@ -103,6 +103,7 @@
                                 <i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Modifier la fiche
                             </a>
                         {% endif %}
+                        {% if app.user and app.user != jeu.createur %}<a class="btn btn-outline-light btn-lg" href="{{ path('app_signaler', {type: 'jeu', id: jeu.id}) }}"><i class="bi bi-flag me-2"></i>Signaler</a>{% endif %}
                     </div>
                 </div>
                 {% if jeu.miniature starts with 'miniature.' %}
@@ -179,6 +180,50 @@
         </aside>
     </div>
 
+    {% if jeu.galerie is not empty %}
+        <section class="gw-panel p-3 p-md-4 mt-4" aria-labelledby="galerie-title">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                <div class="d-flex align-items-center gap-2"><i class="bi bi-images text-primary fs-4" aria-hidden="true"></i><h2 id="galerie-title" class="h4 mb-0">Galerie</h2></div>
+                <span class="text-secondary small">{{ jeu.galerie|length }} image{{ jeu.galerie|length > 1 ? 's' : '' }}</span>
+            </div>
+            <div id="galerie-jeu-{{ jeu.id }}" class="carousel slide gw-game-gallery" data-bs-ride="false" data-bs-touch="true" data-galerie-target="principale">
+                <div class="carousel-inner rounded-4">
+                    {% for image in jeu.galerie %}
+                        <div class="carousel-item{{ loop.first ? ' active' : '' }}">
+                            <button class="gw-game-gallery__open" type="button" data-bs-toggle="modal" data-bs-target="#galerie-agrandie-{{ jeu.id }}" data-action="galerie#ouvrir" data-galerie-index-param="{{ loop.index0 }}" aria-label="Agrandir l’image {{ loop.index }}">
+                                <img src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ image) }}" class="d-block w-100" alt="Capture {{ loop.index }} de {{ jeu.nom }}" loading="{{ loop.first ? 'eager' : 'lazy' }}" decoding="async">
+                                <span><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i> Agrandir</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if jeu.galerie|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#galerie-jeu-{{ jeu.id }}" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Image précédente</span></button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#galerie-jeu-{{ jeu.id }}" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Image suivante</span></button>
+                {% endif %}
+            </div>
+            {% if jeu.galerie|length > 1 %}
+                <div class="gw-game-gallery__thumbs" role="group" aria-label="Choisir une image">
+                    {% for image in jeu.galerie %}
+                        <button type="button" data-bs-target="#galerie-jeu-{{ jeu.id }}" data-bs-slide-to="{{ loop.index0 }}" data-galerie-target="miniature" class="{{ loop.first ? 'active' : '' }}" aria-current="{{ loop.first ? 'true' : 'false' }}" aria-label="Afficher l’image {{ loop.index }}"><img src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ image) }}" alt="" loading="lazy"></button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <div class="modal fade gw-gallery-modal" id="galerie-agrandie-{{ jeu.id }}" tabindex="-1" aria-labelledby="galerie-modal-title-{{ jeu.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen"><div class="modal-content">
+                <div class="modal-header border-0"><h2 class="modal-title h5" id="galerie-modal-title-{{ jeu.id }}">Galerie de {{ jeu.nom }}</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button></div>
+                <div class="modal-body d-flex align-items-center">
+                    <div id="galerie-modal-carousel-{{ jeu.id }}" class="carousel slide w-100" data-bs-ride="false" data-bs-keyboard="true" data-galerie-target="agrandie">
+                        <div class="carousel-inner">{% for image in jeu.galerie %}<div class="carousel-item{{ loop.first ? ' active' : '' }}"><img src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ image) }}" class="d-block mx-auto" alt="Capture {{ loop.index }} de {{ jeu.nom }}"></div>{% endfor %}</div>
+                        {% if jeu.galerie|length > 1 %}<button class="carousel-control-prev" type="button" data-bs-target="#galerie-modal-carousel-{{ jeu.id }}" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Image précédente</span></button><button class="carousel-control-next" type="button" data-bs-target="#galerie-modal-carousel-{{ jeu.id }}" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Image suivante</span></button>{% endif %}
+                    </div>
+                </div>
+            </div></div>
+        </div>
+    {% endif %}
+
     <section id="a-propos" class="gw-panel p-4 mt-4">
         <div class="d-flex align-items-center gap-2 mb-3">
             <i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i>
@@ -237,6 +282,7 @@
                                 {% else %}
                                     <span class="ms-auto small text-secondary"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> {{ commentaire.aimePar|length }}</span>
                                 {% endif %}
+                                {% if app.user and app.user != commentaire.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'commentaire-jeu', id: commentaire.id}) }}" aria-label="Signaler le commentaire"><i class="bi bi-flag"></i></a>{% endif %}
                                 {% if is_granted('COMMENTAIRE_SUPPRIMER', commentaire) %}
                                     <a class="btn btn-sm btn-outline-primary" href="{{ path('app_commentaire_modifier', { id: commentaire.id }) }}">
                                         <i class="bi bi-pencil-fill" aria-hidden="true"></i>
@@ -270,6 +316,7 @@
                                                     {% endif %}
                                                     {% if is_granted('COMMENTAIRE_MODIFIER', reponse) %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_commentaire_modifier', { id: reponse.id }) }}" aria-label="Modifier la réponse"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>{% endif %}
                                                     {% if is_granted('COMMENTAIRE_SUPPRIMER', reponse) %}<form method="post" action="{{ path('app_commentaire_supprimer', { id: reponse.id }) }}" onsubmit="return confirm('Supprimer cette réponse ?')"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-' ~ reponse.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer la réponse"><i class="bi bi-trash-fill" aria-hidden="true"></i></button></form>{% endif %}
+                                                    {% if app.user and app.user != reponse.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'commentaire-jeu', id: reponse.id}) }}" aria-label="Signaler la réponse"><i class="bi bi-flag"></i></a>{% endif %}
                                                 </header>
                                                 <div class="gw-comment__content">{{ reponse.contenu|nl2br }}</div>
                                             </div>

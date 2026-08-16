@@ -90,6 +90,10 @@ class Jeu
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $banniere = null;
 
+    /** @var list<string> */
+    #[ORM\Column(type: Types::JSON)]
+    private array $galerie = [];
+
     #[ORM\Column]
     private \DateTimeImmutable $creeLe;
 
@@ -337,6 +341,39 @@ class Jeu
     public function setBanniere(?string $banniere): static
     {
         $this->banniere = $banniere;
+
+        return $this;
+    }
+
+    /** @return list<string> */
+    public function getGalerie(): array
+    {
+        return $this->galerie;
+    }
+
+    /** @param list<string> $galerie */
+    public function setGalerie(array $galerie): static
+    {
+        $this->galerie = array_values(array_unique($galerie));
+
+        return $this;
+    }
+
+    public function addImageGalerie(string $image): static
+    {
+        if (!in_array($image, $this->galerie, true)) {
+            $this->galerie[] = $image;
+        }
+
+        return $this;
+    }
+
+    public function removeImageGalerie(string $image): static
+    {
+        $this->galerie = array_values(array_filter(
+            $this->galerie,
+            static fn (string $element): bool => $element !== $image,
+        ));
 
         return $this;
     }

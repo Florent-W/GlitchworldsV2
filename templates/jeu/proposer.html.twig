@@ -23,6 +23,22 @@
                 {{ form_row(formulaire.categorie) }}
             </div>
             <div class="col-xl-5">
+                <div class="gw-panel p-3 mb-3">
+                    {{ form_row(formulaire.imagesGalerie) }}
+                    {% if modification and formulaire.vars.data.galerie is not empty %}
+                        <p class="small fw-semibold mb-2">Images actuelles</p>
+                        <div class="row g-2">
+                            {% for image in formulaire.vars.data.galerie %}
+                                <div class="col-6">
+                                    <label class="gw-gallery-admin-image">
+                                        <img src="{{ asset('uploads/jeux/' ~ formulaire.vars.data.id ~ '/' ~ image) }}" alt="" loading="lazy">
+                                        <span><input class="form-check-input" type="checkbox" name="supprimer_galerie[]" value="{{ image }}"> Supprimer</span>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
                 <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.genres) }}</div>
                 <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.plateformes) }}</div>
                 <div class="gw-panel p-3">{{ form_row(formulaire.langues) }}</div>

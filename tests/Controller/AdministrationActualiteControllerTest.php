@@ -36,6 +36,9 @@ final class AdministrationActualiteControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Tableau de bord');
         self::assertSelectorCount(4, '.gw-admin-stat');
+        self::assertSelectorExists('.gw-admin-chart[aria-label*="sept derniers jours"]');
+        self::assertSelectorCount(7, '.gw-admin-chart__day');
+        self::assertSelectorCount(3, '.gw-admin-summary');
         self::assertSelectorExists('a[href="/administration/membres"]');
         self::assertSelectorExists('a[href="/moderation/commentaires"]');
 

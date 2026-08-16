@@ -44,7 +44,7 @@
             { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' },
             { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages' },
             { label: 'Paramètres', icon: 'gear-fill',       route: 'app_parametres' },
-            { label: 'Boutique',   icon: 'bag-fill',        route: null, badge: 'New' }
+            { label: 'Boutique',   icon: 'bag-fill',        route: 'app_boutique', badge: 'New' }
         ] %}
         {% if is_granted('ROLE_MODERATEUR') %}
             {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_commentaires' }]) %}
@@ -72,6 +72,13 @@
                 </search>
 
                 <div class="gw-actions">
+                    {% if app.user %}
+                        <a class="gw-level-chip" href="{{ path('app_profil', {id: app.user.id}) }}" title="Voir ma progression">
+                            <span class="gw-level-chip__points"><i class="bi bi-star-fill" aria-hidden="true"></i>{{ app.user.points|number_format(0, ',', ' ') }} pts</span>
+                            <span class="gw-level-chip__level">Niveau {{ app.user.niveau }}</span>
+                            <span class="gw-level-chip__bar" role="progressbar" aria-label="Progression vers le niveau {{ app.user.niveau + 1 }}" aria-valuenow="{{ app.user.progressionNiveau }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ app.user.progressionNiveau }}%"></span></span>
+                        </a>
+                    {% endif %}
                     <button type="button" class="gw-icon-btn" aria-label="Activer ou couper les sons d'interface">
                         <i class="bi bi-volume-up-fill" aria-hidden="true"></i>
                     </button>

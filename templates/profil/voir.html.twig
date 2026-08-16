@@ -19,6 +19,8 @@
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <h1 class="h2 mb-0">{{ membre.pseudo }}</h1>
                     {% if 'ROLE_ADMIN' in membre.roles %}<span class="badge text-bg-primary">Administrateur</span>{% elseif 'ROLE_MODERATEUR' in membre.roles %}<span class="badge text-bg-info">Modérateur</span>{% endif %}
+                    <span class="badge rounded-pill text-bg-primary"><i class="bi bi-stars me-1"></i>Niveau {{ membre.niveau }}</span>
+                    {% if membre.titreEquipe %}<span class="badge rounded-pill text-bg-{{ membre.titreEquipe.couleur }}-subtle text-{{ membre.titreEquipe.couleur }}-emphasis"><i class="bi bi-{{ membre.titreEquipe.icone }} me-1"></i>{{ membre.titreEquipe.nom }}</span>{% endif %}
                 </div>
                 <p class="text-secondary mb-1"><i class="bi bi-calendar3 me-1"></i>Membre depuis {{ membre.inscritLe|format_datetime('none', 'none', 'MMMM y', locale='fr') }}</p>
                 {% if membre.biographie %}<p class="mb-0 gw-profile__bio">{{ membre.biographie|nl2br }}</p>{% endif %}
@@ -82,6 +84,13 @@
             </section>
         </div>
         <aside class="col-lg-4">
+            <section class="gw-panel p-4 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h6 text-uppercase mb-0">Progression</h2><strong class="text-warning"><i class="bi bi-star-fill me-1"></i>{{ membre.points|number_format(0, ',', ' ') }} pts</strong></div>
+                <div class="d-flex justify-content-between small mb-2"><span>Niveau {{ membre.niveau }}</span><span class="text-secondary">{{ membre.experienceNiveau }} / {{ membre.experienceNiveauSuivant }} XP</span></div>
+                <div class="progress" role="progressbar" aria-label="Progression vers le niveau {{ membre.niveau + 1 }}" aria-valuenow="{{ membre.progressionNiveau }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ membre.progressionNiveau }}%"></div></div>
+            </section>
+            {% set badgesBoutique = achatsBoutique|filter(achat => achat.article.type.value == 'badge') %}
+            {% if badgesBoutique is not empty %}<section class="gw-panel p-4 mb-3"><h2 class="h6 text-uppercase">Badges</h2><div class="d-flex flex-wrap gap-2">{% for achat in badgesBoutique %}<span class="badge rounded-pill text-bg-{{ achat.article.couleur }}-subtle text-{{ achat.article.couleur }}-emphasis p-2" title="{{ achat.article.description }}"><i class="bi bi-{{ achat.article.icone }} me-1"></i>{{ achat.article.nom }}</span>{% endfor %}</div></section>{% endif %}
             <section class="gw-panel p-4 mb-3">
                 <h2 class="h6 text-uppercase">Statut</h2>
                 <p class="mb-0">{{ membre.statutProfil ?: 'Aucun statut renseigné.' }}</p>

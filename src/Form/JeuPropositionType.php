@@ -10,6 +10,7 @@ use App\Entity\Plateforme;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -64,6 +65,22 @@ final class JeuPropositionType extends AbstractType
                 'multiple' => true,
                 'expanded' => true,
                 'constraints' => [new Assert\Count(min: 1, minMessage: 'Choisis au moins une langue.')],
+            ])
+            ->add('imagesGalerie', FileType::class, [
+                'mapped' => false,
+                'multiple' => true,
+                'required' => false,
+                'label' => 'Images de la galerie',
+                'help' => 'Jusqu’à 8 images JPG, PNG, WebP ou GIF de 8 Mo maximum chacune.',
+                'attr' => ['accept' => 'image/jpeg,image/png,image/webp,image/gif'],
+                'constraints' => [
+                    new Assert\Count(max: 8, maxMessage: 'Tu peux envoyer au maximum 8 images à la fois.'),
+                    new Assert\All([new Assert\Image(
+                        maxSize: '8M',
+                        mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+                        mimeTypesMessage: 'Choisis uniquement des images JPG, PNG, WebP ou GIF.',
+                    )]),
+                ],
             ])
             ->add('envoyer', SubmitType::class, [
                 'label' => $options['bouton_libelle'],

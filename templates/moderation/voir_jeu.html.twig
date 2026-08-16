@@ -19,6 +19,8 @@
             <p class="lead">{{ jeu.description }}</p>
         </div>
         <div class="d-flex align-items-start gap-2">
+            {% if is_granted('ROLE_ADMIN') %}<a class="btn btn-outline-primary" href="{{ path('app_jeu_proposition_modifier', {id: jeu.id}) }}"><i class="bi bi-pencil-fill me-1"></i>Modifier</a>{% endif %}
+            {% if jeu.statut.value == 'en_attente' %}
             <form method="post" action="{{ path('app_moderation_jeu_decider', { id: jeu.id, decision: 'refuser' }) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('moderation-jeu-' ~ jeu.id) }}">
                 <button class="btn btn-outline-danger" type="submit"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Refuser</button>
@@ -27,6 +29,7 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('moderation-jeu-' ~ jeu.id) }}">
                 <button class="btn btn-success" type="submit"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Approuver</button>
             </form>
+            {% endif %}
         </div>
     </div>
 

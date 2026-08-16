@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Repository\JeuRepository;
 use App\Repository\PublicationRepository;
+use App\Repository\AchatBoutiqueRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ProfilController extends AbstractController
 {
     #[Route('/membre/{id}', name: 'app_profil', requirements: ['id' => '\\d+'], methods: ['GET'])]
-    public function voir(Utilisateur $membre, Request $request, PublicationRepository $publications, JeuRepository $jeux): Response
+    public function voir(Utilisateur $membre, Request $request, PublicationRepository $publications, JeuRepository $jeux, AchatBoutiqueRepository $achats): Response
     {
         $section = $request->query->getString('section', 'apropos');
         if (!in_array($section, ['apropos', 'activite', 'jeux', 'favoris'], true)) { $section = 'apropos'; }
@@ -24,6 +25,7 @@ final class ProfilController extends AbstractController
             'section' => $section,
             'publications' => $publications->trouverPourAuteur($membre),
             'jeux' => $jeux->trouverApprouvesPar($membre),
+            'achatsBoutique' => $achats->trouverPourUtilisateur($membre),
         ]);
     }
 

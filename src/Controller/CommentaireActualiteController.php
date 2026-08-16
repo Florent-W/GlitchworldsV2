@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\ProgressionUtilisateur;
 
 final class CommentaireActualiteController extends AbstractController
 {
@@ -21,6 +22,7 @@ final class CommentaireActualiteController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
+        ProgressionUtilisateur $progression,
     ): Response {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -43,8 +45,9 @@ final class CommentaireActualiteController extends AbstractController
             $this->addFlash('danger', $erreurs[0]->getMessage());
         } else {
             $entityManager->persist($reponse);
+            $progression->recompenseCommentaire($utilisateur);
             $entityManager->flush();
-            $this->addFlash('success', 'Ta réponse a été publiée.');
+            $this->addFlash('success', 'Ta réponse a été publiée. +10 XP et +5 points.');
         }
 
         return $this->redirigerVersActualite($parent, '#commentaire-'.$parent->getId());

@@ -16,12 +16,40 @@
                 {label: 'Jeux', valeur: statistiques.jeux, icon: 'controller', couleur: 'primary'},
                 {label: 'Membres', valeur: statistiques.membres, icon: 'people-fill', couleur: 'success'},
                 {label: 'Commentaires', valeur: statistiques.commentaires, icon: 'chat-dots-fill', couleur: 'info'},
-                {label: 'Actualités', valeur: statistiques.actualites, icon: 'newspaper', couleur: 'warning'}
+                {label: 'Signalements', valeur: statistiques.signalements, icon: 'flag-fill', couleur: 'warning'}
             ] %}
             {% for carte in cartes %}<div class="col-sm-6 col-xl-3"><div class="gw-admin-stat gw-panel"><span class="gw-admin-stat__icon text-bg-{{ carte.couleur }}"><i class="bi bi-{{ carte.icon }}"></i></span><div><strong>{{ carte.valeur|number_format(0, ',', ' ') }}</strong><span>{{ carte.label }}</span></div></div></div>{% endfor %}
         </div>
 
         {% if jeuxEnAttente > 0 %}<div class="alert alert-warning d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3"><span><i class="bi bi-exclamation-triangle-fill me-2"></i><strong>{{ jeuxEnAttente }}</strong> proposition{{ jeuxEnAttente > 1 ? 's' : '' }} de jeu à examiner.</span><a class="btn btn-sm btn-warning" href="{{ path('app_moderation_jeux') }}">Ouvrir la file</a></div>{% endif %}
+
+        <article class="gw-panel p-4 mb-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 mb-4"><div><h2 class="h4 mb-1">Statistiques</h2><p class="text-secondary mb-0">Activité réelle des 7 derniers jours</p></div><span class="badge rounded-pill text-bg-light align-self-sm-start">30 derniers jours</span></div>
+            <div class="row g-4 align-items-stretch">
+                <div class="col-xl-8">
+                    <div class="d-flex gap-3 small mb-3"><span><i class="bi bi-circle-fill text-primary me-1"></i>Commentaires</span><span><i class="bi bi-circle-fill text-success me-1"></i>Nouveaux membres</span></div>
+                    <div class="gw-admin-chart" role="img" aria-label="Graphique des commentaires et nouveaux membres des sept derniers jours">
+                        {% for point in tendances.graphique %}
+                            <div class="gw-admin-chart__day">
+                                <div class="gw-admin-chart__bars">
+                                    <span class="gw-admin-chart__bar bg-primary" style="--gw-chart-height: {{ (point.commentaires / tendances.maximum * 100)|round }}%" title="{{ point.commentaires }} commentaire(s)"></span>
+                                    <span class="gw-admin-chart__bar bg-success" style="--gw-chart-height: {{ (point.membres / tendances.maximum * 100)|round }}%" title="{{ point.membres }} membre(s)"></span>
+                                </div>
+                                <small>{{ point.jour }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-xl-4"><div class="row g-3 h-100">
+                    {% set resumes = [
+                        {label: 'Nouveaux membres', valeur: tendances.membres30, evolution: tendances.evolutionMembres, icon: 'person-plus-fill', couleur: 'success'},
+                        {label: 'Commentaires', valeur: tendances.commentaires30, evolution: tendances.evolutionCommentaires, icon: 'chat-dots-fill', couleur: 'primary'},
+                        {label: 'Jeux ajoutés', valeur: tendances.jeux30, evolution: null, icon: 'controller', couleur: 'warning'}
+                    ] %}
+                    {% for resume in resumes %}<div class="col-sm-4 col-xl-12"><div class="gw-admin-summary"><i class="bi bi-{{ resume.icon }} text-{{ resume.couleur }}"></i><span><strong>{{ resume.valeur }}</strong><small>{{ resume.label }}</small></span>{% if resume.evolution is not null %}<em class="{{ resume.evolution >= 0 ? 'text-success' : 'text-danger' }}">{{ resume.evolution >= 0 ? '+' : '' }}{{ resume.evolution }}%</em>{% else %}<em class="text-secondary">Nouveau</em>{% endif %}</div></div>{% endfor %}
+                </div></div>
+            </div>
+        </article>
 
         <div class="row g-4">
             <div class="col-xl-8"><article class="gw-panel p-4 h-100"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h4 mb-0">Activité récente</h2><a href="{{ path('app_moderation_commentaires') }}">Modérer</a></div><div class="gw-admin-activity">{% for activite in activites %}<a class="gw-admin-activity__item" href="{{ activite.url ?? '#' }}"><span class="gw-admin-activity__icon text-bg-{{ activite.couleur }}"><i class="bi bi-{{ activite.icone }}"></i></span><span class="flex-grow-1"><strong>{{ activite.auteur }}</strong> {{ activite.texte }}<time datetime="{{ activite.date|date('c') }}">{{ activite.date|date('d/m/Y à H:i') }}</time></span><i class="bi bi-chevron-right text-secondary"></i></a>{% else %}<p class="text-secondary mb-0">Aucune activité récente.</p>{% endfor %}</div></article></div>

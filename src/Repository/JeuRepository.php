@@ -266,6 +266,20 @@ class JeuRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return array{jeux: list<Jeu>, total: int, page: int, pages: int} */
+    public function trouverPourAdministration(string $recherche, ?StatutJeu $statut, int $page, int $parPage = 20): array
+    {
+        $page = max(1, $page);
+        $qb = $this->createQueryBuilder('j')->leftJoin('j.createur', 'createur')->addSelect('createur')->leftJoin('j.categorie', 'categorie')->addSelect('categorie');
+        if ($recherche !== '') { $qb->andWhere('(j.nom LIKE :recherche OR j.slug LIKE :recherche OR j.developpeur LIKE :recherche)')->setParameter('recherche', '%'.$recherche.'%'); }
+        if ($statut) { $qb->andWhere('j.statut = :statut')->setParameter('statut', $statut); }
+        $total = (int) (clone $qb)->select('COUNT(j.id)')->getQuery()->getSingleScalarResult();
+        $pages = max(1, (int) ceil($total / $parPage));
+        $page = min($page, $pages);
+        $jeux = $qb->orderBy('j.modifieLe', 'DESC')->setFirstResult(($page - 1) * $parPage)->setMaxResults($parPage)->getQuery()->getResult();
+        return compact('jeux', 'total', 'page', 'pages');
+    }
+
     /**
      * @return list<Jeu>
      */

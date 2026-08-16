@@ -15,6 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Service\ProgressionUtilisateur;
 
 final class ActualiteController extends AbstractController
 {
@@ -33,7 +34,7 @@ final class ActualiteController extends AbstractController
     }
 
     #[Route('/actualite/{slug}-{id}', name: 'app_actualite_voir', requirements: ['slug' => '[a-z0-9\-]+', 'id' => '\d+'], methods: ['GET'])]
-    public function voir(string $slug, Actualite $actualite, Request $request, CommentaireActualiteRepository $commentaireRepository, EntityManagerInterface $entityManager): Response
+    public function voir(string $slug, Actualite $actualite, Request $request, CommentaireActualiteRepository $commentaireRepository, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression): Response
     {
         if ($actualite->getStatut() !== StatutActualite::Publiee) {
             throw $this->createNotFoundException('Cette actualité n’existe pas.');
@@ -59,8 +60,9 @@ final class ActualiteController extends AbstractController
             }
             $commentaire->setActualite($actualite)->setAuteur($auteur);
             $entityManager->persist($commentaire);
+            $progression->recompenseCommentaire($auteur);
             $entityManager->flush();
-            $this->addFlash('success', 'Ton commentaire a été publié.');
+            $this->addFlash('success', 'Ton commentaire a été publié. +10 XP et +5 points.');
 
             return $this->redirect($this->generateUrl('app_actualite_voir', [
                 'slug' => $actualite->getSlug(),

@@ -62,6 +62,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private \DateTimeImmutable $inscritLe;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private int $experience = 0;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $points = 0;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ArticleBoutique $titreEquipe = null;
+
     /** @var Collection<int, Jeu> */
     #[ORM\ManyToMany(targetEntity: Jeu::class, inversedBy: 'ajouteAuxFavorisPar')]
     #[ORM\JoinTable(name: 'utilisateur_jeu_favori')]
@@ -186,6 +196,38 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDateNaissance(?\DateTimeImmutable $dateNaissance): static { $this->dateNaissance = $dateNaissance; return $this; }
     public function getInscritLe(): \DateTimeImmutable { return $this->inscritLe; }
     public function setInscritLe(\DateTimeImmutable $inscritLe): static { $this->inscritLe = $inscritLe; return $this; }
+    public function getExperience(): int { return $this->experience; }
+    public function setExperience(int $experience): static { $this->experience = max(0, $experience); return $this; }
+    public function getPoints(): int { return $this->points; }
+    public function setPoints(int $points): static { $this->points = max(0, $points); return $this; }
+    public function getTitreEquipe(): ?ArticleBoutique { return $this->titreEquipe; }
+    public function setTitreEquipe(?ArticleBoutique $article): static { $this->titreEquipe = $article; return $this; }
+
+    public function getNiveau(): int
+    {
+        $niveau = 1;
+        $experience = $this->experience;
+        while ($experience >= self::experienceRequisePourNiveau($niveau)) {
+            $experience -= self::experienceRequisePourNiveau($niveau++);
+        }
+
+        return $niveau;
+    }
+
+    public function getExperienceNiveau(): int
+    {
+        $experience = $this->experience;
+        for ($niveau = 1; $niveau < $this->getNiveau(); ++$niveau) {
+            $experience -= self::experienceRequisePourNiveau($niveau);
+        }
+
+        return $experience;
+    }
+
+    public function getExperienceNiveauSuivant(): int { return self::experienceRequisePourNiveau($this->getNiveau()); }
+    public function getProgressionNiveau(): int { return (int) floor(($this->getExperienceNiveau() / $this->getExperienceNiveauSuivant()) * 100); }
+
+    private static function experienceRequisePourNiveau(int $niveau): int { return 100 + (($niveau - 1) * 50); }
 
     /** @return Collection<int, self> */
     public function getAbonnements(): Collection { return $this->abonnements; }
