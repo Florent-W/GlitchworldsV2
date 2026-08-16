@@ -48,6 +48,19 @@ final class PropositionJeuControllerTest extends WebTestCase
 
         $client->loginUser($utilisateur);
         $crawler = $client->request('GET', '/jeu/proposer');
+        self::assertSelectorExists('[data-controller="bbcode"]');
+        self::assertSelectorExists('[data-action="bbcode#video"]');
+        self::assertSelectorExists('[data-action="bbcode#tableau"]');
+        self::assertSelectorTextContains('[data-action="bbcode#basculerApercu"]', 'Afficher l’aperçu');
+        $editeur = $crawler->filter('[data-controller="bbcode"]')->first();
+        $client->request('POST', $editeur->attr('data-bbcode-apercu-url-value'), [
+            '_token' => $editeur->attr('data-bbcode-jeton-value'),
+            'contenu' => '[b]Aperçu Symfony[/b]',
+        ]);
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('<strong>Aperçu Symfony</strong>', $client->getResponse()->getContent());
+
+        $crawler = $client->request('GET', '/jeu/proposer');
         $categorieChoisie = $crawler->filter('select[name="jeu_proposition[categorie]"] option')->reduce(
             static fn ($noeud) => $noeud->attr('value') !== '',
         )->first()->attr('value');

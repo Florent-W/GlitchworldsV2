@@ -39,7 +39,10 @@
                             <span class="badge text-bg-primary align-self-start mb-2">{{ actualite.categorie.label }}</span>
                             <h2 class="h5 card-title"><a class="stretched-link text-decoration-none" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h2>
                             <p class="card-text text-secondary">{{ actualite.description }}</p>
-                            <p class="small text-secondary mt-auto mb-0">{{ actualite.publieeLe|date('d/m/Y') }}{% if actualite.auteur %} · {{ actualite.auteur.pseudo }}{% endif %}</p>
+                            <p class="small text-secondary mt-auto mb-2">{{ actualite.publieeLe|date('d/m/Y') }}{% if actualite.auteur %} · {{ actualite.auteur.pseudo }}{% endif %}</p>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <a class="btn btn-sm btn-warning position-relative z-2 align-self-start" href="{{ path('app_administration_actualites_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Modifier</a>
+                            {% endif %}
                         </div>
                     </article>
                 </div>

@@ -1,0 +1,18 @@
+<nav class="gw-admin-nav gw-panel p-2" aria-label="Navigation de l’administration">
+    {% set route = app.request.attributes.get('_route') %}
+    {% set liens = [
+        {route: 'app_administration_tableau_de_bord', prefixe: 'app_administration_tableau', icon: 'speedometer2', label: 'Tableau de bord'},
+        {route: 'app_moderation_jeux', prefixe: 'app_moderation_jeu', icon: 'controller', label: 'Jeux'},
+        {route: 'app_administration_membres', prefixe: 'app_administration_membres', icon: 'people-fill', label: 'Membres'},
+        {route: 'app_moderation_commentaires', prefixe: 'app_moderation_commentaires', icon: 'chat-dots-fill', label: 'Commentaires'},
+        {route: 'app_administration_actualites_liste', prefixe: 'app_administration_actualites', icon: 'newspaper', label: 'Actualités'}
+    ] %}
+    {% for lien in liens %}
+        <a class="gw-admin-nav__link{{ route starts with lien.prefixe ? ' is-active' : '' }}" href="{{ path(lien.route) }}">
+            <i class="bi bi-{{ lien.icon }}" aria-hidden="true"></i><span>{{ lien.label }}</span>
+            {% if lien.label == 'Jeux' and jeuxEnAttenteNavigation is defined and jeuxEnAttenteNavigation > 0 %}<span class="badge text-bg-warning ms-auto">{{ jeuxEnAttenteNavigation }}</span>{% endif %}
+        </a>
+    {% endfor %}
+    <hr class="my-2">
+    <a class="gw-admin-nav__link" href="{{ path('app_home') }}"><i class="bi bi-arrow-left-circle"></i><span>Retour au site</span></a>
+</nav>

@@ -19,8 +19,10 @@
             (() => {
                 try {
                     const theme = localStorage.getItem('glitchworlds-theme');
-                    const sombre = theme ? theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    const sombre = theme ? ['dark', 'wave'].includes(theme) : window.matchMedia('(prefers-color-scheme: dark)').matches;
                     document.documentElement.dataset.bsTheme = sombre ? 'dark' : 'light';
+                    document.documentElement.dataset.gwTheme = theme || 'system';
+                    document.documentElement.dataset.reducedMotion = localStorage.getItem('glitchworlds-reduced-motion') === 'true' ? 'true' : 'false';
                 } catch (e) {
                     document.documentElement.dataset.bsTheme = 'light';
                 }
@@ -41,14 +43,14 @@
             { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute' },
             { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' },
             { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages' },
-            { label: 'Paramètres', icon: 'gear-fill',       route: null },
+            { label: 'Paramètres', icon: 'gear-fill',       route: 'app_parametres' },
             { label: 'Boutique',   icon: 'bag-fill',        route: null, badge: 'New' }
         ] %}
         {% if is_granted('ROLE_MODERATEUR') %}
             {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_commentaires' }]) %}
         {% endif %}
         {% if is_granted('ROLE_ADMIN') %}
-            {% set nav_items = nav_items|merge([{ label: 'Gérer les actus', icon: 'journal-text', route: 'app_administration_actualites_liste' }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Administration', icon: 'speedometer2', route: 'app_administration_tableau_de_bord' }]) %}
         {% endif %}
 
         <div class="gw-app">

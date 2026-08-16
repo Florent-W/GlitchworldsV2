@@ -64,7 +64,14 @@ final class PropositionJeuController extends AbstractController
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $entityManager->flush();
-            $this->addFlash('success', 'Ta proposition a été modifiée.');
+            $this->addFlash('success', 'La fiche a été modifiée.');
+
+            if ($jeu->getStatut() === StatutJeu::Approuve) {
+                return $this->redirectToRoute('app_jeu_show', [
+                    'slug' => $jeu->getSlug(),
+                    'id' => $jeu->getId(),
+                ]);
+            }
 
             return $this->redirectToRoute('app_compte');
         }

@@ -1,0 +1,62 @@
+<div class="mb-3" data-controller="bbcode" data-bbcode-apercu-url-value="{{ path('app_bbcode_apercu') }}" data-bbcode-jeton-value="{{ csrf_token('apercu-bbcode') }}">
+    {{ form_label(champ) }}
+    <div class="btn-toolbar gap-2 my-2 gw-bbcode-toolbar" role="toolbar" aria-label="Mise en forme BBCode">
+        <div class="btn-group btn-group-sm" role="group" aria-label="Style du texte">
+            <button class="btn btn-outline-secondary fw-bold" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[b]" data-bbcode-fermante-param="[/b]" title="Gras">B</button>
+            <button class="btn btn-outline-secondary fst-italic" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[i]" data-bbcode-fermante-param="[/i]" title="Italique">I</button>
+            <button class="btn btn-outline-secondary text-decoration-underline" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[u]" data-bbcode-fermante-param="[/u]" title="Souligné">U</button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[citation]" data-bbcode-fermante-param="[/citation]" title="Citation"><i class="bi bi-quote" aria-hidden="true"></i></button>
+        </div>
+
+        <div class="btn-group btn-group-sm" role="group" aria-label="Alignement">
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[gauche]" data-bbcode-fermante-param="[/gauche]" title="Aligner à gauche"><i class="bi bi-text-left" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[center]" data-bbcode-fermante-param="[/center]" title="Centrer"><i class="bi bi-text-center" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[droite]" data-bbcode-fermante-param="[/droite]" title="Aligner à droite"><i class="bi bi-text-right" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[gaucheFlottant]" data-bbcode-fermante-param="[/gaucheFlottant]" title="Bloc flottant à gauche"><i class="bi bi-text-indent-left" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[droiteFlottant]" data-bbcode-fermante-param="[/droiteFlottant]" title="Bloc flottant à droite"><i class="bi bi-text-indent-right" aria-hidden="true"></i></button>
+        </div>
+
+        <div class="btn-group btn-group-sm" role="group" aria-label="Éléments">
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#liste" title="Liste"><i class="bi bi-list-ul" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[elementliste]" data-bbcode-fermante-param="[/elementliste]" title="Élément de liste"><i class="bi bi-list-check" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#lien" title="Lien"><i class="bi bi-link-45deg" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#image" title="Image"><i class="bi bi-image" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#video" title="Vidéo YouTube"><i class="bi bi-youtube" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[gallery]" data-bbcode-fermante-param="[/gallery]" title="Galerie"><i class="bi bi-images" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#tableau" title="Tableau"><i class="bi bi-table" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[section]" data-bbcode-fermante-param="[/section]" title="Section"><i class="bi bi-layout-text-window" aria-hidden="true"></i></button>
+        </div>
+
+        <select class="form-select form-select-sm w-auto" data-action="change->bbcode#choisir" data-bbcode-modele-ouvrant="[titre={valeur}]" data-bbcode-modele-fermant="[/titre]" aria-label="Niveau de titre">
+            <option value="">Titre</option>{% for niveau in 1..5 %}<option value="h{{ niveau }}">H{{ niveau }}</option>{% endfor %}
+        </select>
+        <select class="form-select form-select-sm w-auto" data-action="change->bbcode#choisir" data-bbcode-modele-ouvrant="[taille={valeur}]" data-bbcode-modele-fermant="[/taille]" aria-label="Taille du texte">
+            <option value="">Taille</option><option value="smaller">Très petite</option><option value="small">Petite</option><option value="medium">Moyenne</option><option value="large">Grande</option><option value="largest">Très grande</option>
+        </select>
+        <select class="form-select form-select-sm w-auto" data-action="change->bbcode#choisir" data-bbcode-modele-ouvrant="[couleur={valeur}]" data-bbcode-modele-fermant="[/couleur]" aria-label="Couleur du texte">
+            <option value="">Couleur</option>{% for valeur, nom in { blue: 'Bleu', lightskyblue: 'Bleu clair', yellow: 'Jaune', green: 'Vert', orange: 'Orange', red: 'Rouge', pink: 'Rose', violet: 'Violet', brown: 'Marron', silver: 'Argenté' } %}<option value="{{ valeur }}">{{ nom }}</option>{% endfor %}
+        </select>
+        <select class="form-select form-select-sm w-auto" data-action="change->bbcode#choisir" data-bbcode-modele-ouvrant="[couleurfond={valeur}]" data-bbcode-modele-fermant="[/couleurfond]" aria-label="Couleur de fond">
+            <option value="">Fond</option>{% for valeur, nom in { blue: 'Bleu', lightskyblue: 'Bleu clair', yellow: 'Jaune', green: 'Vert', orange: 'Orange', red: 'Rouge', pink: 'Rose', violet: 'Violet', brown: 'Marron', silver: 'Argenté' } %}<option value="{{ valeur }}">{{ nom }}</option>{% endfor %}
+        </select>
+        <select class="form-select form-select-sm w-auto" data-action="change->bbcode#choisir" data-bbcode-modele-ouvrant="[animation={valeur}]" data-bbcode-modele-fermant="[/animation]" aria-label="Animation">
+            <option value="">Animation</option><option value="fade-up">Apparition vers le haut</option><option value="fade-down">Apparition vers le bas</option><option value="fade-left">Apparition vers la gauche</option><option value="fade-right">Apparition vers la droite</option><option value="zoom-in">Agrandissement</option><option value="zoom-out">Réduction</option>
+        </select>
+        <select class="form-select form-select-sm w-auto" data-action="change->bbcode#icone" aria-label="Icône">
+            <option value="">Icône</option><option value="histoir.png">Histoire</option><option value="Important.png">Important</option><option value="pokedex-kanto.png">Pokédex</option><option value="iconemap.png">Carte</option><option value="iconetrailer.png">Bande-annonce</option><option value="iconetelechargement.png">Téléchargement</option><option value="iconecoupe.png">Crédits</option><option value="iconecapture.png">Captures d’écran</option><option value="français.png">Français</option><option value="anglais.png">Anglais</option><option value="iconewindows.png">Windows</option><option value="mac.png">macOS</option><option value="linux.png">Linux</option><option value="android.png">Android</option>
+        </select>
+    </div>
+
+    <div class="d-flex justify-content-end mb-2">
+        <button class="btn btn-sm btn-outline-primary" type="button" data-action="bbcode#basculerApercu" data-bbcode-target="boutonApercu" aria-expanded="false">
+            <i class="bi bi-eye-fill me-1" aria-hidden="true"></i>Afficher l’aperçu
+        </button>
+    </div>
+    {{ form_widget(champ, { attr: { rows: 18, 'data-bbcode-target': 'contenu', 'data-action': 'input->bbcode#planifierApercu' } }) }}
+    {{ form_errors(champ) }}
+    {{ form_help(champ) }}
+    <section class="gw-bbcode-preview d-none mt-3" data-bbcode-target="apercu" aria-live="polite">
+        <div class="d-flex align-items-center gap-2 border-bottom pb-2 mb-3"><i class="bi bi-eye-fill text-primary" aria-hidden="true"></i><strong>Aperçu du contenu</strong></div>
+        <div data-bbcode-target="rendu"></div>
+    </section>
+</div>

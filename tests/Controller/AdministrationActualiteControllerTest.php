@@ -10,6 +10,45 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class AdministrationActualiteControllerTest extends WebTestCase
 {
+    public function testLeTableauDeBordEstReserveAuxAdministrateurs(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/administration');
+
+        self::assertResponseRedirects('/connexion');
+    }
+
+    public function testUnAdministrateurPeutVoirLeTableauDeBordEtLesMembres(): void
+    {
+        $client = self::createClient();
+        $administrateur = (new Utilisateur())
+            ->setPseudo('AdminDashboard')
+            ->setEmail('admin-dashboard-'.bin2hex(random_bytes(5)).'@glitchworlds.local')
+            ->setRoles(['ROLE_ADMIN']);
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($administrateur);
+        $entityManager->flush();
+        $adminId = $administrateur->getId();
+
+        $client->loginUser($administrateur);
+        $client->request('GET', '/administration');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Tableau de bord');
+        self::assertSelectorCount(4, '.gw-admin-stat');
+        self::assertSelectorExists('a[href="/administration/membres"]');
+        self::assertSelectorExists('a[href="/moderation/commentaires"]');
+
+        $client->request('GET', '/administration/membres?recherche=AdminDashboard');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('tbody', 'AdminDashboard');
+        self::assertSelectorTextContains('tbody', 'Administrateur');
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->remove($entityManager->find(Utilisateur::class, $adminId));
+        $entityManager->flush();
+    }
+
     public function testUnMembreNePeutPasAdministrerLesActualites(): void
     {
         $client = self::createClient();
@@ -39,6 +78,9 @@ final class AdministrationActualiteControllerTest extends WebTestCase
 
         $client->loginUser($administrateur);
         $crawler = $client->request('GET', '/administration/actualites/creer');
+        self::assertSelectorExists('[data-controller="bbcode"]');
+        self::assertSelectorExists('[data-action="bbcode#tableau"]');
+        self::assertSelectorExists('select[data-bbcode-modele-ouvrant="[titre={valeur}]"]');
         $client->submit($crawler->selectButton('Créer l’actualité')->form([
             'actualite[titre]' => 'Nouvelle actualité '.$suffixe,
             'actualite[description]' => 'Une description suffisamment précise pour le test.',
@@ -52,9 +94,14 @@ final class AdministrationActualiteControllerTest extends WebTestCase
         $actualite = $actualiteRepository->findOneBy(['titre' => 'Nouvelle actualité '.$suffixe]);
         self::assertInstanceOf(Actualite::class, $actualite);
         self::assertSame($administrateur->getId(), $actualite->getAuteur()?->getId());
+        $actualiteId = $actualite->getId();
+
+        $client->request('GET', sprintf('/actualite/%s-%d', $actualite->getSlug(), $actualiteId));
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(sprintf('a[href="/administration/actualites/%d/modifier"]', $actualiteId));
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        $entityManager->remove($actualite);
+        $entityManager->remove($entityManager->find(Actualite::class, $actualiteId));
         $entityManager->remove($entityManager->find(Utilisateur::class, $adminId));
         $entityManager->flush();
     }

@@ -9,13 +9,18 @@
 {% block body %}
 <article class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 980px">
     <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_actualites') }}">Actualités</a></li><li class="breadcrumb-item active" aria-current="page">{{ actualite.categorie.label }}</li></ol></nav>
-    <span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+        <span class="badge text-bg-primary">{{ actualite.categorie.label }}</span>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a class="btn btn-warning" href="{{ path('app_administration_actualites_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Modifier l’actualité</a>
+        {% endif %}
+    </div>
     <h1 class="display-6">{{ actualite.titre }}</h1>
     <p class="lead text-secondary">{{ actualite.description }}</p>
     <p class="small text-secondary">Publié le {{ actualite.publieeLe|format_datetime('long', 'none', locale='fr') }}{% if actualite.auteur %} par {{ actualite.auteur.pseudo }}{% endif %}</p>
-    {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="img-fluid rounded-4 w-100 mb-4" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="Miniature de {{ actualite.titre }}" style="max-height: 520px; object-fit: cover">{% endif %}
+    {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="img-fluid rounded-4 w-100 mb-4" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="Miniature de {{ actualite.titre }}" style="max-height: 520px; object-fit: cover" loading="eager" fetchpriority="high" decoding="async">{% endif %}
     <hr>
-    <div class="gw-article-content">{{ actualite.contenu|nl2br }}</div>
+    <div class="gw-article-content">{{ actualite.contenu|bbcode }}</div>
     {% if actualite.jeux is not empty %}
         <hr>
         <h2 class="h5">Jeux concernés</h2>
@@ -71,7 +76,7 @@
         {{ form_start(formulaireCommentaire) }}
             {{ form_row(formulaireCommentaire.contenu) }}
             <div class="d-flex justify-content-between align-items-center gap-2">
-                <small class="text-secondary">{% if app.user %}Entre 3 et 1 000 caractères.{% else %}<a href="{{ path('app_connexion') }}">Connecte-toi</a> pour commenter.{% endif %}</small>
+                <small class="{{ app.user ? 'gw-text-violet' : 'text-secondary' }}">{% if app.user %}Entre 3 et 1 000 caractères.{% else %}<a href="{{ path('app_connexion') }}">Connecte-toi</a> pour commenter.{% endif %}</small>
                 {{ form_widget(formulaireCommentaire.publier) }}
             </div>
         {{ form_end(formulaireCommentaire) }}

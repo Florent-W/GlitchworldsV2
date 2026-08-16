@@ -30,7 +30,8 @@ final class JeuPropositionType extends AbstractType
             ->add('contenu', TextareaType::class, [
                 'label' => 'Présentation complète',
                 'required' => false,
-                'attr' => ['rows' => 10],
+                'help' => 'Tu peux utiliser le BBCode pour mettre en forme la fiche.',
+                'attr' => ['rows' => 18],
             ])
             ->add('developpeur', null, ['label' => 'Développeur ou équipe', 'required' => false])
             ->add('dateSortie', DateType::class, [

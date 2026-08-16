@@ -23,8 +23,15 @@ final class PropositionJeuVoter extends Voter
     {
         $utilisateur = $token->getUser();
 
-        return $utilisateur instanceof Utilisateur
-            && $subject->getCreateur() === $utilisateur
+        if (!$utilisateur instanceof Utilisateur) {
+            return false;
+        }
+
+        if (in_array('ROLE_ADMIN', $utilisateur->getRoles(), true)) {
+            return true;
+        }
+
+        return $subject->getCreateur() === $utilisateur
             && $subject->getStatut() === StatutJeu::EnAttente;
     }
 }

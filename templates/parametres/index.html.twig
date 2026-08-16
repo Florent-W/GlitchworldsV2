@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paramètres - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-settings" data-controller="theme preferences">
+    <header class="gw-page-heading mb-4">
+        <div>
+            <span class="gw-eyebrow"><i class="bi bi-gear-fill" aria-hidden="true"></i> Mon espace</span>
+            <h1 class="display-6 fw-bold mb-1">Paramètres</h1>
+            <p class="text-secondary mb-0">Personnalise GlitchWorlds et gère ton compte.</p>
+        </div>
+        <a class="btn btn-outline-primary" href="{{ path('app_profil', {id: utilisateur.id}) }}">
+            <i class="bi bi-person-fill me-2" aria-hidden="true"></i>Voir mon profil
+        </a>
+    </header>
+
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <nav class="gw-panel p-2 position-sticky gw-settings__nav" aria-label="Rubriques des paramètres">
+                <a class="gw-settings__nav-link" href="#apparence"><i class="bi bi-palette-fill"></i> Apparence</a>
+                <a class="gw-settings__nav-link" href="#profil"><i class="bi bi-person-fill"></i> Profil</a>
+                <a class="gw-settings__nav-link" href="#securite"><i class="bi bi-shield-lock-fill"></i> Compte et sécurité</a>
+                <a class="gw-settings__nav-link" href="#accessibilite"><i class="bi bi-universal-access"></i> Accessibilité</a>
+            </nav>
+        </div>
+
+        <div class="col-lg-9 d-grid gap-4">
+            <article id="apparence" class="gw-panel p-4 p-xl-5 scroll-mt">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="gw-settings__icon"><i class="bi bi-palette-fill"></i></span>
+                    <div><h2 class="h3 mb-1">Apparence</h2><p class="text-secondary mb-0">Choisis l'ambiance qui te convient.</p></div>
+                </div>
+                <h3 class="h6 text-uppercase text-secondary mb-3">Réglage de l'appareil</h3>
+                <div class="row g-3 mb-5">
+                    {% set themes = [
+                        {value: 'system', icon: 'circle-half', titre: 'Système', texte: 'Suit automatiquement ton appareil.'},
+                        {value: 'light', icon: 'sun-fill', titre: 'Clair', texte: 'Une interface lumineuse et nette.'},
+                        {value: 'dark', icon: 'moon-stars-fill', titre: 'Sombre', texte: 'Plus confortable dans la pénombre.'}
+                    ] %}
+                    {% for theme in themes %}
+                        <div class="col-md-4">
+                            <button type="button" class="gw-theme-card w-100 text-start" aria-pressed="false"
+                                    data-theme-target="option" data-theme-value="{{ theme.value }}"
+                                    data-action="theme#selectionner" data-theme-theme-param="{{ theme.value }}">
+                                <span class="gw-theme-card__preview gw-theme-card__preview--{{ theme.value }}"><i class="bi bi-{{ theme.icon }}"></i></span>
+                                <strong>{{ theme.titre }}</strong><small>{{ theme.texte }}</small>
+                                <span class="gw-theme-card__check"><i class="bi bi-check-lg"></i></span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 mb-3">
+                    <div><h3 class="h5 mb-1">Thèmes consoles</h3><p class="text-secondary small mb-0">Chaque thème adapte les couleurs de toute l'interface.</p></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary align-self-sm-start" data-action="theme#selectionner" data-theme-theme-param="system"><i class="bi bi-arrow-counterclockwise me-2"></i>Restaurer par défaut</button>
+                </div>
+                <div class="row g-3">
+                    {% set consoles = [
+                        {value: 'glitchworlds', icon: 'stars', titre: 'GlitchWorlds', badge: 'Officiel', texte: 'Bleu lumineux et violet, le thème de la communauté.'},
+                        {value: 'channel', icon: 'people-fill', titre: 'Channel', badge: 'Wii', texte: 'Vert, épuré et convivial.'},
+                        {value: 'dual', icon: 'device-ssd-fill', titre: 'Dual', badge: 'DS', texte: 'Rose, compact et rétro-portable.'},
+                        {value: 'wave', icon: 'controller', titre: 'Wave', badge: 'PS3', texte: 'Sombre, fluide et premium.'},
+                        {value: 'legacy', icon: 'clock-history', titre: 'Ancien site', badge: 'Legacy', texte: 'Le bleu, la barre sombre et le coucher de soleil d’origine.'},
+                    ] %}
+                    {% for theme in consoles %}
+                        <div class="col-sm-6 col-xl-3">
+                            <button type="button" class="gw-theme-card w-100 text-start" aria-pressed="false"
+                                    data-theme-target="option" data-theme-value="{{ theme.value }}"
+                                    data-action="theme#selectionner" data-theme-theme-param="{{ theme.value }}">
+                                <span class="gw-theme-card__preview gw-theme-card__preview--{{ theme.value }}"><i class="bi bi-{{ theme.icon }}"></i><em>{{ theme.badge }}</em></span>
+                                <strong>{{ theme.titre }}</strong><small>{{ theme.texte }}</small>
+                                <span class="gw-theme-card__check"><i class="bi bi-check-lg"></i></span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article id="profil" class="gw-panel p-4 p-xl-5 scroll-mt">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="gw-settings__avatar">
+                            {% if utilisateur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ utilisateur.id ~ '/' ~ utilisateur.avatar) }}" alt="">{% else %}{{ utilisateur.pseudo|first|upper }}{% endif %}
+                        </div>
+                        <div><h2 class="h3 mb-1">{{ utilisateur.pseudo }}</h2><p class="text-secondary mb-0">{{ utilisateur.email ?? 'Adresse e-mail à ajouter' }}</p></div>
+                    </div>
+                    <a class="btn btn-primary" href="{{ path('app_compte_modifier') }}"><i class="bi bi-pencil-fill me-2"></i>Modifier mon profil</a>
+                </div>
+                {% if utilisateur.email is null %}<div class="alert alert-warning mt-4 mb-0"><strong>Compte récupéré :</strong> ajoute une adresse e-mail pour mieux sécuriser ton accès.</div>{% endif %}
+            </article>
+
+            <article id="securite" class="gw-panel p-4 p-xl-5 scroll-mt">
+                <h2 class="h3 mb-4"><i class="bi bi-shield-lock-fill text-primary me-2"></i>Compte et sécurité</h2>
+                <div class="list-group list-group-flush gw-settings__list">
+                    <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-3" href="{{ path('app_compte_mot_de_passe') }}">
+                        <span><strong class="d-block">Mot de passe</strong><small class="text-secondary">Choisis un mot de passe unique d'au moins 12 caractères.</small></span><i class="bi bi-chevron-right"></i>
+                    </a>
+                    <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-3" href="{{ path('app_compte') }}">
+                        <span><strong class="d-block">Mes données et propositions</strong><small class="text-secondary">Retrouve tes favoris et les jeux que tu as proposés.</small></span><i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+                <a class="btn btn-outline-danger mt-4" href="{{ path('app_deconnexion') }}"><i class="bi bi-box-arrow-right me-2"></i>Se déconnecter</a>
+            </article>
+
+            <article id="accessibilite" class="gw-panel p-4 p-xl-5 scroll-mt">
+                <h2 class="h3 mb-1"><i class="bi bi-universal-access text-primary me-2"></i>Accessibilité</h2>
+                <p class="text-secondary mb-4">Adapte les mouvements de l'interface à ton confort.</p>
+                <div class="form-check form-switch d-flex align-items-start gap-3 ps-0">
+                    <div class="flex-grow-1"><label class="form-check-label fw-semibold" for="reduction-mouvement">Réduire les animations</label><small class="d-block text-secondary">Désactive les transitions et effets de déplacement.</small></div>
+                    <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="reduction-mouvement" data-preferences-target="mouvement" data-action="preferences#changerMouvement">
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}

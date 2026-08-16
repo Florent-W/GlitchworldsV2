@@ -44,6 +44,7 @@ security:
         - { path: ^/administration, roles: ROLE_ADMIN }
         - { path: ^/moderation, roles: ROLE_MODERATEUR }
         - { path: ^/mon-compte, roles: ROLE_USER }
+        - { path: ^/parametres, roles: ROLE_USER }
         - { path: ^/favoris, roles: ROLE_USER }
         - { path: ^/jeu/proposer, roles: ROLE_USER }
         - { path: ^/communaute/publication, roles: ROLE_USER }

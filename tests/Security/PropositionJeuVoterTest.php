@@ -25,4 +25,15 @@ final class PropositionJeuVoterTest extends TestCase
         $jeu->setStatut(StatutJeu::Approuve);
         self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote(new UsernamePasswordToken($createur, 'main'), $jeu, [PropositionJeuVoter::MODIFIER]));
     }
+
+    public function testSeulUnAdministrateurPeutModifierUneFicheApprouvee(): void
+    {
+        $administrateur = (new Utilisateur())->setPseudo('Administrateur')->setRoles(['ROLE_ADMIN']);
+        $moderateur = (new Utilisateur())->setPseudo('Modérateur')->setRoles(['ROLE_MODERATEUR']);
+        $jeu = (new Jeu())->setStatut(StatutJeu::Approuve);
+        $voter = new PropositionJeuVoter();
+
+        self::assertSame(VoterInterface::ACCESS_GRANTED, $voter->vote(new UsernamePasswordToken($administrateur, 'main'), $jeu, [PropositionJeuVoter::MODIFIER]));
+        self::assertSame(VoterInterface::ACCESS_DENIED, $voter->vote(new UsernamePasswordToken($moderateur, 'main'), $jeu, [PropositionJeuVoter::MODIFIER]));
+    }
 }

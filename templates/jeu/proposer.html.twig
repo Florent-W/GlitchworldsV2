@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ modification ? 'Modifier ma proposition' : 'Proposer un jeu' }} - GlitchWorlds{% endblock %}
+{% block title %}{{ modification ? 'Modifier la fiche' : 'Proposer un jeu' }} - GlitchWorlds{% endblock %}
 {% block robots_meta %}noindex,nofollow{% endblock %}
 
 {% block body %}
 <section class="gw-panel p-4">
     <div class="d-flex align-items-center gap-3 mb-4">
         <i class="bi bi-file-earmark-plus-fill text-primary fs-1" aria-hidden="true"></i>
-        <div><h1 class="h2 mb-1">{{ modification ? 'Modifier ma proposition' : 'Proposer un jeu' }}</h1><p class="text-secondary mb-0">{{ modification ? 'Corrige ta fiche avant sa validation.' : 'Partage ton fangame avec la communauté GlitchWorlds.' }}</p></div>
+        <div><h1 class="h2 mb-1">{{ modification ? 'Modifier la fiche' : 'Proposer un jeu' }}</h1><p class="text-secondary mb-0">{{ modification ? 'Mets à jour les informations affichées sur la fiche.' : 'Partage ton fangame avec la communauté GlitchWorlds.' }}</p></div>
     </div>
 
     {{ form_start(formulaire) }}
@@ -15,7 +15,7 @@
             <div class="col-xl-7">
                 {{ form_row(formulaire.nom) }}
                 {{ form_row(formulaire.description) }}
-                {{ form_row(formulaire.contenu) }}
+                {% include '_editeur_bbcode.html.twig' with { champ: formulaire.contenu } only %}
                 <div class="row g-3">
                     <div class="col-md-6">{{ form_row(formulaire.developpeur) }}</div>
                     <div class="col-md-6">{{ form_row(formulaire.dateSortie) }}</div>

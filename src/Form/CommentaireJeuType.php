@@ -16,7 +16,8 @@ final class CommentaireJeuType extends AbstractType
         $builder
             ->add('contenu', TextareaType::class, [
                 'label' => false,
-                'help' => 'Entre 3 et 1 000 caracteres.',
+                'help' => 'Entre 3 et 1 000 caractères.',
+                'help_attr' => ['class' => 'form-text gw-text-violet'],
                 'attr' => [
                     'rows' => 4,
                     'maxlength' => 1000,

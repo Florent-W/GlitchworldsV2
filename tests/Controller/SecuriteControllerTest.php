@@ -70,6 +70,40 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertResponseRedirects('/connexion');
     }
 
+    public function testUnVisiteurEstRedirigeVersLaConnexionPourVoirLesParametres(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/parametres');
+
+        self::assertResponseRedirects('/connexion');
+    }
+
+    public function testUnMembrePeutChoisirSesParametresInterface(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $utilisateur = (new Utilisateur())
+            ->setPseudo('ParametresTest')
+            ->setEmail(sprintf('parametres-%s@glitchworlds.local', bin2hex(random_bytes(5))));
+        $entityManager->persist($utilisateur);
+        $entityManager->flush();
+        $utilisateurId = $utilisateur->getId();
+
+        $client->loginUser($utilisateur);
+        $client->request('GET', '/parametres');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Paramètres');
+        self::assertSelectorCount(8, '[data-theme-target="option"]');
+        self::assertSelectorExists('a[href="/mon-compte/modifier"]');
+        self::assertSelectorExists('a[href="/mon-compte/mot-de-passe"]');
+        self::assertSelectorExists('#reduction-mouvement');
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->remove($entityManager->find(Utilisateur::class, $utilisateurId));
+        $entityManager->flush();
+    }
+
     public function testUnAncienMembrePeutSeConnecterAvecSonPseudo(): void
     {
         $client = self::createClient();

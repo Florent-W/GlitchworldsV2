@@ -10,6 +10,31 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class ActualiteControllerTest extends WebTestCase
 {
+    public function testUneActualiteAfficheSonContenuBbcode(): void
+    {
+        $client = self::createClient();
+        $suffixe = bin2hex(random_bytes(5));
+        $actualite = (new Actualite())
+            ->setTitre('Article BBCode '.$suffixe)
+            ->setSlug('article-bbcode-'.$suffixe)
+            ->setDescription('Vérifie le rendu sécurisé du BBCode.')
+            ->setContenu('[b]Information importante[/b]\n[liste][elementliste]Premier point[/elementliste][/liste]\n<script>alert(1)</script>')
+            ->setCategorie(CategorieActualite::News)
+            ->setStatut(StatutActualite::Publiee);
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($actualite);
+        $entityManager->flush();
+
+        $client->request('GET', sprintf('/actualite/%s-%d', $actualite->getSlug(), $actualite->getId()));
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.gw-article-content strong', 'Information importante');
+        self::assertSelectorTextContains('.gw-article-content li', 'Premier point');
+        self::assertSelectorNotExists('.gw-article-content script');
+
+        $entityManager->remove($actualite);
+        $entityManager->flush();
+    }
+
     public function testLaListeNExposeQueLesActualitesPubliees(): void
     {
         $client = self::createClient();

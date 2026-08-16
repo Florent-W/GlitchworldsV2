@@ -31,6 +31,7 @@ final class ActualiteType extends AbstractType
             ])
             ->add('contenu', TextareaType::class, [
                 'label' => 'Contenu',
+                'help' => 'Tu peux utiliser le BBCode pour mettre en forme l’article.',
                 'attr' => ['rows' => 18],
             ])
             ->add('image', FileType::class, [

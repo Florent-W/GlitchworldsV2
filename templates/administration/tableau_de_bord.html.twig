@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+{% block title %}Tableau de bord - Administration{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<div class="gw-admin">
+    <aside>{% include 'administration/_navigation.html.twig' with {jeuxEnAttenteNavigation: jeuxEnAttente} %}</aside>
+    <section class="min-w-0">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+            <div><span class="gw-eyebrow"><i class="bi bi-shield-check"></i> Back-office</span><h1 class="display-6 fw-bold mb-0">Tableau de bord</h1></div>
+            <div class="d-flex gap-2"><a class="btn btn-outline-primary" href="{{ path('app_administration_actualites_creer') }}"><i class="bi bi-file-earmark-plus me-2"></i>Ajouter une actualité</a><a class="btn btn-primary" href="{{ path('app_jeu_proposer') }}"><i class="bi bi-plus-lg me-2"></i>Ajouter un jeu</a></div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            {% set cartes = [
+                {label: 'Jeux', valeur: statistiques.jeux, icon: 'controller', couleur: 'primary'},
+                {label: 'Membres', valeur: statistiques.membres, icon: 'people-fill', couleur: 'success'},
+                {label: 'Commentaires', valeur: statistiques.commentaires, icon: 'chat-dots-fill', couleur: 'info'},
+                {label: 'Actualités', valeur: statistiques.actualites, icon: 'newspaper', couleur: 'warning'}
+            ] %}
+            {% for carte in cartes %}<div class="col-sm-6 col-xl-3"><div class="gw-admin-stat gw-panel"><span class="gw-admin-stat__icon text-bg-{{ carte.couleur }}"><i class="bi bi-{{ carte.icon }}"></i></span><div><strong>{{ carte.valeur|number_format(0, ',', ' ') }}</strong><span>{{ carte.label }}</span></div></div></div>{% endfor %}
+        </div>
+
+        {% if jeuxEnAttente > 0 %}<div class="alert alert-warning d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3"><span><i class="bi bi-exclamation-triangle-fill me-2"></i><strong>{{ jeuxEnAttente }}</strong> proposition{{ jeuxEnAttente > 1 ? 's' : '' }} de jeu à examiner.</span><a class="btn btn-sm btn-warning" href="{{ path('app_moderation_jeux') }}">Ouvrir la file</a></div>{% endif %}
+
+        <div class="row g-4">
+            <div class="col-xl-8"><article class="gw-panel p-4 h-100"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h4 mb-0">Activité récente</h2><a href="{{ path('app_moderation_commentaires') }}">Modérer</a></div><div class="gw-admin-activity">{% for activite in activites %}<a class="gw-admin-activity__item" href="{{ activite.url ?? '#' }}"><span class="gw-admin-activity__icon text-bg-{{ activite.couleur }}"><i class="bi bi-{{ activite.icone }}"></i></span><span class="flex-grow-1"><strong>{{ activite.auteur }}</strong> {{ activite.texte }}<time datetime="{{ activite.date|date('c') }}">{{ activite.date|date('d/m/Y à H:i') }}</time></span><i class="bi bi-chevron-right text-secondary"></i></a>{% else %}<p class="text-secondary mb-0">Aucune activité récente.</p>{% endfor %}</div></article></div>
+            <div class="col-xl-4"><article class="gw-panel p-4 h-100"><h2 class="h4 mb-3">Accès rapide</h2><div class="d-grid gap-2"><a class="gw-admin-quick" href="{{ path('app_moderation_jeux') }}"><i class="bi bi-controller"></i><span><strong>Valider les jeux</strong><small>{{ jeuxEnAttente }} en attente</small></span></a><a class="gw-admin-quick" href="{{ path('app_administration_membres') }}"><i class="bi bi-people-fill"></i><span><strong>Voir les membres</strong><small>Comptes et rôles</small></span></a><a class="gw-admin-quick" href="{{ path('app_moderation_commentaires') }}"><i class="bi bi-chat-dots-fill"></i><span><strong>Commentaires</strong><small>Édition et suppression</small></span></a><a class="gw-admin-quick" href="{{ path('app_administration_actualites_liste') }}"><i class="bi bi-newspaper"></i><span><strong>Actualités</strong><small>Créer et modifier</small></span></a></div></article></div>
+        </div>
+
+        <article class="gw-panel p-4 mt-4"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h4 mb-0">Derniers jeux</h2><a href="{{ path('app_jeux') }}">Voir le site</a></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Jeu</th><th>Créateur</th><th>Statut</th><th>Date</th><th></th></tr></thead><tbody>{% for jeu in derniersJeux %}<tr><td class="fw-semibold">{{ jeu.nom }}</td><td>{{ jeu.createur ? jeu.createur.pseudo : 'Importé' }}</td><td><span class="badge {{ jeu.statut.value == 'approuve' ? 'text-bg-success' : (jeu.statut.value == 'en_attente' ? 'text-bg-warning' : 'text-bg-secondary') }}">{{ jeu.statut.label }}</span></td><td>{{ jeu.creeLe|date('d/m/Y') }}</td><td class="text-end">{% if jeu.statut.value == 'en_attente' %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_moderation_jeu_voir', {id: jeu.id}) }}">Examiner</a>{% else %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id}) }}"><i class="bi bi-eye"></i></a>{% endif %}</td></tr>{% endfor %}</tbody></table></div></article>
+    </section>
+</div>
+{% endblock %}

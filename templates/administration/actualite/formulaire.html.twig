@@ -11,7 +11,7 @@
     {{ form_start(formulaire) }}
         {{ form_row(formulaire.titre) }}
         {{ form_row(formulaire.description) }}
-        {{ form_row(formulaire.contenu) }}
+        {% include '_editeur_bbcode.html.twig' with { champ: formulaire.contenu } only %}
         {{ form_row(formulaire.image) }}
         {{ form_row(formulaire.jeux) }}
         <div class="row"><div class="col-md-6">{{ form_row(formulaire.categorie) }}</div><div class="col-md-6">{{ form_row(formulaire.statut) }}</div></div>

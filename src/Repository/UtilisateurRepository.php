@@ -18,6 +18,22 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
         parent::__construct($registry, Utilisateur::class);
     }
 
+    /** @return list<Utilisateur> */
+    public function rechercherPourAdministration(string $recherche): array
+    {
+        $requete = $this->createQueryBuilder('utilisateur')
+            ->orderBy('utilisateur.inscritLe', 'DESC')
+            ->setMaxResults(100);
+
+        if ($recherche !== '') {
+            $requete
+                ->andWhere('LOWER(utilisateur.pseudo) LIKE :recherche OR LOWER(utilisateur.email) LIKE :recherche')
+                ->setParameter('recherche', '%'.mb_strtolower($recherche).'%');
+        }
+
+        return $requete->getQuery()->getResult();
+    }
+
     public function loadUserByIdentifier(string $identifier): ?UserInterface
     {
         $utilisateurs = $this->createQueryBuilder('utilisateur')
