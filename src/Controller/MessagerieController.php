@@ -11,6 +11,7 @@ use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UtilisateurRepository;
 use App\Service\PieceJointeMessageUploader;
+use App\Service\CentreNotifications;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,7 +39,7 @@ final class MessagerieController extends AbstractController
     }
 
     #[Route('/nouveau', name: 'app_messages_nouveau')]
-    public function nouveau(Request $request, ConversationRepository $repository, UtilisateurRepository $utilisateurRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader): Response
+    public function nouveau(Request $request, ConversationRepository $repository, UtilisateurRepository $utilisateurRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader, CentreNotifications $notifications): Response
     {
         $donnees = [];
         $destinataireId = $request->query->getInt('destinataire');
@@ -61,6 +62,7 @@ final class MessagerieController extends AbstractController
                 $fichier = $formulaire->get('fichier')->getData();
                 if ($fichier instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) { $message->setPieceJointe($uploader->enregistrer($fichier, (int) $conversation->getId())); }
                 $entityManager->persist($message);
+                $notifications->ajouter($destinataire, 'Nouveau message', $utilisateur->getPseudo().' t’a envoyé un message.', 'envelope-fill', '/messages/'.$conversation->getId());
                 $entityManager->flush();
 
                 return $this->redirectToRoute('app_messages_voir', ['id' => $conversation->getId()]);
@@ -71,7 +73,7 @@ final class MessagerieController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_messages_voir')]
-    public function voir(Conversation $conversation, Request $request, ConversationRepository $repository, MessageRepository $messageRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader): Response
+    public function voir(Conversation $conversation, Request $request, ConversationRepository $repository, MessageRepository $messageRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader, CentreNotifications $notifications): Response
     {
         $utilisateur = $this->utilisateur();
         if (!$conversation->contient($utilisateur)) {
@@ -87,6 +89,7 @@ final class MessagerieController extends AbstractController
             $fichier = $formulaire->get('fichier')->getData();
             if ($fichier instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) { $message->setPieceJointe($uploader->enregistrer($fichier, (int) $conversation->getId())); }
             $entityManager->persist($message);
+            if ($destinataire = $conversation->autreMembre($utilisateur)) { $notifications->ajouter($destinataire, 'Nouveau message', $utilisateur->getPseudo().' t’a envoyé un message.', 'envelope-fill', '/messages/'.$conversation->getId()); }
             $entityManager->flush();
 
             return $this->redirectToRoute('app_messages_voir', ['id' => $conversation->getId()]);

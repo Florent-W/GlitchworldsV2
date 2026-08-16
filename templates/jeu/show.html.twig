@@ -86,6 +86,11 @@
                             <i class="bi bi-info-circle me-2" aria-hidden="true"></i>Plus d'infos
                         </a>
                         {% if app.user %}
+                            <form method="post" action="{{ path('app_mes_jeux_ajouter', { id: jeu.id }) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('bibliotheque-' ~ jeu.id) }}">
+                                <input type="hidden" name="statut" value="a_jouer">
+                                <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-collection-play-fill me-2" aria-hidden="true"></i>Ajouter à Mes jeux</button>
+                            </form>
                             {% set estFavori = app.user.aPourFavori(jeu) %}
                             <form method="post" action="{{ path('app_jeu_favori', { id: jeu.id }) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('favori-jeu-' ~ jeu.id) }}">
