@@ -79,6 +79,21 @@ final class AdministrationActualiteController extends AbstractController
         return $this->render('administration/actualite/formulaire.html.twig', ['formulaire' => $formulaire, 'titre' => 'Modifier l’actualité']);
     }
 
+    #[Route('/{id}/supprimer', name: 'supprimer', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function supprimer(Actualite $actualite, Request $request, ActualiteImageUploader $imageUploader, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('supprimer-actualite-'.$actualite->getId(), $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+        $id = (int) $actualite->getId();
+        $entityManager->remove($actualite);
+        $entityManager->flush();
+        $imageUploader->supprimerImages($id);
+        $this->addFlash('success', 'L’actualité et ses images ont été supprimées.');
+
+        return $this->redirectToRoute('app_administration_actualites_liste');
+    }
+
     private function creerSlugUnique(string $titre, SluggerInterface $slugger, ActualiteRepository $actualiteRepository): string
     {
         $base = strtolower($slugger->slug($titre)->toString()) ?: 'actualite';

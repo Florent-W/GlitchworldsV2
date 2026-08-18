@@ -41,6 +41,7 @@
             { label: 'Jeux',       icon: 'controller',      route: 'app_jeux' },
             { label: 'Mes jeux',    icon: 'collection-play-fill', route: 'app_mes_jeux' },
             { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute' },
+            { label: 'Classement', icon: 'trophy-fill',     route: 'app_classement' },
             { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' },
             { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages' },
             { label: 'Notifications', icon: 'bell-fill', route: 'app_notifications' },
@@ -74,7 +75,7 @@
 
                 <div class="gw-actions">
                     {% if app.user %}
-                        <a class="gw-level-chip" href="{{ path('app_profil', {id: app.user.id}) }}" title="Voir ma progression">
+                        <a class="gw-level-chip" href="{{ path('app_progression_historique') }}" title="Voir ma progression">
                             <span class="gw-level-chip__points"><i class="bi bi-star-fill" aria-hidden="true"></i>{{ app.user.points|number_format(0, ',', ' ') }} pts</span>
                             <span class="gw-level-chip__level">Niveau {{ app.user.niveau }}</span>
                             <span class="gw-level-chip__bar" role="progressbar" aria-label="Progression vers le niveau {{ app.user.niveau + 1 }}" aria-valuenow="{{ app.user.progressionNiveau }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ app.user.progressionNiveau }}%"></span></span>

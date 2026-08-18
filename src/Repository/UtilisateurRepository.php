@@ -69,4 +69,15 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
             ->setMaxResults(max(1, min(20, $limite)))
             ->getQuery()->getResult();
     }
+
+    /** @return list<Utilisateur> */
+    public function trouverClassement(int $limite = 100): array
+    {
+        return $this->createQueryBuilder('utilisateur')
+            ->orderBy('utilisateur.experience', 'DESC')
+            ->addOrderBy('utilisateur.points', 'DESC')
+            ->addOrderBy('utilisateur.inscritLe', 'ASC')
+            ->setMaxResults(max(1, min(100, $limite)))
+            ->getQuery()->getResult();
+    }
 }

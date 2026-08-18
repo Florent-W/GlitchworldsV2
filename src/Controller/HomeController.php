@@ -27,6 +27,7 @@ final class HomeController extends AbstractController
             'nouveautes' => $jeuRepository->trouverNouveautes(),
             'populaires' => $jeuRepository->trouverPopulaires(),
             'dernieresActualites' => $actualiteRepository->trouverDernieres(),
+            'actualitesMisesEnAvant' => $actualiteRepository->trouverMisesEnAvant(),
             'totalJeux' => $jeuRepository->count(['statut' => StatutJeu::Approuve]),
             'totalMembres' => $utilisateurRepository->count([]),
             'totalCommentaires' => $commentaireJeuRepository->count([]) + $commentaireActualiteRepository->count([]),

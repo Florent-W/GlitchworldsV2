@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class Boutique
 {
-    public function __construct(private EntityManagerInterface $entityManager) {}
+    public function __construct(private EntityManagerInterface $entityManager, private ProgressionUtilisateur $progression) {}
 
     public function acheter(Utilisateur $utilisateur, ArticleBoutique $article): AchatBoutique
     {
@@ -21,7 +21,7 @@ final readonly class Boutique
             if ($entityManager->getRepository(AchatBoutique::class)->findOneBy(['utilisateur' => $membreVerrouille, 'article' => $articleVerrouille])) { throw new \DomainException('Tu possèdes déjà cet article.'); }
             if ($membreVerrouille->getPoints() < $articleVerrouille->getPrix()) { throw new \DomainException('Tu n’as pas assez de points pour cet achat.'); }
 
-            $membreVerrouille->setPoints($membreVerrouille->getPoints() - $articleVerrouille->getPrix());
+            $this->progression->debiterBoutique($membreVerrouille, (int) $articleVerrouille->getId(), $articleVerrouille->getNom(), $articleVerrouille->getPrix());
             $articleVerrouille->retirerDuStock();
             $achat = (new AchatBoutique())->setUtilisateur($membreVerrouille)->setArticle($articleVerrouille)->setPrixPaye($articleVerrouille->getPrix());
             $entityManager->persist($achat);

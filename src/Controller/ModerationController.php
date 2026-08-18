@@ -18,6 +18,7 @@ use App\Repository\SignalementRepository;
 use App\Enum\StatutSignalement;
 use App\Entity\Signalement;
 use App\Entity\Utilisateur;
+use App\Service\JournalModeration;
 
 #[Route('/moderation', name: 'app_moderation_')]
 final class ModerationController extends AbstractController
@@ -61,6 +62,7 @@ final class ModerationController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         ProgressionUtilisateur $progression,
+        JournalModeration $journal,
     ): Response {
         if ($jeu->getStatut() !== StatutJeu::EnAttente) {
             throw $this->createNotFoundException('Cette proposition n’est plus en attente.');
@@ -71,8 +73,10 @@ final class ModerationController extends AbstractController
 
         $jeu->setStatut($decision === 'approuver' ? StatutJeu::Approuve : StatutJeu::Refuse);
         if ($decision === 'approuver' && $jeu->getCreateur() !== null) {
-            $progression->recompenseJeuApprouve($jeu->getCreateur());
+            $progression->recompenseJeuApprouve($jeu->getCreateur(), (int) $jeu->getId());
         }
+        $moderateur = $this->getUser();
+        $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, $decision, 'jeu', $jeu->getId(), ($decision === 'approuver' ? 'Approbation' : 'Refus').' du jeu '.$jeu->getNom());
         $entityManager->flush();
         $this->addFlash('success', $decision === 'approuver' ? 'Le jeu a été approuvé.' : 'Le jeu a été refusé.');
 
@@ -80,25 +84,31 @@ final class ModerationController extends AbstractController
     }
 
     #[Route('/jeux/{id}/statut', name: 'jeu_statut', methods: ['POST'])]
-    public function changerStatut(Jeu $jeu, Request $request, EntityManagerInterface $entityManager): Response
+    public function changerStatut(Jeu $jeu, Request $request, EntityManagerInterface $entityManager, JournalModeration $journal): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         if (!$this->isCsrfTokenValid('statut-jeu-'.$jeu->getId(), $request->request->getString('_token'))) { throw $this->createAccessDeniedException(); }
         $statut = StatutJeu::tryFrom($request->request->getString('statut'));
         if (!$statut) { throw $this->createNotFoundException('Statut inconnu.'); }
+        $ancienStatut = $jeu->getStatut()->value;
         $jeu->setStatut($statut);
+        $moderateur = $this->getUser();
+        $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, 'changement_statut', 'jeu', $jeu->getId(), 'Statut de '.$jeu->getNom().' : '.$ancienStatut.' vers '.$statut->value);
         $entityManager->flush();
         $this->addFlash('success', 'Le statut du jeu a été modifié.');
         return $this->redirectToRoute('app_moderation_jeux');
     }
 
     #[Route('/jeux/{id}/supprimer', name: 'jeu_supprimer', methods: ['POST'])]
-    public function supprimerJeu(Jeu $jeu, Request $request, EntityManagerInterface $entityManager, JeuGalerieUploader $medias): Response
+    public function supprimerJeu(Jeu $jeu, Request $request, EntityManagerInterface $entityManager, JeuGalerieUploader $medias, JournalModeration $journal): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         if (!$this->isCsrfTokenValid('supprimer-jeu-'.$jeu->getId(), $request->request->getString('_token'))) { throw $this->createAccessDeniedException(); }
         $id = (int) $jeu->getId();
+        $nom = (string) $jeu->getNom();
         $entityManager->remove($jeu);
+        $moderateur = $this->getUser();
+        $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, 'suppression', 'jeu', $id, 'Suppression du jeu '.$nom);
         $entityManager->flush();
         $medias->supprimerMedias($id);
         $this->addFlash('success', 'Le jeu et ses contenus associés ont été supprimés.');
@@ -113,7 +123,7 @@ final class ModerationController extends AbstractController
     }
 
     #[Route('/signalements/{id}/{decision}', name: 'signalement_decider', requirements: ['decision' => 'traiter|rejeter|supprimer'], methods: ['POST'])]
-    public function deciderSignalement(Signalement $signalement, string $decision, Request $request, EntityManagerInterface $entityManager): Response
+    public function deciderSignalement(Signalement $signalement, string $decision, Request $request, EntityManagerInterface $entityManager, JournalModeration $journal): Response
     {
         if (!$this->isCsrfTokenValid('signalement-'.$signalement->getId(), $request->request->getString('_token'))) { throw $this->createAccessDeniedException(); }
         $moderateur = $this->getUser();
@@ -123,6 +133,7 @@ final class ModerationController extends AbstractController
             if ($cible) { $entityManager->remove($cible); }
         }
         $signalement->cloturer($decision === 'rejeter' ? StatutSignalement::Rejete : StatutSignalement::Traite, $moderateur);
+        $journal->ajouter($moderateur, $decision, 'signalement', $signalement->getId(), 'Signalement #'.$signalement->getId().' : '.$decision);
         $entityManager->flush();
         $this->addFlash('success', $decision === 'supprimer' ? 'Le contenu a été supprimé et le signalement traité.' : 'Le signalement a été clôturé.');
         return $this->redirectToRoute('app_moderation_signalements');

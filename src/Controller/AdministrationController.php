@@ -15,12 +15,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Service\StatistiquesAdministration;
+use App\Entity\ActionModeration;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/administration', name: 'app_administration_')]
 final class AdministrationController extends AbstractController
 {
     #[Route('', name: 'tableau_de_bord', methods: ['GET'])]
     public function tableauDeBord(
+        Request $request,
         JeuRepository $jeux,
         UtilisateurRepository $utilisateurs,
         CommentaireJeuRepository $commentairesJeux,
@@ -28,6 +32,8 @@ final class AdministrationController extends AbstractController
         ActualiteRepository $actualites,
         SignalementRepository $signalements,
         Connection $connexion,
+        StatistiquesAdministration $statistiquesAdministration,
+        EntityManagerInterface $entityManager,
     ): Response {
         $activites = [];
         foreach ($commentairesJeux->findBy([], ['dateCommentaire' => 'DESC'], 4) as $commentaire) {
@@ -74,6 +80,8 @@ final class AdministrationController extends AbstractController
             'derniersJeux' => $jeux->findBy([], ['creeLe' => 'DESC'], 5),
             'activites' => array_slice($activites, 0, 8),
             'tendances' => $this->construireTendances($connexion),
+            'audience' => $statistiquesAdministration->construire($request->query->getInt('periode', 30)),
+            'journalModeration' => $entityManager->getRepository(ActionModeration::class)->findBy([], ['effectueeLe' => 'DESC'], 10),
         ]);
     }
 

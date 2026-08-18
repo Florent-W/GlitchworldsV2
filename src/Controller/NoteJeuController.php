@@ -8,6 +8,7 @@ use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
 use App\Form\NoteJeuType;
 use App\Repository\AvisRepository;
+use App\Service\ProgressionUtilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +23,7 @@ final class NoteJeuController extends AbstractController
         Request $request,
         AvisRepository $avisRepository,
         EntityManagerInterface $entityManager,
+        ProgressionUtilisateur $progression,
     ): Response {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -45,8 +47,9 @@ final class NoteJeuController extends AbstractController
             $avis->setNote((float) $formulaire->get('note')->getData());
             $avis->setDateAvis(new \DateTimeImmutable());
             $entityManager->persist($avis);
+            $recompense = $progression->recompenseNote($utilisateur, (int) $jeu->getId());
             $entityManager->flush();
-            $this->addFlash('success', 'Ta note a été enregistrée.');
+            $this->addFlash('success', 'Ta note a été enregistrée.'.($recompense ? ' +5 XP et +2 points.' : ''));
         }
 
         return $this->redirectToRoute('app_jeu_show', ['slug' => $jeu->getSlug(), 'id' => $jeu->getId()]);

@@ -27,4 +27,14 @@ final class ActualiteImageUploader
 
         return $nom;
     }
+
+    public function supprimerImages(int $actualiteId): void
+    {
+        $dossier = $this->dossierCible.DIRECTORY_SEPARATOR.$actualiteId;
+        if (!is_dir($dossier)) { return; }
+        foreach (new \FilesystemIterator($dossier) as $fichier) {
+            if ($fichier->isFile()) { unlink($fichier->getPathname()); }
+        }
+        rmdir($dossier);
+    }
 }

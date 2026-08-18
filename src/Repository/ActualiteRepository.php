@@ -50,7 +50,8 @@ final class ActualiteRepository extends ServiceEntityRepository
             ->innerJoin('actualite.jeux', 'jeu')
             ->andWhere('jeu = :jeu')->setParameter('jeu', $jeu)
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
-            ->orderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
+            ->addOrderBy('actualite.miseEnAvant', 'DESC')
+            ->addOrderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
             ->getQuery()->getResult();
     }
 
@@ -60,6 +61,16 @@ final class ActualiteRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('actualite')
             ->leftJoin('actualite.auteur', 'auteur')->addSelect('auteur')
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->orderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
+            ->getQuery()->getResult();
+    }
+
+    /** @return list<Actualite> */
+    public function trouverMisesEnAvant(int $limite = 5): array
+    {
+        return $this->createQueryBuilder('actualite')
+            ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('actualite.miseEnAvant = true')
             ->orderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
             ->getQuery()->getResult();
     }

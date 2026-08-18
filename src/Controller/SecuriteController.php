@@ -16,6 +16,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final class SecuriteController extends AbstractController
 {
@@ -126,6 +136,73 @@ final class SecuriteController extends AbstractController
         return $this->render('securite/modifier_mot_de_passe.html.twig', [
             'formulaire' => $formulaire,
         ]);
+    }
+
+    #[Route('/mot-de-passe-oublie', name: 'app_mot_de_passe_oublie')]
+    public function motDePasseOublie(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer, #[Autowire(service: 'limiter.password_reset')] RateLimiterFactory $passwordResetLimiter): Response
+    {
+        $formulaire = $this->createFormBuilder()
+            ->add('email', EmailType::class, ['label' => 'Adresse e-mail', 'constraints' => [new Assert\NotBlank(), new Assert\Email()]])
+            ->add('envoyer', SubmitType::class, ['label' => 'Envoyer le lien', 'attr' => ['class' => 'btn btn-primary']])
+            ->getForm();
+        $formulaire->handleRequest($request);
+
+        if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            if (!$passwordResetLimiter->create($request->getClientIp() ?? 'inconnue')->consume()->isAccepted()) {
+                $this->addFlash('danger', 'Trop de demandes ont été envoyées. Réessaie dans quelques minutes.');
+                return $this->redirectToRoute('app_mot_de_passe_oublie');
+            }
+            $email = strtolower(trim((string) $formulaire->get('email')->getData()));
+            $utilisateur = $entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
+            if ($utilisateur instanceof Utilisateur) {
+                $jeton = bin2hex(random_bytes(32));
+                $utilisateur->definirJetonReinitialisation(hash('sha256', $jeton), new \DateTimeImmutable('+1 hour'));
+                $entityManager->flush();
+                $lien = $this->generateUrl('app_reinitialiser_mot_de_passe', ['jeton' => $jeton], UrlGeneratorInterface::ABSOLUTE_URL);
+                $mailer->send((new Email())
+                    ->from('noreply@glitchworlds.local')
+                    ->to($email)
+                    ->subject('Réinitialisation de ton mot de passe GlitchWorlds')
+                    ->text("Utilise ce lien dans l’heure qui suit :\n\n".$lien."\n\nSi tu n’es pas à l’origine de cette demande, ignore ce message."));
+            }
+            $this->addFlash('success', 'Si un compte correspond à cette adresse, un lien vient d’être envoyé.');
+            return $this->redirectToRoute('app_connexion');
+        }
+
+        return $this->render('securite/mot_de_passe_oublie.html.twig', ['formulaire' => $formulaire]);
+    }
+
+    #[Route('/reinitialiser-mot-de-passe/{jeton}', name: 'app_reinitialiser_mot_de_passe', requirements: ['jeton' => '[a-f0-9]{64}'])]
+    public function reinitialiserMotDePasse(string $jeton, Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $hasher): Response
+    {
+        $utilisateur = $entityManager->getRepository(Utilisateur::class)->findOneBy(['jetonReinitialisation' => hash('sha256', $jeton)]);
+        if (!$utilisateur instanceof Utilisateur || $utilisateur->getExpirationJetonReinitialisation() === null || $utilisateur->getExpirationJetonReinitialisation() < new \DateTimeImmutable()) {
+            $this->addFlash('danger', 'Ce lien est invalide ou a expiré.');
+            return $this->redirectToRoute('app_mot_de_passe_oublie');
+        }
+
+        $formulaire = $this->createFormBuilder()
+            ->add('motDePasse', RepeatedType::class, [
+                'type' => PasswordType::class,
+                'first_options' => ['label' => 'Nouveau mot de passe'],
+                'second_options' => ['label' => 'Confirmer le mot de passe'],
+                'invalid_message' => 'Les mots de passe doivent être identiques.',
+                'constraints' => [new Assert\Length(min: 8, max: 4096)],
+            ])
+            ->add('enregistrer', SubmitType::class, ['label' => 'Changer mon mot de passe', 'attr' => ['class' => 'btn btn-primary']])
+            ->getForm();
+        $formulaire->handleRequest($request);
+
+        if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $utilisateur
+                ->setPassword($hasher->hashPassword($utilisateur, (string) $formulaire->get('motDePasse')->getData()))
+                ->definirJetonReinitialisation(null, null);
+            $entityManager->flush();
+            $this->addFlash('success', 'Ton mot de passe a été changé. Tu peux te connecter.');
+            return $this->redirectToRoute('app_connexion');
+        }
+
+        return $this->render('securite/reinitialiser_mot_de_passe.html.twig', ['formulaire' => $formulaire]);
     }
 
     #[Route('/deconnexion', name: 'app_deconnexion')]

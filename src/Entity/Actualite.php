@@ -58,6 +58,9 @@ class Actualite
     #[ORM\Column]
     private \DateTimeImmutable $publieeLe;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $miseEnAvant = false;
+
     public function __construct()
     {
         $this->publieeLe = new \DateTimeImmutable();
@@ -88,4 +91,6 @@ class Actualite
     public function retirerJeu(Jeu $jeu): static { $this->jeux->removeElement($jeu); return $this; }
     public function getPublieeLe(): \DateTimeImmutable { return $this->publieeLe; }
     public function setPublieeLe(\DateTimeImmutable $publieeLe): static { $this->publieeLe = $publieeLe; return $this; }
+    public function isMiseEnAvant(): bool { return $this->miseEnAvant; }
+    public function setMiseEnAvant(bool $miseEnAvant): static { $this->miseEnAvant = $miseEnAvant; return $this; }
 }

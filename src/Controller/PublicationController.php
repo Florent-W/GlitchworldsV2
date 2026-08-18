@@ -36,13 +36,13 @@ final class PublicationController extends AbstractController
             $utilisateur = $this->getUser();
             if ($utilisateur instanceof Utilisateur) {
                 $publication->setAuteur($utilisateur);
-                $progression->recompensePublication($utilisateur);
+                $recompenseAccordee = $progression->recompensePublication($utilisateur, hash('sha256', mb_strtolower(trim($publication->getContenu()))));
             }
             $entityManager->persist($publication);
             $entityManager->flush();
             $image = $formulaire->get('imageFichier')->getData();
             if ($image instanceof UploadedFile) { $publication->setImage($uploader->enregistrer($image, (int) $publication->getId())); $entityManager->flush(); }
-            $this->addFlash('success', 'Ta publication est en ligne. +20 XP et +10 points.');
+            $this->addFlash('success', 'Ta publication est en ligne.'.(($recompenseAccordee ?? false) ? ' +20 XP et +10 points.' : ''));
         } else {
             $erreurs = [];
             foreach ($formulaire->getErrors(true) as $erreur) { $erreurs[] = $erreur->getMessage(); }

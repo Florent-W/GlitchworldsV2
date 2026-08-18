@@ -6,6 +6,7 @@ use App\Entity\Jeu;
 use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
 use App\Repository\JeuRepository;
+use App\Service\ProgressionUtilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +30,7 @@ final class FavoriController extends AbstractController
     }
 
     #[Route('/jeu/{id}/favori', name: 'app_jeu_favori', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function basculer(Jeu $jeu, Request $request, EntityManagerInterface $entityManager): Response
+    public function basculer(Jeu $jeu, Request $request, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -47,7 +48,8 @@ final class FavoriController extends AbstractController
             $message = 'Le jeu a été retiré de tes favoris.';
         } else {
             $utilisateur->ajouterJeuFavori($jeu);
-            $message = 'Le jeu a été ajouté à tes favoris.';
+            $recompense = $progression->recompenseFavori($utilisateur, (int) $jeu->getId());
+            $message = 'Le jeu a été ajouté à tes favoris.'.($recompense ? ' +3 XP et +1 point.' : '');
         }
 
         $entityManager->flush();

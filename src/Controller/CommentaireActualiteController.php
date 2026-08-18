@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\ProgressionUtilisateur;
+use App\Service\JournalModeration;
 
 final class CommentaireActualiteController extends AbstractController
 {
@@ -45,22 +46,23 @@ final class CommentaireActualiteController extends AbstractController
             $this->addFlash('danger', $erreurs[0]->getMessage());
         } else {
             $entityManager->persist($reponse);
-            $progression->recompenseCommentaire($utilisateur);
+            $recompenseAccordee = $progression->recompenseCommentaire($utilisateur, 'reponse-actualite:'.$parent->getId().':'.hash('sha256', mb_strtolower(trim($reponse->getContenu()))));
             $entityManager->flush();
-            $this->addFlash('success', 'Ta réponse a été publiée. +10 XP et +5 points.');
+            $this->addFlash('success', 'Ta réponse a été publiée.'.($recompenseAccordee ? ' +10 XP et +5 points.' : ''));
         }
 
         return $this->redirigerVersActualite($parent, '#commentaire-'.$parent->getId());
     }
 
     #[Route('/actualite/commentaire/{id}/modifier', name: 'app_actualite_commentaire_modifier')]
-    public function modifier(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager): Response
+    public function modifier(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager, JournalModeration $journal): Response
     {
         $this->denyAccessUnlessGranted(CommentaireActualiteVoter::MODIFIER, $commentaire);
         $formulaire = $this->createForm(CommentaireActualiteType::class, $commentaire, ['bouton_libelle' => 'Enregistrer']);
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            if ($this->isGranted('ROLE_MODERATEUR')) { $moderateur = $this->getUser(); $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, 'modification', 'commentaire_actualite', $commentaire->getId(), 'Modification du commentaire #'.$commentaire->getId()); }
             $entityManager->flush();
             $this->addFlash('success', 'Ton commentaire a été modifié.');
 
@@ -75,7 +77,7 @@ final class CommentaireActualiteController extends AbstractController
     }
 
     #[Route('/actualite/commentaire/{id}/supprimer', name: 'app_actualite_commentaire_supprimer', methods: ['POST'])]
-    public function supprimer(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager): Response
+    public function supprimer(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager, JournalModeration $journal): Response
     {
         $this->denyAccessUnlessGranted(CommentaireActualiteVoter::SUPPRIMER, $commentaire);
         if (!$this->isCsrfTokenValid('supprimer-commentaire-actualite-'.$commentaire->getId(), (string) $request->request->get('_token'))) {
@@ -83,6 +85,7 @@ final class CommentaireActualiteController extends AbstractController
         }
 
         $actualite = $commentaire->getActualite();
+        if ($this->isGranted('ROLE_MODERATEUR')) { $moderateur = $this->getUser(); $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, 'suppression', 'commentaire_actualite', $commentaire->getId(), 'Suppression du commentaire #'.$commentaire->getId()); }
         $entityManager->remove($commentaire);
         $entityManager->flush();
         $this->addFlash('success', 'Le commentaire a été supprimé.');

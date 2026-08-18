@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\ProgressionUtilisateur;
+use App\Service\JournalModeration;
 
 final class CommentaireJeuController extends AbstractController
 {
@@ -45,9 +46,9 @@ final class CommentaireJeuController extends AbstractController
             $this->addFlash('danger', $erreurs[0]->getMessage());
         } else {
             $entityManager->persist($reponse);
-            $progression->recompenseCommentaire($utilisateur);
+            $recompenseAccordee = $progression->recompenseCommentaire($utilisateur, 'reponse-jeu:'.$parent->getId().':'.hash('sha256', mb_strtolower(trim($reponse->getContenu()))));
             $entityManager->flush();
-            $this->addFlash('success', 'Ta réponse a été publiée. +10 XP et +5 points.');
+            $this->addFlash('success', 'Ta réponse a été publiée.'.($recompenseAccordee ? ' +10 XP et +5 points.' : ''));
         }
 
         $jeu = $parent->getJeu();
@@ -63,6 +64,7 @@ final class CommentaireJeuController extends AbstractController
         CommentaireJeu $commentaire,
         Request $request,
         EntityManagerInterface $entityManager,
+        JournalModeration $journal,
     ): Response {
         $this->denyAccessUnlessGranted(CommentaireJeuVoter::MODIFIER, $commentaire);
 
@@ -72,6 +74,7 @@ final class CommentaireJeuController extends AbstractController
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            if ($this->isGranted('ROLE_MODERATEUR')) { $moderateur = $this->getUser(); $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, 'modification', 'commentaire_jeu', $commentaire->getId(), 'Modification du commentaire #'.$commentaire->getId()); }
             $entityManager->flush();
             $this->addFlash('success', 'Ton commentaire a été modifié.');
             if ('moderation' === $request->query->getString('retour')) {
@@ -96,6 +99,7 @@ final class CommentaireJeuController extends AbstractController
         CommentaireJeu $commentaire,
         Request $request,
         EntityManagerInterface $entityManager,
+        JournalModeration $journal,
     ): Response {
         $this->denyAccessUnlessGranted(CommentaireJeuVoter::SUPPRIMER, $commentaire);
 
@@ -104,6 +108,7 @@ final class CommentaireJeuController extends AbstractController
         }
 
         $jeu = $commentaire->getJeu();
+        if ($this->isGranted('ROLE_MODERATEUR')) { $moderateur = $this->getUser(); $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, 'suppression', 'commentaire_jeu', $commentaire->getId(), 'Suppression du commentaire #'.$commentaire->getId()); }
         $entityManager->remove($commentaire);
         $entityManager->flush();
         $this->addFlash('success', 'Ton commentaire a été supprimé.');

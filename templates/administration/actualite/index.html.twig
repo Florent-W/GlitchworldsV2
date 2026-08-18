@@ -12,18 +12,19 @@
 
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-            <thead><tr><th>Titre</th><th>Catégorie</th><th>Statut</th><th>Date</th><th class="text-end">Action</th></tr></thead>
+            <thead><tr><th>Titre</th><th>Catégorie</th><th>Statut</th><th>Accueil</th><th>Date</th><th class="text-end">Actions</th></tr></thead>
             <tbody>
             {% for actualite in actualites %}
                 <tr>
                     <td><strong>{{ actualite.titre }}</strong></td>
                     <td>{{ actualite.categorie.label }}</td>
                     <td><span class="badge {{ actualite.statut.value == 'publiee' ? 'text-bg-success' : (actualite.statut.value == 'en_attente' ? 'text-bg-warning' : 'text-bg-secondary') }}">{{ actualite.statut.value == 'publiee' ? 'Publiée' : (actualite.statut.value == 'en_attente' ? 'En attente' : 'Brouillon') }}</span></td>
+                    <td>{% if actualite.miseEnAvant %}<span class="badge text-bg-primary"><i class="bi bi-stars me-1"></i>Mise en avant</span>{% else %}<span class="text-secondary">-</span>{% endif %}</td>
                     <td>{{ actualite.publieeLe|date('d/m/Y') }}</td>
-                    <td class="text-end"><div class="d-inline-flex gap-1">{% if actualite.statut.value == 'publiee' %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}" aria-label="Voir"><i class="bi bi-eye" aria-hidden="true"></i></a>{% endif %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_administration_actualites_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Modifier</a></div></td>
+                    <td class="text-end"><div class="d-inline-flex gap-1">{% if actualite.statut.value == 'publiee' %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}" aria-label="Voir"><i class="bi bi-eye" aria-hidden="true"></i></a>{% endif %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_administration_actualites_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Modifier</a><form method="post" action="{{ path('app_administration_actualites_supprimer', {id: actualite.id}) }}" onsubmit="return confirm('Supprimer définitivement cette actualité ?')"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-actualite-' ~ actualite.id) }}"><button class="btn btn-sm btn-outline-danger" aria-label="Supprimer"><i class="bi bi-trash"></i></button></form></div></td>
                 </tr>
             {% else %}
-                <tr><td colspan="5" class="text-center text-secondary py-4">Aucune actualité.</td></tr>
+                <tr><td colspan="6" class="text-center text-secondary py-4">Aucune actualité.</td></tr>
             {% endfor %}
             </tbody>
         </table>

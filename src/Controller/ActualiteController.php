@@ -60,9 +60,9 @@ final class ActualiteController extends AbstractController
             }
             $commentaire->setActualite($actualite)->setAuteur($auteur);
             $entityManager->persist($commentaire);
-            $progression->recompenseCommentaire($auteur);
+            $recompense = $progression->recompenseCommentaire($auteur, 'actualite:'.$actualite->getId().':'.hash('sha256', mb_strtolower(trim($commentaire->getContenu()))));
             $entityManager->flush();
-            $this->addFlash('success', 'Ton commentaire a été publié. +10 XP et +5 points.');
+            $this->addFlash('success', 'Ton commentaire a été publié.'.($recompense ? ' +10 XP et +5 points.' : ''));
 
             return $this->redirect($this->generateUrl('app_actualite_voir', [
                 'slug' => $actualite->getSlug(),

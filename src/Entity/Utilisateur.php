@@ -71,6 +71,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $derniereActivite = null;
 
+    #[ORM\Column(length: 64, nullable: true, unique: true)]
+    private ?string $jetonReinitialisation = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $expirationJetonReinitialisation = null;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?ArticleBoutique $titreEquipe = null;
@@ -205,6 +211,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPoints(int $points): static { $this->points = max(0, $points); return $this; }
     public function getDerniereActivite(): ?\DateTimeImmutable { return $this->derniereActivite; }
     public function setDerniereActivite(?\DateTimeImmutable $date): static { $this->derniereActivite = $date; return $this; }
+    public function getJetonReinitialisation(): ?string { return $this->jetonReinitialisation; }
+    public function getExpirationJetonReinitialisation(): ?\DateTimeImmutable { return $this->expirationJetonReinitialisation; }
+    public function definirJetonReinitialisation(?string $hash, ?\DateTimeImmutable $expiration): static { $this->jetonReinitialisation = $hash; $this->expirationJetonReinitialisation = $expiration; return $this; }
     public function isEnLigne(): bool { return $this->derniereActivite !== null && $this->derniereActivite > new \DateTimeImmutable('-5 minutes'); }
     public function getTitreEquipe(): ?ArticleBoutique { return $this->titreEquipe; }
     public function setTitreEquipe(?ArticleBoutique $article): static { $this->titreEquipe = $article; return $this; }

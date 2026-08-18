@@ -11,6 +11,7 @@ use App\Repository\JeuRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -69,6 +70,11 @@ final class ActualiteType extends AbstractType
                     StatutActualite::EnAttente => 'En attente',
                     StatutActualite::Publiee => 'Publiée',
                 },
+            ])
+            ->add('miseEnAvant', CheckboxType::class, [
+                'label' => 'Mettre en avant sur l’accueil',
+                'required' => false,
+                'help' => 'Les actualités mises en avant apparaissent avant les dernières publications.',
             ])
             ->add('enregistrer', SubmitType::class, [
                 'label' => $options['bouton_libelle'],

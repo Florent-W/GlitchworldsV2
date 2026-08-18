@@ -94,9 +94,9 @@ final class JeuController extends AbstractController
 
             $commentaire->setJeu($jeu)->setAuteur($auteur);
             $entityManager->persist($commentaire);
-            $progression->recompenseCommentaire($auteur);
+            $recompense = $progression->recompenseCommentaire($auteur, 'jeu:'.$jeu->getId().':'.hash('sha256', mb_strtolower(trim($commentaire->getContenu()))));
             $entityManager->flush();
-            $this->addFlash('success', 'Ton commentaire a été publié. +10 XP et +5 points.');
+            $this->addFlash('success', 'Ton commentaire a été publié.'.($recompense ? ' +10 XP et +5 points.' : ''));
 
             return $this->redirect($this->generateUrl('app_jeu_show', [
                 'slug' => $jeu->getSlug(),

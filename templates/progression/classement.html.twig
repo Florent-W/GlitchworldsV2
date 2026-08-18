@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Classement des membres{% endblock %}
+
+{% block body %}
+<section class="gw-page-panel p-3 p-lg-4">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <span class="gw-section-icon"><i class="bi bi-trophy-fill" aria-hidden="true"></i></span>
+        <div><h1 class="h2 mb-1">Classement</h1><p class="text-body-secondary mb-0">Les membres les plus expérimentés de GlitchWorlds.</p></div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead><tr><th scope="col">Rang</th><th scope="col">Membre</th><th scope="col">Niveau</th><th scope="col">XP</th><th scope="col">Points</th></tr></thead>
+            <tbody>
+            {% for membre in membres %}
+                <tr>
+                    <th scope="row">{% if loop.index <= 3 %}<i class="bi bi-trophy-fill text-{{ loop.index == 1 ? 'warning' : (loop.index == 2 ? 'secondary' : 'danger') }} me-1"></i>{% endif %}{{ loop.index }}</th>
+                    <td><a class="fw-semibold text-decoration-none" href="{{ path('app_profil', {id: membre.id}) }}">{{ membre.pseudo }}</a></td>
+                    <td><span class="badge text-bg-primary">Niveau {{ membre.niveau }}</span></td>
+                    <td>{{ membre.experience|number_format(0, ',', ' ') }}</td>
+                    <td><i class="bi bi-star-fill text-warning me-1" aria-hidden="true"></i>{{ membre.points|number_format(0, ',', ' ') }}</td>
+                </tr>
+            {% else %}<tr><td colspan="5" class="text-center text-body-secondary py-5">Aucun membre classé.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
