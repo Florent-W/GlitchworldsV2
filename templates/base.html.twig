@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html lang="fr">
+﻿<!DOCTYPE html>
+{% set default_theme = app.user ? app.user.getTheme() : 'system' %}
+<html lang="fr" data-theme="{{ default_theme }}" data-theme-resolved="{{ default_theme }}" data-gw-theme="{{ default_theme }}" data-default-theme="{{ default_theme }}" data-user-authenticated="{{ app.user ? '1' : '0' }}">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,15 +17,45 @@
         <meta property="og:url" content="{{ block('canonical')|trim }}">
         {% block structured_data %}{% endblock %}
         <script>
-            (() => {
+            (function () {
                 try {
-                    const theme = localStorage.getItem('glitchworlds-theme');
-                    const sombre = theme ? ['dark', 'wave'].includes(theme) : window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    document.documentElement.dataset.bsTheme = sombre ? 'dark' : 'light';
-                    document.documentElement.dataset.gwTheme = theme || 'system';
-                    document.documentElement.dataset.reducedMotion = localStorage.getItem('glitchworlds-reduced-motion') === 'true' ? 'true' : 'false';
-                } catch (e) {
-                    document.documentElement.dataset.bsTheme = 'light';
+                    const root = document.documentElement;
+                    const normalizedMap = {
+                        ds: 'wii',
+                        gamecube: 'wii',
+                        dreamcast: 'ps3',
+                        neon: 'ps3',
+                        wave: 'ps3'
+                    };
+                    const allowed = ['system', 'light', 'dark', 'glitchworlds', 'wii', 'ps3', 'legacy'];
+                    const normalize = function (theme) {
+                        const mapped = normalizedMap[theme] || theme;
+                        return allowed.includes(mapped) ? mapped : 'system';
+                    };
+
+                    const serverTheme = normalize(root.getAttribute('data-default-theme') || 'system');
+                    const isAuthenticated = root.getAttribute('data-user-authenticated') === '1';
+                    const storedTheme = localStorage.getItem('glitchworlds-theme');
+                    const chosenTheme = isAuthenticated ? serverTheme : normalize(storedTheme || serverTheme || 'system');
+                    const resolvedTheme = chosenTheme === 'system'
+                        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                        : chosenTheme;
+
+                    if (isAuthenticated) {
+                        localStorage.setItem('glitchworlds-theme', chosenTheme);
+                    }
+
+                    root.setAttribute('data-theme', chosenTheme);
+                    root.setAttribute('data-theme-resolved', resolvedTheme);
+                    root.setAttribute('data-gw-theme', chosenTheme);
+                    root.setAttribute('data-bs-theme', ['dark', 'ps3'].includes(resolvedTheme) ? 'dark' : 'light');
+                    root.setAttribute('data-reduced-motion', localStorage.getItem('glitchworlds-reduced-motion') === 'true' ? 'true' : 'false');
+                } catch (error) {
+                    document.documentElement.setAttribute('data-theme', 'system');
+                    document.documentElement.setAttribute('data-theme-resolved', 'light');
+                    document.documentElement.setAttribute('data-gw-theme', 'system');
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                    document.documentElement.setAttribute('data-reduced-motion', 'false');
                 }
             })();
         </script>

@@ -4,7 +4,7 @@
 {% block robots_meta %}noindex,nofollow{% endblock %}
 
 {% block body %}
-<section class="gw-settings" data-controller="theme preferences">
+<section class="gw-settings" data-controller="theme preferences" data-preferences-sync-url="{{ path('app_parametres_preferences') }}" data-preferences-theme="{{ preferences.theme }}" data-preferences-reduction="{{ preferences.reductionAnimations ? 'true' : 'false' }}" data-preferences-notifications='{{ preferences.notifications|json_encode|raw }}' data-preferences-profil-prive="{{ preferences.profilPrive ? 'true' : 'false' }}" data-preferences-contraste="{{ preferences.contrasteRenforce ? 'true' : 'false' }}" data-preferences-taille="{{ preferences.tailleTexte }}">
     <header class="gw-page-heading mb-4">
         <div>
             <span class="gw-eyebrow"><i class="bi bi-gear-fill" aria-hidden="true"></i> Mon espace</span>
@@ -52,19 +52,16 @@
                     {% endfor %}
                 </div>
                 <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 mb-3">
-                    <div><h3 class="h5 mb-1">Thèmes consoles</h3><p class="text-secondary small mb-0">Chaque thème adapte les couleurs de toute l'interface.</p></div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary align-self-sm-start" data-action="theme#selectionner" data-theme-theme-param="system"><i class="bi bi-arrow-counterclockwise me-2"></i>Restaurer par défaut</button>
+                    <div><h3 class="h5 mb-1">Thèmes immersifs</h3><p class="text-secondary small mb-0">Aperçu immédiat sans rechargement, puis validation explicite.</p></div>
                 </div>
                 <div class="row g-3">
-                    {% set consoles = [
-                        {value: 'glitchworlds', icon: 'stars', titre: 'GlitchWorlds', badge: 'Officiel', texte: 'Bleu lumineux et violet, le thème de la communauté.'},
-                        {value: 'channel', icon: 'people-fill', titre: 'Channel', badge: 'Wii', texte: 'Vert, épuré et convivial.'},
-                        {value: 'dual', icon: 'device-ssd-fill', titre: 'Dual', badge: 'DS', texte: 'Rose, compact et rétro-portable.'},
-                        {value: 'wave', icon: 'controller', titre: 'Wave', badge: 'PS3', texte: 'Sombre, fluide et premium.'},
-                        {value: 'legacy', icon: 'clock-history', titre: 'Ancien site', badge: 'Legacy', texte: 'Le bleu, la barre sombre et le coucher de soleil d’origine.'},
+                    {% set palettes = [
+                        {value: 'glitchworlds', icon: 'stars', titre: 'Classique', badge: 'GW', texte: 'Palette standard GlitchWorlds.'},
+                        {value: 'wii', icon: 'controller', titre: 'Wii', badge: 'WII', texte: 'Clair, blanc et bleu ciel avec profondeur douce.'},
+                        {value: 'ps3', icon: 'gamepad', titre: 'PS3', badge: 'PS3', texte: 'Sombre cinématique, halos bleus et navigation fluide.'},
                     ] %}
-                    {% for theme in consoles %}
-                        <div class="col-sm-6 col-xl-3">
+                    {% for theme in palettes %}
+                        <div class="col-sm-6 col-xl-4">
                             <button type="button" class="gw-theme-card w-100 text-start" aria-pressed="false"
                                     data-theme-target="option" data-theme-value="{{ theme.value }}"
                                     data-action="theme#selectionner" data-theme-theme-param="{{ theme.value }}">
@@ -75,6 +72,12 @@
                         </div>
                     {% endfor %}
                 </div>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="button" class="btn btn-primary" data-theme-target="applyButton" data-action="theme#appliquerSelection">Appliquer</button>
+                    <button type="button" class="btn btn-outline-secondary" data-theme-target="cancelButton" data-action="theme#annulerApercu">Annuler l'aperçu</button>
+                    <button type="button" class="btn btn-outline-secondary" data-action="theme#restaurerDefaut"><i class="bi bi-arrow-counterclockwise me-2"></i>Restaurer le thème par défaut</button>
+                </div>
+                <p class="small text-secondary mb-0 mt-2" data-theme-target="status" aria-live="polite"></p>
             </article>
 
             <article id="profil" class="gw-panel p-4 p-xl-5 scroll-mt">
@@ -105,10 +108,70 @@
 
             <article id="accessibilite" class="gw-panel p-4 p-xl-5 scroll-mt">
                 <h2 class="h3 mb-1"><i class="bi bi-universal-access text-primary me-2"></i>Accessibilité</h2>
-                <p class="text-secondary mb-4">Adapte les mouvements de l'interface à ton confort.</p>
-                <div class="form-check form-switch d-flex align-items-start gap-3 ps-0">
-                    <div class="flex-grow-1"><label class="form-check-label fw-semibold" for="reduction-mouvement">Réduire les animations</label><small class="d-block text-secondary">Désactive les transitions et effets de déplacement.</small></div>
-                    <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="reduction-mouvement" data-preferences-target="mouvement" data-action="preferences#changerMouvement">
+                <p class="text-secondary mb-4">Adapte les mouvements et le rendu de l'interface à ton confort.</p>
+                <div class="d-grid gap-4">
+                    <div class="form-check form-switch d-flex align-items-start gap-3 ps-0">
+                        <div class="flex-grow-1"><label class="form-check-label fw-semibold" for="reduction-mouvement">Réduire les animations</label><small class="d-block text-secondary">Désactive les transitions et effets de déplacement.</small></div>
+                        <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="reduction-mouvement" data-preferences-target="mouvement" data-action="preferences#changerMouvement">
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center">
+                        <div>
+                            <label class="form-label fw-semibold mb-1" for="contraste-renforce">Contraste renforcé</label>
+                            <div class="text-secondary small">Améliore la lisibilité sur les éléments faibles.</div>
+                        </div>
+                        <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="contraste-renforce" data-preferences-target="contraste" data-action="preferences#changerContraste">
+                    </div>
+                    <div>
+                        <label class="form-label fw-semibold" for="taille-texte">Taille du texte</label>
+                        <select class="form-select" id="taille-texte" data-preferences-target="taille" data-action="preferences#changerTaille">
+                            <option value="small">Petite</option>
+                            <option value="normal">Normale</option>
+                            <option value="large">Large</option>
+                            <option value="xl">Très large</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-5 border-top pt-4">
+                    <h3 class="h5 mb-3">Préférences de notification</h3>
+                    <div class="d-grid gap-3">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-between gap-3 ps-0">
+                            <label class="form-check-label fw-semibold" for="notifications-email">Notifications par e-mail</label>
+                            <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="notifications-email" data-preferences-target="notificationsEmail" data-action="preferences#changerNotification">
+                        </div>
+                        <div class="form-check form-switch d-flex align-items-center justify-content-between gap-3 ps-0">
+                            <label class="form-check-label fw-semibold" for="notifications-messages">Messages privés</label>
+                            <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="notifications-messages" data-preferences-target="notificationsMessages" data-action="preferences#changerNotification">
+                        </div>
+                        <div class="form-check form-switch d-flex align-items-center justify-content-between gap-3 ps-0">
+                            <label class="form-check-label fw-semibold" for="notifications-communaute">Activité communautaire</label>
+                            <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="notifications-communaute" data-preferences-target="notificationsCommunaute" data-action="preferences#changerNotification">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 border-top pt-4">
+                    <h3 class="h5 mb-3">Confidentialité et compte</h3>
+                    <div class="form-check form-switch d-flex align-items-start gap-3 ps-0 mb-4">
+                        <div class="flex-grow-1"><label class="form-check-label fw-semibold" for="profil-prive">Profil privé</label><small class="d-block text-secondary">Cache ton profil aux visiteurs non connectés.</small></div>
+                        <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="profil-prive" data-preferences-target="profilPrive" data-action="preferences#changerProfilPrive">
+                    </div>
+                    <div id="session-actuelle" class="d-flex align-items-center justify-content-between gap-3 p-3 rounded border bg-body-tertiary">
+                        <div><strong class="d-block">Session actuelle</strong><small class="text-secondary">Cette session est active sur cet appareil.</small></div>
+                        <span class="badge text-bg-success">Active</span>
+                    </div>
+                    <form method="post" action="{{ path('app_parametres_sessions_deconnecter_toutes') }}" class="mt-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('sessions-connectees-' ~ utilisateur.id) }}">
+                        <button type="submit" class="btn btn-outline-secondary" id="session-actuelle-deconnexion">Se déconnecter des autres appareils</button>
+                    </form>
+                    <div class="d-flex flex-wrap gap-3 mt-4">
+                        <form method="post" action="{{ path('app_parametres_exporter') }}" id="export-compte">
+                            <button type="submit" class="btn btn-outline-primary">Exporter les données</button>
+                        </form>
+                        <form method="post" action="{{ path('app_parametres_supprimer') }}" id="suppression-compte" onsubmit="return confirm('Supprimer ton compte ? Cette action est définitive.');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('suppression-compte-' ~ utilisateur.id) }}">
+                            <input type="password" name="motDePasse" class="form-control form-control-sm mb-2" placeholder="Mot de passe" aria-label="Mot de passe" required>
+                            <button type="submit" class="btn btn-outline-danger">Supprimer le compte</button>
+                        </form>
+                    </div>
                 </div>
             </article>
         </div>

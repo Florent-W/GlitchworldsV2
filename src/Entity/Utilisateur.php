@@ -71,6 +71,27 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $derniereActivite = null;
 
+    #[ORM\Column(length: 32, options: ['default' => 'system'])]
+    private string $theme = 'system';
+
+    #[ORM\Column(options: ['default' => 0])]
+    private bool $reductionAnimations = false;
+
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    private array $notifications = ['email' => true, 'messages' => true, 'communaute' => true];
+
+    #[ORM\Column(options: ['default' => 0])]
+    private bool $profilPrive = false;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private bool $contrasteRenforce = false;
+
+    #[ORM\Column(length: 16, options: ['default' => 'normal'])]
+    private string $tailleTexte = 'normal';
+
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    private array $sessionsConnectees = [];
+
     #[ORM\Column(length: 64, nullable: true, unique: true)]
     private ?string $jetonReinitialisation = null;
 
@@ -211,6 +232,32 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPoints(int $points): static { $this->points = max(0, $points); return $this; }
     public function getDerniereActivite(): ?\DateTimeImmutable { return $this->derniereActivite; }
     public function setDerniereActivite(?\DateTimeImmutable $date): static { $this->derniereActivite = $date; return $this; }
+    public function getTheme(): string { return $this->theme; }
+    public function setTheme(string $theme): static {
+        $theme = match ($theme) {
+            'ds', 'gamecube' => 'wii',
+            'dreamcast', 'wave', 'neon' => 'ps3',
+            default => $theme,
+        };
+        $this->theme = in_array($theme, ['system', 'light', 'dark', 'glitchworlds', 'wii', 'ps3', 'legacy'], true) ? $theme : 'system';
+        return $this;
+    }
+    public function isReductionAnimations(): bool { return $this->reductionAnimations; }
+    public function setReductionAnimations(bool $reductionAnimations): static { $this->reductionAnimations = $reductionAnimations; return $this; }
+    /** @return array{email?: bool, messages?: bool, communaute?: bool} */
+    public function getNotifications(): array { return ['email' => (bool) ($this->notifications['email'] ?? true), 'messages' => (bool) ($this->notifications['messages'] ?? true), 'communaute' => (bool) ($this->notifications['communaute'] ?? true)]; }
+    /** @param array<string, mixed> $notifications */
+    public function setNotifications(array $notifications): static { $this->notifications = ['email' => (bool) ($notifications['email'] ?? true), 'messages' => (bool) ($notifications['messages'] ?? true), 'communaute' => (bool) ($notifications['communaute'] ?? true)]; return $this; }
+    public function isProfilPrive(): bool { return $this->profilPrive; }
+    public function setProfilPrive(bool $profilPrive): static { $this->profilPrive = $profilPrive; return $this; }
+    public function isContrasteRenforce(): bool { return $this->contrasteRenforce; }
+    public function setContrasteRenforce(bool $contrasteRenforce): static { $this->contrasteRenforce = $contrasteRenforce; return $this; }
+    public function getTailleTexte(): string { return in_array($this->tailleTexte, ['small', 'normal', 'large', 'xl'], true) ? $this->tailleTexte : 'normal'; }
+    public function setTailleTexte(string $tailleTexte): static { $this->tailleTexte = in_array($tailleTexte, ['small', 'normal', 'large', 'xl'], true) ? $tailleTexte : 'normal'; return $this; }
+    /** @return array<string, array<string, mixed>> */
+    public function getSessionsConnectees(): array { return is_array($this->sessionsConnectees) ? $this->sessionsConnectees : []; }
+    /** @param array<string, array<string, mixed>> $sessions */
+    public function setSessionsConnectees(array $sessions): static { $this->sessionsConnectees = $sessions; return $this; }
     public function getJetonReinitialisation(): ?string { return $this->jetonReinitialisation; }
     public function getExpirationJetonReinitialisation(): ?\DateTimeImmutable { return $this->expirationJetonReinitialisation; }
     public function definirJetonReinitialisation(?string $hash, ?\DateTimeImmutable $expiration): static { $this->jetonReinitialisation = $hash; $this->expirationJetonReinitialisation = $expiration; return $this; }

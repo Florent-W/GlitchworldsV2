@@ -78,6 +78,19 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertResponseRedirects('/connexion');
     }
 
+    public function testLeThemeEstAmorceAvantAffichagePourEviterLeFlash(): void
+    {
+        $client = self::createClient();
+        $crawler = $client->request('GET', '/connexion');
+
+        self::assertResponseIsSuccessful();
+        $contenu = $client->getResponse()->getContent() ?? '';
+        self::assertStringContainsString('data-theme-resolved="', $contenu);
+        self::assertStringContainsString("localStorage.getItem('glitchworlds-theme')", $contenu);
+        self::assertStringContainsString("root.setAttribute('data-theme', chosenTheme)", $contenu);
+        self::assertGreaterThan(0, $crawler->filter('script')->count());
+    }
+
     public function testUnMembrePeutChoisirSesParametresInterface(): void
     {
         $client = self::createClient();
@@ -94,10 +107,79 @@ final class SecuriteControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Paramètres');
-        self::assertSelectorCount(8, '[data-theme-target="option"]');
+        self::assertSelectorCount(6, '[data-theme-target="option"]');
+        self::assertSelectorTextContains('[data-theme-value="wii"] strong', 'Wii');
+        self::assertSelectorTextContains('[data-theme-value="ps3"] strong', 'PS3');
+        self::assertSelectorExists('[data-action="theme#appliquerSelection"]');
+        self::assertSelectorExists('[data-action="theme#annulerApercu"]');
+        self::assertSelectorExists('[data-action="theme#restaurerDefaut"]');
         self::assertSelectorExists('a[href="/mon-compte/modifier"]');
         self::assertSelectorExists('a[href="/mon-compte/mot-de-passe"]');
         self::assertSelectorExists('#reduction-mouvement');
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->remove($entityManager->find(Utilisateur::class, $utilisateurId));
+        $entityManager->flush();
+    }
+
+    public function testUnMembrePeutEnregistrerSesPreferencesDeCompte(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $utilisateur = (new Utilisateur())
+            ->setPseudo('PreferencesTest')
+            ->setEmail(sprintf('preferences-%s@glitchworlds.local', bin2hex(random_bytes(5))));
+        $entityManager->persist($utilisateur);
+        $entityManager->flush();
+        $utilisateurId = $utilisateur->getId();
+
+        $client->loginUser($utilisateur);
+        $client->request('POST', '/parametres/preferences', [], [], [], json_encode([
+            'theme' => 'ps3',
+            'reductionAnimations' => true,
+            'notifications' => ['email' => true, 'messages' => false, 'communaute' => true],
+            'profilPrive' => true,
+            'contrasteRenforce' => true,
+            'tailleTexte' => 'large',
+        ]));
+
+        self::assertResponseIsSuccessful();
+        $entityManager->clear();
+        $recharge = $entityManager->find(Utilisateur::class, $utilisateurId);
+        self::assertSame('ps3', $recharge->getTheme());
+        self::assertTrue($recharge->isReductionAnimations());
+        self::assertTrue($recharge->isProfilPrive());
+        self::assertTrue($recharge->isContrasteRenforce());
+        self::assertSame('large', $recharge->getTailleTexte());
+        self::assertFalse($recharge->getNotifications()['messages']);
+
+        $entityManager->remove($recharge);
+        $entityManager->flush();
+    }
+
+    public function testUnMembreVoitLesOptionsSupplementairesDeParametres(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $utilisateur = (new Utilisateur())
+            ->setPseudo('OptionsParametres')
+            ->setEmail(sprintf('options-%s@glitchworlds.local', bin2hex(random_bytes(5))));
+        $entityManager->persist($utilisateur);
+        $entityManager->flush();
+        $utilisateurId = $utilisateur->getId();
+
+        $client->loginUser($utilisateur);
+        $client->request('GET', '/parametres');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#notifications-email');
+        self::assertSelectorExists('#notifications-messages');
+        self::assertSelectorExists('#profil-prive');
+        self::assertSelectorExists('#contraste-renforce');
+        self::assertSelectorExists('#taille-texte');
+        self::assertSelectorExists('#session-actuelle');
+        self::assertSelectorExists('#export-compte');
+        self::assertSelectorExists('#suppression-compte');
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $entityManager->remove($entityManager->find(Utilisateur::class, $utilisateurId));
