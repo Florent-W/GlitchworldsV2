@@ -36,12 +36,14 @@
                     const serverTheme = normalize(root.getAttribute('data-default-theme') || 'system');
                     const isAuthenticated = root.getAttribute('data-user-authenticated') === '1';
                     const storedTheme = localStorage.getItem('glitchworlds-theme');
-                    const chosenTheme = isAuthenticated ? serverTheme : normalize(storedTheme || serverTheme || 'system');
+                    // Le choix local est appliqué immédiatement sur toutes les pages.
+                    // La valeur du compte reste le repli quand ce navigateur n'a encore rien mémorisé.
+                    const chosenTheme = normalize(storedTheme || serverTheme || 'system');
                     const resolvedTheme = chosenTheme === 'system'
                         ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                         : chosenTheme;
 
-                    if (isAuthenticated) {
+                    if (isAuthenticated && !storedTheme) {
                         localStorage.setItem('glitchworlds-theme', chosenTheme);
                     }
 

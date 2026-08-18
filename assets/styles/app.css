@@ -632,22 +632,99 @@ body {
 }
 
 @media (min-width: 768px) {
+    :root[data-theme="wii"] {
+        --gw-rail-width: 100%;
+    }
+    :root[data-theme="wii"] .gw-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    :root[data-theme="wii"] .gw-rail {
+        position: static;
+        padding: .8rem;
+        border: 1px solid rgba(255, 255, 255, .92);
+        border-radius: 1.65rem;
+        background: rgba(231, 241, 247, .72);
+        box-shadow: inset 0 1px #fff, 0 .75rem 1.8rem rgba(70, 120, 155, .13);
+    }
+    :root[data-theme="wii"] .gw-rail__list {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: .7rem;
+        padding: 0;
+    }
+    :root[data-theme="wii"] .gw-rail__item {
+        min-height: 108px;
+        padding: .85rem .5rem;
+        border: 1px solid #becdd7;
+        border-radius: .75rem;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(232, 238, 242, .96));
+        box-shadow: inset 0 1px #fff, 0 .22rem .48rem rgba(82, 105, 120, .15);
+    }
+    :root[data-theme="wii"] .gw-rail__item i {
+        font-size: 2rem;
+    }
+    :root[data-theme="wii"] .gw-rail__label {
+        font-size: .68rem;
+    }
+    :root[data-theme="wii"] .gw-rail__item.is-active {
+        background:
+            radial-gradient(100% 80% at 50% 0, rgba(255, 255, 255, .38), transparent 55%),
+            linear-gradient(180deg, #38b8f2, #0785d0);
+    }
+
     :root[data-theme="ps3"] .gw-layout { grid-template-columns: minmax(0, 1fr); }
-    :root[data-theme="ps3"] .gw-rail { top: .5rem; z-index: 1030; }
+    :root[data-theme="ps3"] .gw-rail {
+        position: relative;
+        top: auto;
+        z-index: 1;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
     :root[data-theme="ps3"] .gw-rail__list {
         display: flex;
-        gap: .45rem;
-        padding: .55rem;
+        align-items: flex-end;
+        justify-content: center;
+        gap: clamp(.35rem, 1.2vw, 1rem);
+        padding: 1rem .55rem 1.25rem;
         overflow-x: auto;
         scrollbar-width: thin;
     }
     :root[data-theme="ps3"] .gw-rail__list > li { flex: 0 0 auto; }
     :root[data-theme="ps3"] .gw-rail__item {
-        width: 112px;
-        min-height: 78px;
-        padding: .7rem .5rem;
+        width: 104px;
+        min-height: 88px;
+        padding: .75rem .45rem;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
     }
-    :root[data-theme="ps3"] .gw-rail__item i { font-size: 1.55rem; }
+    :root[data-theme="ps3"] .gw-rail__item i {
+        font-size: 2rem;
+        filter: drop-shadow(0 0 .55rem rgba(168, 220, 255, .28));
+    }
+    :root[data-theme="ps3"] .gw-rail__item:not(.is-active) .gw-rail__label {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+    }
+    :root[data-theme="ps3"] .gw-rail__item.is-active {
+        transform: translateY(.35rem) scale(1.14);
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+    :root[data-theme="ps3"] .gw-rail__item.is-active i {
+        font-size: 2.55rem;
+        filter: drop-shadow(0 0 .7rem rgba(72, 184, 255, .75));
+    }
+    :root[data-theme="ps3"] .gw-rail__item.is-active .gw-rail__label {
+        margin-top: .4rem;
+        font-size: .72rem;
+        text-shadow: 0 0 .65rem rgba(72, 184, 255, .85);
+    }
 }
 
 :root[data-theme="ps3"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .accordion-item),
