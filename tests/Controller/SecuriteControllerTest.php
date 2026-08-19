@@ -87,7 +87,8 @@ final class SecuriteControllerTest extends WebTestCase
         $contenu = $client->getResponse()->getContent() ?? '';
         self::assertStringContainsString('data-theme-resolved="', $contenu);
         self::assertStringContainsString("localStorage.getItem('glitchworlds-theme')", $contenu);
-        self::assertStringContainsString("root.setAttribute('data-theme', chosenTheme)", $contenu);
+        self::assertStringContainsString("root.setAttribute('data-theme', chosen.palette)", $contenu);
+        self::assertStringContainsString("root.setAttribute('data-bs-theme', resolvedMode)", $contenu);
         self::assertGreaterThan(0, $crawler->filter('script')->count());
     }
 
@@ -107,7 +108,9 @@ final class SecuriteControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Paramètres');
-        self::assertSelectorCount(6, '[data-theme-target="option"]');
+        // Les deux axes sont proposés séparément : 3 niveaux de luminosité, 4 ambiances.
+        self::assertSelectorCount(3, '[data-theme-target="modeOption"]');
+        self::assertSelectorCount(4, '[data-theme-target="paletteOption"]');
         self::assertSelectorTextContains('[data-theme-value="wii"] strong', 'Wii');
         self::assertSelectorTextContains('[data-theme-value="ps3"] strong', 'PS3');
         self::assertSelectorExists('[data-action="theme#appliquerSelection"]');
@@ -146,7 +149,9 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $entityManager->clear();
         $recharge = $entityManager->find(Utilisateur::class, $utilisateurId);
-        self::assertSame('ps3', $recharge->getTheme());
+        // Ancienne valeur mono-axe : la palette est conservée et le mode déduit.
+        self::assertSame('ps3', $recharge->getPalette());
+        self::assertSame('dark', $recharge->getMode());
         self::assertTrue($recharge->isReductionAnimations());
         self::assertTrue($recharge->isProfilPrive());
         self::assertTrue($recharge->isContrasteRenforce());
@@ -178,7 +183,6 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertSelectorExists('#contraste-renforce');
         self::assertSelectorExists('#taille-texte');
         self::assertSelectorExists('#session-actuelle');
-        self::assertSelectorExists('#export-compte');
         self::assertSelectorExists('#suppression-compte');
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);

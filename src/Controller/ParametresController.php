@@ -27,6 +27,8 @@ final class ParametresController extends AbstractController
             'utilisateur' => $utilisateur,
             'preferences' => [
                 'theme' => $utilisateur->getTheme(),
+                'palette' => $utilisateur->getPalette(),
+                'mode' => $utilisateur->getMode(),
                 'reductionAnimations' => $utilisateur->isReductionAnimations(),
                 'notifications' => $utilisateur->getNotifications(),
                 'profilPrive' => $utilisateur->isProfilPrive(),
@@ -66,39 +68,14 @@ final class ParametresController extends AbstractController
             'status' => 'ok',
             'preferences' => [
                 'theme' => $utilisateur->getTheme(),
+                'palette' => $utilisateur->getPalette(),
+                'mode' => $utilisateur->getMode(),
                 'reductionAnimations' => $utilisateur->isReductionAnimations(),
                 'notifications' => $utilisateur->getNotifications(),
                 'profilPrive' => $utilisateur->isProfilPrive(),
                 'contrasteRenforce' => $utilisateur->isContrasteRenforce(),
                 'tailleTexte' => $utilisateur->getTailleTexte(),
             ],
-        ]);
-    }
-
-    #[Route('/parametres/exporter', name: 'app_parametres_exporter', methods: ['POST'])]
-    public function exporterCompte(): Response
-    {
-        $utilisateur = $this->getUser();
-        if (!$utilisateur instanceof Utilisateur) {
-            throw $this->createAccessDeniedException();
-        }
-
-        $export = [
-            'pseudo' => $utilisateur->getPseudo(),
-            'email' => $utilisateur->getEmail(),
-            'inscritLe' => $utilisateur->getInscritLe()->format(DATE_ATOM),
-            'theme' => $utilisateur->getTheme(),
-            'notifications' => $utilisateur->getNotifications(),
-            'profilPrive' => $utilisateur->isProfilPrive(),
-            'contrasteRenforce' => $utilisateur->isContrasteRenforce(),
-            'tailleTexte' => $utilisateur->getTailleTexte(),
-        ];
-
-        $json = json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-        return new Response((string) $json, Response::HTTP_OK, [
-            'Content-Type' => 'application/json; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="glitchworlds-compte-'.$utilisateur->getId().'.json"',
         ]);
     }
 

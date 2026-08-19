@@ -915,6 +915,251 @@ body {
     to { transform: translate3d(1.5%, 1%, 0) scale(1.06); }
 }
 
+/* ===============================================================
+   3 bis. Déclinaisons clair / sombre des ambiances
+   La palette (data-theme) et la luminosité (data-bs-theme) sont deux
+   axes indépendants. Les blocs ci-dessous ne reprennent que ce que la
+   version de base de chaque ambiance fixe en dur : le double attribut
+   leur donne la priorité sur les tokens de la palette.
+   =============================================================== */
+
+/* --- Wii en sombre : mêmes formes arrondies, surfaces ardoise --- */
+:root[data-theme="wii"][data-bs-theme="dark"] {
+    --gw-primary: #4cc3ff;
+    --gw-primary-rgb: 76, 195, 255;
+    --gw-primary-dark: #8bd9ff;
+    --gw-secondary: #6fd0ef;
+    --gw-secondary-rgb: 111, 208, 239;
+    --gw-background: #0b1a24;
+    --gw-background-accent: #12283a;
+    --gw-surface: rgba(18, 40, 58, 0.86);
+    --gw-surface-solid: #14293b;
+    --gw-text: #e7f3fa;
+    --gw-muted: #9db3c3;
+    --gw-border: rgba(120, 190, 225, 0.22);
+    --gw-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.45);
+    --gw-shadow-soft: 0 .45rem 1.25rem rgba(0, 0, 0, 0.32);
+    --bs-body-color: var(--gw-text);
+    --bs-body-bg: var(--gw-background);
+    --bs-secondary-color: var(--gw-muted);
+    --bs-tertiary-bg: #163043;
+    --bs-border-color: var(--gw-border);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] body {
+    background-image:
+        radial-gradient(130% 70% at 10% 0%, rgba(50, 140, 190, .3), transparent 58%),
+        radial-gradient(120% 80% at 100% 20%, rgba(30, 90, 130, .34), transparent 56%),
+        radial-gradient(160% 62% at 50% 100%, rgba(16, 60, 90, .5), transparent 58%),
+        linear-gradient(180deg, #0d2130 0%, #0b1a24 42%, #0a1620 100%);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] body::before {
+    opacity: .5;
+    background:
+        radial-gradient(70% 18% at 10% 24%, transparent 68%, rgba(76, 195, 255, .18) 70%, transparent 73%),
+        radial-gradient(85% 22% at 86% 78%, transparent 67%, rgba(140, 205, 240, .16) 69%, transparent 72%);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] .gw-topbar {
+    border-color: var(--gw-border);
+    box-shadow: 0 .65rem 1.8rem rgba(0, 0, 0, .35);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .table, .accordion-item),
+:root[data-theme="wii"][data-bs-theme="dark"] :is(.gw-community__composer, .gw-community__post, .gw-community__side, .gw-similar-card, .gw-comment) {
+    background-color: var(--gw-surface-solid);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] :is(.card, .modal-content, .dropdown-menu, .gw-community__post, .gw-comment) {
+    box-shadow: 0 .55rem 1.4rem rgba(0, 0, 0, .32);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] :is(.form-control, .form-select, .input-group-text) {
+    background-color: rgba(9, 24, 36, .8);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] .gw-rail__item i {
+    color: var(--gw-muted);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] .gw-rail__item.is-active {
+    border-color: #4cc3ff;
+    box-shadow: 0 0 0 3px rgba(76, 195, 255, .2), 0 0 1.25rem rgba(0, 0, 0, .4);
+}
+
+:root[data-theme="wii"][data-bs-theme="dark"] .gw-rail__item:hover {
+    color: #8bd9ff;
+    box-shadow: 0 .65rem 1.3rem rgba(0, 0, 0, .38);
+}
+
+@media (min-width: 768px) {
+    :root[data-theme="wii"][data-bs-theme="dark"] .gw-rail {
+        border-color: var(--gw-border);
+        background: rgba(14, 33, 48, .72);
+        box-shadow: inset 0 1px rgba(255, 255, 255, .06), 0 .75rem 1.8rem rgba(0, 0, 0, .38);
+    }
+    :root[data-theme="wii"][data-bs-theme="dark"] .gw-rail__item {
+        border-color: rgba(120, 190, 225, .18);
+        background: linear-gradient(180deg, rgba(24, 48, 68, .98), rgba(15, 33, 48, .96));
+        box-shadow: inset 0 1px rgba(255, 255, 255, .05), 0 .22rem .48rem rgba(0, 0, 0, .3);
+    }
+}
+
+/* --- Legacy en sombre : l'ancien site à la nuit tombée --- */
+:root[data-theme="legacy"][data-bs-theme="dark"] {
+    --gw-primary: #5b8cff;
+    --gw-primary-rgb: 91, 140, 255;
+    --gw-primary-dark: #93b2ff;
+    --gw-secondary: #2ee0bd;
+    --gw-secondary-rgb: 46, 224, 189;
+    --gw-background: #14161c;
+    --gw-background-accent: #1d212a;
+    --gw-surface: rgba(33, 37, 45, .92);
+    --gw-surface-solid: #23272f;
+    --gw-text: #e9ecef;
+    --gw-muted: #a8b1ba;
+    --gw-border: rgba(0, 0, 0, .62);
+    --gw-shadow: 0 0 0 .22rem rgba(0, 0, 0, .9), 0 12px 28px rgba(0, 0, 0, .5);
+    --gw-shadow-soft: 0 3px 10px rgba(0, 0, 0, .45);
+    --bs-body-color: var(--gw-text);
+    --bs-body-bg: var(--gw-background);
+    --bs-secondary-color: var(--gw-muted);
+    --bs-tertiary-bg: #2a2f38;
+    --bs-border-color: var(--gw-border);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] body {
+    background-image:
+        linear-gradient(180deg, rgba(6, 14, 30, .55), rgba(14, 9, 46, .6) 48%, rgba(70, 30, 12, .5)),
+        linear-gradient(145deg, #142542 0%, #1b1832 52%, #5c3324 82%, #6b4a2c 100%);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .accordion-item) {
+    color: var(--gw-text);
+    background-color: var(--gw-surface-solid);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.form-control, .form-select, .input-group-text) {
+    color: var(--gw-text);
+    background-color: #1b1f26;
+    border-color: var(--gw-border);
+}
+
+/* --- PS3 en clair : même architecture, verre laiteux --- */
+:root[data-theme="ps3"][data-bs-theme="light"] {
+    --gw-primary: #0f7fc4;
+    --gw-primary-rgb: 15, 127, 196;
+    --gw-primary-dark: #0a5f95;
+    --gw-secondary: #6c5ce7;
+    --gw-secondary-rgb: 108, 92, 231;
+    --gw-background: #eef6fd;
+    --gw-background-accent: #dcecfa;
+    --gw-surface: rgba(255, 255, 255, .84);
+    --gw-surface-solid: #ffffff;
+    --gw-text: #0d2135;
+    --gw-muted: #5a7288;
+    --gw-border: rgba(15, 127, 196, .22);
+    --gw-shadow: 0 1rem 3rem rgba(28, 78, 120, .18);
+    --gw-shadow-soft: 0 .5rem 1.5rem rgba(28, 78, 120, .14);
+    --gw-glow: 0 0 0 2px rgba(15, 127, 196, .24), 0 0 24px rgba(15, 127, 196, .16);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] body {
+    background-image:
+        radial-gradient(100% 85% at 50% -10%, rgba(15, 127, 196, .16), transparent 55%),
+        radial-gradient(90% 90% at 80% 25%, rgba(108, 92, 231, .14), transparent 62%),
+        radial-gradient(120% 90% at 0% 90%, rgba(78, 156, 214, .16), transparent 58%),
+        linear-gradient(180deg, #f4faff 0%, #e7f2fc 45%, #dceafa 100%);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] body::before {
+    opacity: .7;
+    background:
+        radial-gradient(90% 28% at 48% 32%, transparent 66%, rgba(15, 127, 196, .14) 68%, transparent 71%),
+        radial-gradient(110% 32% at 58% 75%, transparent 67%, rgba(108, 92, 231, .12) 69%, transparent 72%);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-topbar {
+    border-color: var(--gw-border);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .8), 0 1rem 2.6rem rgba(28, 78, 120, .14);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-logo__name,
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-logo__tagline {
+    color: var(--gw-text);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-rail__item.is-active {
+    color: #063a5e;
+    background: linear-gradient(180deg, rgba(15, 127, 196, .22), rgba(108, 92, 231, .16));
+    border-color: rgba(15, 127, 196, .5);
+    text-shadow: none;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-rail__item.is-active i,
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-rail__item.is-active .gw-rail__label {
+    color: #063a5e;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-rail__item:hover {
+    box-shadow: 0 0 1rem rgba(15, 127, 196, .2);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .accordion-item),
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.gw-community__composer, .gw-community__post, .gw-community__side, .gw-similar-card, .gw-comment) {
+    background-color: rgba(255, 255, 255, .92);
+    border-color: var(--gw-border);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .9), 0 .8rem 2rem rgba(28, 78, 120, .12);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.table, .table > :not(caption) > * > *, .list-group-item) {
+    border-color: rgba(15, 127, 196, .16);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.form-control, .form-select, .input-group-text) {
+    background-color: rgba(255, 255, 255, .95);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.form-control, .form-select):focus {
+    color: var(--gw-text);
+    background-color: #ffffff;
+    border-color: #0f7fc4;
+    box-shadow: 0 0 0 .2rem rgba(15, 127, 196, .16);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.btn-primary, .btn-gw, .nav-pills .nav-link.active, .page-item.active .page-link) {
+    background: linear-gradient(115deg, #1188d1, #4f74dd 58%, #7756d6);
+    border-color: rgba(15, 127, 196, .45);
+    box-shadow: 0 .35rem .9rem rgba(28, 78, 120, .18);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.btn-outline-primary, .page-link) {
+    color: #0a5f95;
+    border-color: rgba(15, 127, 196, .38);
+    background-color: rgba(255, 255, 255, .72);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.btn-outline-primary, .page-link):hover {
+    color: #ffffff;
+    background-color: #0f7fc4;
+    box-shadow: 0 0 .9rem rgba(15, 127, 196, .22);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete {
+    background: #ffffff;
+    border-color: var(--gw-border);
+    box-shadow: 0 1.4rem 3.5rem rgba(28, 78, 120, .22);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-topbar-status {
+    border-right-color: var(--gw-border);
+}
+
 .gw-rail__badge {
     position: absolute;
     top: 0.3rem;

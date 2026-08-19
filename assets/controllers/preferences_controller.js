@@ -16,13 +16,14 @@ export default class extends Controller {
     ajouterEcouteurs() {
         this.onThemeChange = event => {
             const detail = event.detail || {};
-            if (!detail.persisted) {
+            // « saved » signale que le contrôleur de thème a déjà fait l'appel réseau lui-même.
+            if (!detail.persisted || detail.saved) {
                 return;
             }
 
             const theme = typeof detail.theme === 'string'
                 ? detail.theme
-                : (localStorage.getItem('glitchworlds-theme') || 'system');
+                : (localStorage.getItem('glitchworlds-theme') || 'glitchworlds:system');
 
             this.sauvegarder({ theme });
         };

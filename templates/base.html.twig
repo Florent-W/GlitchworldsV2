@@ -1,6 +1,8 @@
 ﻿<!DOCTYPE html>
-{% set default_theme = app.user ? app.user.getTheme() : 'system' %}
-<html lang="fr" data-theme="{{ default_theme }}" data-theme-resolved="{{ default_theme }}" data-gw-theme="{{ default_theme }}" data-default-theme="{{ default_theme }}" data-user-authenticated="{{ app.user ? '1' : '0' }}">
+{% set default_theme = app.user ? app.user.getTheme() : 'glitchworlds:system' %}
+{% set default_palette = app.user ? app.user.getPalette() : 'glitchworlds' %}
+{% set default_mode = app.user ? app.user.getMode() : 'system' %}
+<html lang="fr" data-theme="{{ default_palette }}" data-theme-resolved="{{ default_mode }}" data-gw-theme="{{ default_palette }}" data-gw-mode="{{ default_mode }}" data-default-theme="{{ default_theme }}" data-user-authenticated="{{ app.user ? '1' : '0' }}">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,44 +22,69 @@
             (function () {
                 try {
                     const root = document.documentElement;
-                    const normalizedMap = {
+                    // Le thème mémorisé combine deux axes indépendants : « palette:mode ».
+                    // Les anciennes valeurs mono-axe sont rattrapées ici, comme côté PHP.
+                    const aliases = {
                         ds: 'wii',
                         gamecube: 'wii',
                         dreamcast: 'ps3',
                         neon: 'ps3',
                         wave: 'ps3'
                     };
-                    const allowed = ['system', 'light', 'dark', 'glitchworlds', 'wii', 'ps3', 'legacy'];
-                    const normalize = function (theme) {
-                        const mapped = normalizedMap[theme] || theme;
-                        return allowed.includes(mapped) ? mapped : 'system';
+                    const palettes = ['glitchworlds', 'wii', 'ps3', 'legacy'];
+                    const modes = ['system', 'light', 'dark'];
+                    const split = function (value) {
+                        const parts = String(value || '').split(':');
+                        let palette = aliases[parts[0]] || parts[0];
+                        let mode = parts.length > 1 ? parts[1] : null;
+
+                        if (mode === null) {
+                            if (modes.includes(palette)) {
+                                mode = palette;
+                                palette = 'glitchworlds';
+                            } else if (palette === 'ps3') {
+                                mode = 'dark';
+                            } else if (palette === 'wii' || palette === 'legacy') {
+                                mode = 'light';
+                            } else {
+                                mode = 'system';
+                            }
+                        }
+
+                        return {
+                            palette: palettes.includes(palette) ? palette : 'glitchworlds',
+                            mode: modes.includes(mode) ? mode : 'system'
+                        };
                     };
 
-                    const serverTheme = normalize(root.getAttribute('data-default-theme') || 'system');
                     const isAuthenticated = root.getAttribute('data-user-authenticated') === '1';
                     const storedTheme = localStorage.getItem('glitchworlds-theme');
                     // Le choix local est appliqué immédiatement sur toutes les pages.
                     // La valeur du compte reste le repli quand ce navigateur n'a encore rien mémorisé.
-                    const chosenTheme = normalize(storedTheme || serverTheme || 'system');
-                    const resolvedTheme = chosenTheme === 'system'
+                    const chosen = split(storedTheme || root.getAttribute('data-default-theme'));
+                    const resolvedMode = chosen.mode === 'system'
                         ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-                        : chosenTheme;
+                        : chosen.mode;
 
                     if (isAuthenticated && !storedTheme) {
-                        localStorage.setItem('glitchworlds-theme', chosenTheme);
+                        localStorage.setItem('glitchworlds-theme', chosen.palette + ':' + chosen.mode);
                     }
 
-                    root.setAttribute('data-theme', chosenTheme);
-                    root.setAttribute('data-theme-resolved', resolvedTheme);
-                    root.setAttribute('data-gw-theme', chosenTheme);
-                    root.setAttribute('data-bs-theme', ['dark', 'ps3'].includes(resolvedTheme) ? 'dark' : 'light');
+                    root.setAttribute('data-theme', chosen.palette);
+                    root.setAttribute('data-gw-theme', chosen.palette);
+                    root.setAttribute('data-gw-mode', chosen.mode);
+                    root.setAttribute('data-theme-resolved', resolvedMode);
+                    root.setAttribute('data-bs-theme', resolvedMode);
                     root.setAttribute('data-reduced-motion', localStorage.getItem('glitchworlds-reduced-motion') === 'true' ? 'true' : 'false');
+                    root.setAttribute('data-gw-sons', localStorage.getItem('glitchworlds-sons') === '0' ? '0' : '1');
                 } catch (error) {
-                    document.documentElement.setAttribute('data-theme', 'system');
+                    document.documentElement.setAttribute('data-theme', 'glitchworlds');
                     document.documentElement.setAttribute('data-theme-resolved', 'light');
-                    document.documentElement.setAttribute('data-gw-theme', 'system');
+                    document.documentElement.setAttribute('data-gw-theme', 'glitchworlds');
+                    document.documentElement.setAttribute('data-gw-mode', 'system');
                     document.documentElement.setAttribute('data-bs-theme', 'light');
                     document.documentElement.setAttribute('data-reduced-motion', 'false');
+                    document.documentElement.setAttribute('data-gw-sons', '1');
                 }
             })();
         </script>
@@ -150,10 +177,10 @@
                             {% endif %}
                         </a>
                     {% endif %}
-                    <button type="button" class="gw-icon-btn" aria-label="Activer ou couper les sons d'interface">
-                        <i class="bi bi-volume-up-fill" aria-hidden="true"></i>
+                    <button type="button" class="gw-icon-btn" aria-label="Activer ou couper les sons d'interface" title="Sons d'interface" aria-pressed="true" data-controller="son" data-action="click->son#basculer" data-son-base-url="{{ app.request.basePath }}/sons/">
+                        <i class="bi bi-volume-up-fill" aria-hidden="true" data-son-target="icone"></i>
                     </button>
-                    <button type="button" class="gw-icon-btn" aria-label="Activer le thème sombre" title="Activer le thème sombre" aria-pressed="false" data-controller="theme" data-action="click->theme#basculer">
+                    <button type="button" class="gw-icon-btn" aria-label="Activer le thème sombre" title="Activer le thème sombre" aria-pressed="false" data-controller="theme" data-action="click->theme#basculer"{% if app.user %} data-theme-sync-url="{{ path('app_parametres_preferences') }}"{% endif %}>
                         <i class="bi bi-moon-stars-fill" aria-hidden="true" data-theme-target="icone"></i>
                     </button>
                     <a class="gw-icon-btn gw-icon-btn--avatar" href="{{ app.user ? path('app_profil', {id: app.user.id}) : path('app_connexion') }}" aria-label="{{ app.user ? 'Mon profil' : 'Se connecter' }}" title="{{ app.user ? app.user.userIdentifier : 'Se connecter' }}">

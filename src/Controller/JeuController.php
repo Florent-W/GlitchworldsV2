@@ -42,10 +42,6 @@ final class JeuController extends AbstractController
         $plateforme = trim((string) $request->query->get('plateforme', ''));
         $genre = trim((string) $request->query->get('genre', ''));
         $langue = trim((string) $request->query->get('langue', ''));
-        $auteur = trim((string) $request->query->get('auteur', ''));
-        if ($auteur === '') {
-            $auteur = trim((string) $request->query->get('developpeur', ''));
-        }
         $anneeBrute = trim((string) $request->query->get('annee', ''));
         $annee = ctype_digit($anneeBrute) ? (int) $anneeBrute : null;
         $mesFavoris = $request->query->getBoolean('mes_favoris');
@@ -60,7 +56,6 @@ final class JeuController extends AbstractController
             $genre,
             $langue,
             $tri,
-            $auteur,
             $annee,
             $mesFavoris,
             $utilisateur instanceof Utilisateur ? $utilisateur : null,
@@ -72,7 +67,6 @@ final class JeuController extends AbstractController
             'plateformes' => $plateformeRepository->trouverToutes(),
             'genres' => $genreRepository->trouverTous(),
             'langues' => $langueRepository->trouverToutes(),
-            'auteurs' => $jeuRepository->listerAuteurs(),
             'annees' => $jeuRepository->listerAnneesSortie(),
             'tris' => TriJeu::cases(),
         ]);

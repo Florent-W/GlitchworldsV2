@@ -30,10 +30,6 @@ final class RechercheController extends AbstractController
         $plateforme = $request->query->getString('plateforme');
         $genre = $request->query->getString('genre');
         $langue = $request->query->getString('langue');
-        $auteur = trim($request->query->getString('auteur'));
-        if ($auteur === '') {
-            $auteur = trim($request->query->getString('developpeur'));
-        }
         $anneeBrute = trim($request->query->getString('annee'));
         $annee = ctype_digit($anneeBrute) ? (int) $anneeBrute : null;
         $mesFavoris = $request->query->getBoolean('mes_favoris');
@@ -49,7 +45,6 @@ final class RechercheController extends AbstractController
                 $genre,
                 $langue,
                 $tri,
-                $auteur,
                 $annee,
                 $mesFavoris,
                 $utilisateur instanceof Utilisateur ? $utilisateur : null,
@@ -63,11 +58,11 @@ final class RechercheController extends AbstractController
         return $this->render('recherche/index.html.twig', [
             'recherche' => $recherche,
             'type' => $type, 'categorie' => $categorie, 'plateforme' => $plateforme, 'genre' => $genre, 'langue' => $langue,
-            'auteur' => $auteur, 'annee' => $annee, 'mesFavoris' => $mesFavoris, 'tri' => $tri,
+            'annee' => $annee, 'mesFavoris' => $mesFavoris, 'tri' => $tri,
             'jeux' => $paginationJeux['jeux'], 'totalJeux' => $paginationJeux['total'], 'actualites' => $actualites, 'membres' => $membres,
             'totalActualites' => $totalActualites, 'totalMembres' => $totalMembres,
             'categories' => $categorieRepository->trouverToutes(), 'plateformes' => $plateformeRepository->trouverToutes(), 'genres' => $genreRepository->trouverTous(), 'langues' => $langueRepository->trouverToutes(),
-            'auteurs' => $jeuRepository->listerAuteurs(), 'annees' => $jeuRepository->listerAnneesSortie(), 'tris' => TriJeu::cases(),
+            'annees' => $jeuRepository->listerAnneesSortie(), 'tris' => TriJeu::cases(),
             'totalResultats' => $paginationJeux['total'] + $totalActualites + $totalMembres,
         ]);
     }

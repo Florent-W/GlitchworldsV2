@@ -16,6 +16,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity(fields: ['email'], message: 'Cette adresse e-mail est déjà utilisée.')]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    /** Ambiances visuelles disponibles, indépendantes du mode clair/sombre. */
+    public const PALETTES = ['glitchworlds', 'wii', 'ps3', 'legacy'];
+
+    /** Mode d'affichage : « system » suit le réglage de l'appareil. */
+    public const MODES = ['system', 'light', 'dark'];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -72,7 +78,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeImmutable $derniereActivite = null;
 
     #[ORM\Column(length: 32, options: ['default' => 'system'])]
-    private string $theme = 'system';
+    private string $theme = 'glitchworlds:system';
 
     #[ORM\Column(options: ['default' => 0])]
     private bool $reductionAnimations = false;
@@ -232,15 +238,48 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPoints(int $points): static { $this->points = max(0, $points); return $this; }
     public function getDerniereActivite(): ?\DateTimeImmutable { return $this->derniereActivite; }
     public function setDerniereActivite(?\DateTimeImmutable $date): static { $this->derniereActivite = $date; return $this; }
-    public function getTheme(): string { return $this->theme; }
+    /** Valeur stockée : « palette:mode », par exemple « wii:dark ». */
+    public function getTheme(): string { return implode(':', self::decomposerTheme($this->theme)); }
+    public function getPalette(): string { return self::decomposerTheme($this->theme)[0]; }
+    public function getMode(): string { return self::decomposerTheme($this->theme)[1]; }
     public function setTheme(string $theme): static {
-        $theme = match ($theme) {
+        $this->theme = implode(':', self::decomposerTheme($theme));
+        return $this;
+    }
+    public function setPalette(string $palette): static { return $this->setTheme($palette . ':' . $this->getMode()); }
+    public function setMode(string $mode): static { return $this->setTheme($this->getPalette() . ':' . $mode); }
+
+    /**
+     * Sépare les deux axes du thème et rattrape les valeurs mono-axe des anciens comptes,
+     * où le thème choisi était soit un mode, soit une palette figée dans une seule teinte.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private static function decomposerTheme(string $valeur): array
+    {
+        [$palette, $mode] = array_pad(explode(':', $valeur, 2), 2, null);
+        $palette = match ($palette) {
             'ds', 'gamecube' => 'wii',
             'dreamcast', 'wave', 'neon' => 'ps3',
-            default => $theme,
+            default => $palette,
         };
-        $this->theme = in_array($theme, ['system', 'light', 'dark', 'glitchworlds', 'wii', 'ps3', 'legacy'], true) ? $theme : 'system';
-        return $this;
+
+        if ($mode === null) {
+            $mode = match ($palette) {
+                'light', 'dark', 'system' => $palette,
+                'ps3' => 'dark',
+                'wii', 'legacy' => 'light',
+                default => 'system',
+            };
+            if (in_array($palette, self::MODES, true)) {
+                $palette = 'glitchworlds';
+            }
+        }
+
+        return [
+            in_array($palette, self::PALETTES, true) ? $palette : 'glitchworlds',
+            in_array($mode, self::MODES, true) ? $mode : 'system',
+        ];
     }
     public function isReductionAnimations(): bool { return $this->reductionAnimations; }
     public function setReductionAnimations(bool $reductionAnimations): static { $this->reductionAnimations = $reductionAnimations; return $this; }

@@ -32,7 +32,6 @@ class JeuRepository extends ServiceEntityRepository
      *     plateforme: string,
      *     genre: string,
      *     langue: string,
-     *     auteur: string,
      *     annee: ?int,
      *     mesFavoris: bool,
      *     tri: TriJeu
@@ -47,7 +46,6 @@ class JeuRepository extends ServiceEntityRepository
         string $genre = '',
         string $langue = '',
         TriJeu $tri = TriJeu::Recent,
-        string $auteur = '',
         ?int $annee = null,
         bool $mesFavoris = false,
         ?Utilisateur $utilisateur = null,
@@ -59,7 +57,6 @@ class JeuRepository extends ServiceEntityRepository
         $plateforme = trim($plateforme);
         $genre = trim($genre);
         $langue = trim($langue);
-        $auteur = trim($auteur);
         $mesFavoris = $mesFavoris && $utilisateur instanceof Utilisateur;
 
         $qb = $this->createQueryBuilder('j')
@@ -99,12 +96,6 @@ class JeuRepository extends ServiceEntityRepository
                 ->innerJoin('j.langues', 'l')
                 ->andWhere('l.slug = :langue')
                 ->setParameter('langue', $langue);
-        }
-
-        if ($auteur !== '') {
-            $qb
-                ->andWhere('j.developpeur = :auteur')
-                ->setParameter('auteur', $auteur);
         }
 
         if ($annee !== null) {
@@ -185,27 +176,10 @@ class JeuRepository extends ServiceEntityRepository
             'plateforme' => $plateforme,
             'genre' => $genre,
             'langue' => $langue,
-            'auteur' => $auteur,
             'annee' => $annee,
             'mesFavoris' => $mesFavoris,
             'tri' => $tri,
         ];
-    }
-
-    /** @return list<string> */
-    public function listerAuteurs(): array
-    {
-        /** @var list<string> $auteurs */
-        $auteurs = $this->createQueryBuilder('j')
-            ->select('DISTINCT j.developpeur')
-            ->andWhere('j.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
-            ->andWhere('j.developpeur IS NOT NULL')
-            ->andWhere("TRIM(j.developpeur) != ''")
-            ->orderBy('j.developpeur', 'ASC')
-            ->getQuery()
-            ->getSingleColumnResult();
-
-        return $auteurs;
     }
 
     /** @return list<int> */

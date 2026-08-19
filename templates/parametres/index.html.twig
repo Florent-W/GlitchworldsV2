@@ -32,40 +32,43 @@
                     <span class="gw-settings__icon"><i class="bi bi-palette-fill"></i></span>
                     <div><h2 class="h3 mb-1">Apparence</h2><p class="text-secondary mb-0">Choisis l'ambiance qui te convient.</p></div>
                 </div>
-                <h3 class="h6 text-uppercase text-secondary mb-3">Réglage de l'appareil</h3>
+                <div class="mb-3">
+                    <h3 class="h5 mb-1">Luminosité</h3>
+                    <p class="text-secondary small mb-0">S'applique à toutes les ambiances ci-dessous.</p>
+                </div>
                 <div class="row g-3 mb-5">
-                    {% set themes = [
+                    {% set modes = [
                         {value: 'system', icon: 'circle-half', titre: 'Système', texte: 'Suit automatiquement ton appareil.'},
                         {value: 'light', icon: 'sun-fill', titre: 'Clair', texte: 'Une interface lumineuse et nette.'},
                         {value: 'dark', icon: 'moon-stars-fill', titre: 'Sombre', texte: 'Plus confortable dans la pénombre.'}
                     ] %}
-                    {% for theme in themes %}
+                    {% for mode in modes %}
                         <div class="col-md-4">
                             <button type="button" class="gw-theme-card w-100 text-start" aria-pressed="false"
-                                    data-theme-target="option" data-theme-value="{{ theme.value }}"
-                                    data-action="theme#selectionner" data-theme-theme-param="{{ theme.value }}">
-                                <span class="gw-theme-card__preview gw-theme-card__preview--{{ theme.value }}"><i class="bi bi-{{ theme.icon }}"></i></span>
-                                <strong>{{ theme.titre }}</strong><small>{{ theme.texte }}</small>
+                                    data-theme-target="modeOption" data-theme-value="{{ mode.value }}"
+                                    data-action="theme#choisirMode" data-theme-mode-param="{{ mode.value }}">
+                                <span class="gw-theme-card__preview gw-theme-card__preview--{{ mode.value }}"><i class="bi bi-{{ mode.icon }}"></i></span>
+                                <strong>{{ mode.titre }}</strong><small>{{ mode.texte }}</small>
                                 <span class="gw-theme-card__check"><i class="bi bi-check-lg"></i></span>
                             </button>
                         </div>
                     {% endfor %}
                 </div>
                 <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 mb-3">
-                    <div><h3 class="h5 mb-1">Thèmes immersifs</h3><p class="text-secondary small mb-0">Aperçu immédiat sans rechargement, puis validation explicite.</p></div>
+                    <div><h3 class="h5 mb-1">Ambiances</h3><p class="text-secondary small mb-0">Aperçu immédiat sans rechargement, puis validation explicite.</p></div>
                 </div>
                 <div class="row g-3">
                     {% set palettes = [
                         {value: 'glitchworlds', icon: 'stars', titre: 'Classique', badge: 'GW', texte: 'Palette standard GlitchWorlds.'},
                         {value: 'legacy', icon: 'clock-history', titre: 'GlitchWorlds Legacy', badge: 'GW', texte: 'L’ancien site revisité : barre sombre, bleu intense et touches turquoise.'},
-                        {value: 'wii', icon: 'controller', titre: 'Wii', badge: 'WII', texte: 'Clair, blanc et bleu ciel avec profondeur douce.'},
-                        {value: 'ps3', icon: 'gamepad', titre: 'PS3', badge: 'PS3', texte: 'Sombre cinématique, halos bleus et navigation fluide.'},
+                        {value: 'wii', icon: 'controller', titre: 'Wii', badge: 'WII', texte: 'Blanc et bleu ciel, avec une profondeur douce.'},
+                        {value: 'ps3', icon: 'gamepad', titre: 'PS3', badge: 'PS3', texte: 'Cinématique, halos bleus et navigation fluide.'},
                     ] %}
                     {% for theme in palettes %}
                         <div class="col-sm-6 col-xl-4">
                             <button type="button" class="gw-theme-card w-100 text-start" aria-pressed="false"
-                                    data-theme-target="option" data-theme-value="{{ theme.value }}"
-                                    data-action="theme#selectionner" data-theme-theme-param="{{ theme.value }}">
+                                    data-theme-target="paletteOption" data-theme-value="{{ theme.value }}"
+                                    data-action="theme#choisirPalette" data-theme-palette-param="{{ theme.value }}">
                                 <span class="gw-theme-card__preview gw-theme-card__preview--{{ theme.value }}"><i class="bi bi-{{ theme.icon }}"></i><em>{{ theme.badge }}</em></span>
                                 <strong>{{ theme.titre }}</strong><small>{{ theme.texte }}</small>
                                 <span class="gw-theme-card__check"><i class="bi bi-check-lg"></i></span>
@@ -164,9 +167,6 @@
                         <button type="submit" class="btn btn-outline-secondary" id="session-actuelle-deconnexion">Se déconnecter des autres appareils</button>
                     </form>
                     <div class="d-flex flex-wrap gap-3 mt-4">
-                        <form method="post" action="{{ path('app_parametres_exporter') }}" id="export-compte">
-                            <button type="submit" class="btn btn-outline-primary">Exporter les données</button>
-                        </form>
                         <form method="post" action="{{ path('app_parametres_supprimer') }}" id="suppression-compte" onsubmit="return confirm('Supprimer ton compte ? Cette action est définitive.');">
                             <input type="hidden" name="_token" value="{{ csrf_token('suppression-compte-' ~ utilisateur.id) }}">
                             <input type="password" name="motDePasse" class="form-control form-control-sm mb-2" placeholder="Mot de passe" aria-label="Mot de passe" required>

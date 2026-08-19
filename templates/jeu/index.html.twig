@@ -24,7 +24,7 @@
 {% block canonical %}{{ url('app_jeux', page > 1 ? { page: page } : {}) }}{% endblock %}
 
 {% block robots_meta %}
-    {%- if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty or langue is not empty or auteur is not empty or annee is not null or mesFavoris -%}
+    {%- if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty or langue is not empty or annee is not null or mesFavoris -%}
         noindex,follow
     {%- else -%}
         index,follow
@@ -38,7 +38,6 @@
         plateforme: plateforme ?: null,
         genre: genre ?: null,
         langue: langue ?: null,
-        auteur: auteur ?: null,
         annee: annee,
         mes_favoris: mesFavoris ? 1 : null,
         tri: tri.value != 'recent' ? tri.value : null
@@ -208,16 +207,6 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="jeux-auteur">Auteur de la fiche</label>
-                    <select id="jeux-auteur" class="form-select" name="auteur">
-                        <option value="">Tous les auteurs</option>
-                        {% for item in auteurs %}
-                            <option value="{{ item }}" {{ auteur == item ? 'selected' : '' }}>{{ item }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="mb-3">
                     <label class="form-label" for="jeux-annee">Année de sortie</label>
                     <select id="jeux-annee" class="form-select" name="annee">
                         <option value="">Toutes les années</option>
@@ -244,7 +233,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-gw w-100">Appliquer les filtres</button>
-                {% if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty or langue is not empty or auteur is not empty or annee is not null or mesFavoris or tri.value != 'recent' %}
+                {% if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty or langue is not empty or annee is not null or mesFavoris or tri.value != 'recent' %}
                     <a class="btn btn-link w-100 mt-2" href="{{ path('app_jeux') }}">
                         <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                         Effacer les filtres
