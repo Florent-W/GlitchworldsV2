@@ -77,6 +77,7 @@
                     root.setAttribute('data-bs-theme', resolvedMode);
                     root.setAttribute('data-reduced-motion', localStorage.getItem('glitchworlds-reduced-motion') === 'true' ? 'true' : 'false');
                     root.setAttribute('data-gw-sons', localStorage.getItem('glitchworlds-sons') === '0' ? '0' : '1');
+                    root.setAttribute('data-gw-retour-haut', localStorage.getItem('glitchworlds-retour-haut') === '0' ? '0' : '1');
                 } catch (error) {
                     document.documentElement.setAttribute('data-theme', 'glitchworlds');
                     document.documentElement.setAttribute('data-theme-resolved', 'light');
@@ -85,6 +86,7 @@
                     document.documentElement.setAttribute('data-bs-theme', 'light');
                     document.documentElement.setAttribute('data-reduced-motion', 'false');
                     document.documentElement.setAttribute('data-gw-sons', '1');
+                    document.documentElement.setAttribute('data-gw-retour-haut', '1');
                 }
             })();
         </script>
@@ -170,12 +172,17 @@
                         </a>
                     {% endif %}
                     {% if app.user %}
-                        <a class="gw-icon-btn" href="{{ path('app_notifications') }}" aria-label="Notifications{{ notifications_non_lues > 0 ? ' (' ~ notifications_non_lues ~ ' non lue' ~ (notifications_non_lues > 1 ? 's' : '') ~ ')' : '' }}" title="Notifications">
-                            <i class="bi bi-bell-fill" aria-hidden="true"></i>
-                            {% if notifications_non_lues > 0 %}
-                                <span class="gw-icon-btn__badge">{{ notifications_non_lues > 99 ? '99+' : notifications_non_lues }}</span>
-                            {% endif %}
-                        </a>
+                        <div class="gw-notif" data-controller="notifications" data-notifications-url-value="{{ path('app_notifications_panneau') }}">
+                            <a class="gw-icon-btn" href="{{ path('app_notifications') }}" aria-label="Notifications{{ notifications_non_lues > 0 ? ' (' ~ notifications_non_lues ~ ' non lue' ~ (notifications_non_lues > 1 ? 's' : '') ~ ')' : '' }}" title="Notifications"
+                               aria-haspopup="true" aria-expanded="false" aria-controls="gw-notif-panel"
+                               data-notifications-target="bouton" data-action="notifications#basculer">
+                                <i class="bi bi-bell-fill" aria-hidden="true"></i>
+                                {% if notifications_non_lues > 0 %}
+                                    <span class="gw-icon-btn__badge">{{ notifications_non_lues > 99 ? '99+' : notifications_non_lues }}</span>
+                                {% endif %}
+                            </a>
+                            <div id="gw-notif-panel" class="gw-notif-panel" role="region" aria-label="Dernières notifications" data-notifications-target="panneau" hidden></div>
+                        </div>
                     {% endif %}
                     <button type="button" class="gw-icon-btn" aria-label="Activer ou couper les sons d'interface" title="Sons d'interface" aria-pressed="true" data-controller="son" data-action="click->son#basculer" data-son-base-url="{{ app.request.basePath }}/sons/">
                         <i class="bi bi-volume-up-fill" aria-hidden="true" data-son-target="icone"></i>
@@ -203,11 +210,13 @@
                                     <i class="bi bi-{{ item.icon }}" aria-hidden="true"></i>
                                     <span class="gw-rail__label">{{ item.label }}</span>
                                     {% set badge = item.badge|default(null) %}
+                                    {% set badge_alerte = false %}
                                     {% if item.route == 'app_notifications' and notifications_non_lues > 0 %}
                                         {% set badge = notifications_non_lues > 99 ? '99+' : notifications_non_lues %}
+                                        {% set badge_alerte = true %}
                                     {% endif %}
                                     {% if badge is not null %}
-                                        <span class="gw-rail__badge">{{ badge }}</span>
+                                        <span class="gw-rail__badge{{ badge_alerte ? ' gw-rail__badge--alerte' : '' }}">{{ badge }}</span>
                                     {% endif %}
                                 </a>
                             </li>
@@ -260,5 +269,17 @@
                 </div>
             </footer>
         </div>
+
+        <button type="button"
+                class="gw-retour-haut"
+                hidden
+                aria-hidden="true"
+                tabindex="-1"
+                aria-label="Retour en haut de la page"
+                title="Retour en haut"
+                data-controller="retour-haut"
+                data-action="click->retour-haut#remonter">
+            <i class="bi bi-arrow-up-short" aria-hidden="true"></i>
+        </button>
     </body>
 </html>

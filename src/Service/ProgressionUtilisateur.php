@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\MouvementProgression;
 use App\Entity\Succes;
-use App\Entity\SuccesUtilisateur;
 use App\Entity\Utilisateur;
 use App\Repository\MouvementProgressionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,19 +36,9 @@ final class ProgressionUtilisateur
         if ($this->mouvements->existe($utilisateur, $cle)) { return false; }
         if ($plafondJournalier !== null && $this->mouvements->compterDepuis($utilisateur, $categorie, new \DateTimeImmutable('today')) >= $plafondJournalier) { return false; }
         $this->appliquer($utilisateur, $categorie, $cle, $libelle, $experience, $points);
-        $this->debloquerBadgesNiveau($utilisateur);
+
         return true;
     }
 
     private function appliquer(Utilisateur $utilisateur, string $categorie, string $cle, string $libelle, int $experience, int $points): void { $utilisateur->setExperience($utilisateur->getExperience() + $experience)->setPoints($utilisateur->getPoints() + $points); $this->entityManager->persist(new MouvementProgression($utilisateur, $categorie, $cle, $libelle, $experience, $points)); }
-
-    private function debloquerBadgesNiveau(Utilisateur $utilisateur): void
-    {
-        foreach ([5, 10, 20, 50] as $niveau) {
-            if ($utilisateur->getNiveau() < $niveau) { continue; }
-            $succes = $this->entityManager->getRepository(Succes::class)->findOneBy(['code' => 'niveau_'.$niveau]);
-            if (!$succes || $this->entityManager->getRepository(SuccesUtilisateur::class)->findOneBy(['utilisateur' => $utilisateur, 'succes' => $succes])) { continue; }
-            $this->entityManager->persist((new SuccesUtilisateur())->setUtilisateur($utilisateur)->setSucces($succes));
-        }
-    }
 }

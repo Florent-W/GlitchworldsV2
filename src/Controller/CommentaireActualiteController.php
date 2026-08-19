@@ -13,10 +13,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\ProgressionUtilisateur;
+use App\Service\GestionSucces;
 use App\Service\JournalModeration;
 
 final class CommentaireActualiteController extends AbstractController
 {
+    use AnnonceSuccesTrait;
     #[Route('/actualite/commentaire/{id}/repondre', name: 'app_actualite_commentaire_repondre', methods: ['POST'])]
     public function repondre(
         CommentaireActualite $commentaire,
@@ -24,6 +26,7 @@ final class CommentaireActualiteController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
         ProgressionUtilisateur $progression,
+        GestionSucces $gestionSucces,
     ): Response {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -49,6 +52,7 @@ final class CommentaireActualiteController extends AbstractController
             $recompenseAccordee = $progression->recompenseCommentaire($utilisateur, 'reponse-actualite:'.$parent->getId().':'.hash('sha256', mb_strtolower(trim($reponse->getContenu()))));
             $entityManager->flush();
             $this->addFlash('success', 'Ta réponse a été publiée.'.($recompenseAccordee ? ' +10 XP et +5 points.' : ''));
+            $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
         }
 
         return $this->redirigerVersActualite($parent, '#commentaire-'.$parent->getId());

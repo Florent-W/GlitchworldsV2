@@ -1,0 +1,44 @@
+{# Contenu du panneau déroulant de la cloche (chargé à la demande par le contrôleur Stimulus « notifications »).
+   Variables : notifications (Notification[]), nonLues (int) #}
+<div class="gw-notif-panel__head">
+    <span class="gw-notif-panel__title">Notifications</span>
+    {% if nonLues > 0 %}
+        <span class="gw-notif-panel__count">{{ nonLues }} non lue{{ nonLues > 1 ? 's' : '' }}</span>
+    {% endif %}
+</div>
+
+{% if notifications is empty %}
+    <p class="gw-notif-panel__empty">
+        <i class="bi bi-bell-slash" aria-hidden="true"></i>
+        Aucune notification pour l’instant.
+    </p>
+{% else %}
+    <ul class="gw-notif-panel__list">
+        {% for notification in notifications %}
+            <li>
+                <form method="post" action="{{ path('app_notification_lire', { id: notification.id }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('lire-notification-' ~ notification.id) }}">
+                    <button type="submit" class="gw-notif-panel__item{{ notification.lue ? '' : ' is-unread' }}">
+                        <span class="gw-notif-panel__icon"><i class="bi bi-{{ notification.icone }}" aria-hidden="true"></i></span>
+                        <span class="gw-notif-panel__body">
+                            <span class="gw-notif-panel__label">{{ notification.titre }}</span>
+                            <span class="gw-notif-panel__message">{{ notification.message }}</span>
+                            <time datetime="{{ notification.creeeLe|date('c') }}" data-controller="date-locale" data-date-locale-date-value="{{ notification.creeeLe|date('c') }}">{{ notification.creeeLe|date('d/m/Y H:i') }}</time>
+                        </span>
+                        {% if not notification.lue %}<span class="visually-hidden">Non lue</span>{% endif %}
+                    </button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<div class="gw-notif-panel__foot">
+    {% if nonLues > 0 %}
+        <form method="post" action="{{ path('app_notifications_tout_lire') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('notifications-tout-lire') }}">
+            <button type="submit" class="gw-notif-panel__action"><i class="bi bi-check2-all" aria-hidden="true"></i> Tout marquer comme lu</button>
+        </form>
+    {% endif %}
+    <a class="gw-notif-panel__action" href="{{ path('app_notifications') }}">Voir tout</a>
+</div>

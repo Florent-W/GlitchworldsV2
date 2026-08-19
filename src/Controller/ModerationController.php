@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\ProgressionUtilisateur;
+use App\Service\GestionSucces;
 use App\Service\JeuGalerieUploader;
 use App\Repository\SignalementRepository;
 use App\Enum\StatutSignalement;
@@ -62,6 +63,7 @@ final class ModerationController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         ProgressionUtilisateur $progression,
+        GestionSucces $gestionSucces,
         JournalModeration $journal,
     ): Response {
         if ($jeu->getStatut() !== StatutJeu::EnAttente) {
@@ -78,6 +80,10 @@ final class ModerationController extends AbstractController
         $moderateur = $this->getUser();
         $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, $decision, 'jeu', $jeu->getId(), ($decision === 'approuver' ? 'Approbation' : 'Refus').' du jeu '.$jeu->getNom());
         $entityManager->flush();
+        if ($decision === 'approuver' && $jeu->getCreateur() instanceof Utilisateur) {
+            // Notification au créateur via GestionSucces ; pas de flash côté modérateur.
+            $gestionSucces->verifier($jeu->getCreateur());
+        }
         $this->addFlash('success', $decision === 'approuver' ? 'Le jeu a été approuvé.' : 'Le jeu a été refusé.');
 
         return $this->redirectToRoute('app_moderation_jeux');

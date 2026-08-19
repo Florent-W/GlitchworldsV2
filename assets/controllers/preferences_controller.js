@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['mouvement', 'contraste', 'taille', 'notificationsEmail', 'notificationsMessages', 'notificationsCommunaute', 'profilPrive'];
+    static targets = ['mouvement', 'contraste', 'taille', 'retourHaut', 'notificationsEmail', 'notificationsMessages', 'notificationsCommunaute', 'profilPrive'];
 
     connect() {
         this.syncUrl = this.element.dataset.preferencesSyncUrl || null;
@@ -45,6 +45,10 @@ export default class extends Controller {
         this.tailleTarget.value = taille;
         this.appliquerTaille(taille, false);
 
+        // Préférence locale uniquement, comme les sons d'interface.
+        this.retourHautTarget.checked = localStorage.getItem('glitchworlds-retour-haut') !== '0';
+        this.appliquerRetourHaut(this.retourHautTarget.checked, false);
+
         const notifications = this.element.dataset.preferencesNotifications ? JSON.parse(this.element.dataset.preferencesNotifications) : { email: true, messages: true, communaute: true };
         this.notificationsEmailTarget.checked = notifications.email ?? true;
         this.notificationsMessagesTarget.checked = notifications.messages ?? true;
@@ -70,6 +74,10 @@ export default class extends Controller {
         const valeur = event.target.value;
         this.appliquerTaille(valeur, true);
         this.sauvegarder({ tailleTexte: valeur });
+    }
+
+    changerRetourHaut() {
+        this.appliquerRetourHaut(this.retourHautTarget.checked, true);
     }
 
     changerNotification() {
@@ -100,6 +108,16 @@ export default class extends Controller {
     appliquerTaille(valeur, memoriser) {
         document.documentElement.dataset.gwTextSize = valeur;
         if (memoriser) localStorage.setItem('glitchworlds-text-size', valeur);
+    }
+
+    appliquerRetourHaut(actif, memoriser) {
+        document.documentElement.dataset.gwRetourHaut = actif ? '1' : '0';
+        if (memoriser) {
+            localStorage.setItem('glitchworlds-retour-haut', actif ? '1' : '0');
+        }
+        window.dispatchEvent(new CustomEvent('glitchworlds:retour-haut-change', {
+            detail: { actif },
+        }));
     }
 
     appliquerNotifications(notifications, memoriser) {

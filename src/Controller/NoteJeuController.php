@@ -9,6 +9,7 @@ use App\Enum\StatutJeu;
 use App\Form\NoteJeuType;
 use App\Repository\AvisRepository;
 use App\Service\ProgressionUtilisateur;
+use App\Service\GestionSucces;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class NoteJeuController extends AbstractController
 {
+    use AnnonceSuccesTrait;
     #[Route('/jeu/{id}/noter', name: 'app_jeu_noter', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function noter(
         Jeu $jeu,
@@ -24,6 +26,7 @@ final class NoteJeuController extends AbstractController
         AvisRepository $avisRepository,
         EntityManagerInterface $entityManager,
         ProgressionUtilisateur $progression,
+        GestionSucces $gestionSucces,
     ): Response {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -50,6 +53,7 @@ final class NoteJeuController extends AbstractController
             $recompense = $progression->recompenseNote($utilisateur, (int) $jeu->getId());
             $entityManager->flush();
             $this->addFlash('success', 'Ta note a été enregistrée.'.($recompense ? ' +5 XP et +2 points.' : ''));
+            $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
         }
 
         return $this->redirectToRoute('app_jeu_show', ['slug' => $jeu->getSlug(), 'id' => $jeu->getId()]);

@@ -50,7 +50,7 @@
     <div class="row g-4 mt-1">
         <div class="col-lg-8">
             <nav class="nav nav-pills gw-panel p-2 mb-3" aria-label="Sections du profil">
-                {% for cle, libelle in {apropos: 'À propos', activite: 'Activité', jeux: 'Jeux', favoris: 'Favoris'} %}
+                {% for cle, libelle in {apropos: 'À propos', activite: 'Activité', jeux: 'Jeux', favoris: 'Favoris', succes: 'Succès'} %}
                     <a class="nav-link {{ section == cle ? 'active' }}" href="{{ path('app_profil', {id: membre.id, section: cle}) }}">{{ libelle }}</a>
                 {% endfor %}
             </nav>
@@ -77,6 +77,33 @@
                 {% elseif section == 'jeux' %}
                     <h2 class="h5">Jeux publiés</h2>
                     {{ _self.jeux(jeux) }}
+                {% elseif section == 'succes' %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0">Succès</h2>
+                        <span class="badge text-bg-warning">{{ succesAcquis|length }}/{{ succes|length }}</span>
+                    </div>
+                    <div class="row g-3">
+                        {% for item in succes %}
+                            {% set acquis = item.code in codesAcquis %}
+                            <div class="col-md-6">
+                                <article class="border rounded-4 p-3 h-100 {{ not acquis ? 'opacity-50' }}">
+                                    <div class="d-flex gap-3">
+                                        <span class="gw-achievement text-bg-{{ item.couleur }}"><i class="bi bi-{{ acquis ? item.icone : 'lock-fill' }}"></i></span>
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <h3 class="h6 mb-0">{{ item.nom }}</h3>
+                                                {% if acquis %}<span class="badge text-bg-success">Débloqué</span>{% endif %}
+                                            </div>
+                                            <p class="text-secondary small my-2 mb-0">{{ item.description }}</p>
+                                            <strong class="text-warning small">+{{ item.points }} points</strong>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        {% else %}
+                            <p class="text-secondary mb-0">Aucun succès n’est encore défini.</p>
+                        {% endfor %}
+                    </div>
                 {% else %}
                     <h2 class="h5">Jeux favoris</h2>
                     {{ _self.jeux(membre.jeuxFavoris) }}
@@ -89,6 +116,22 @@
                 <div class="d-flex justify-content-between small mb-2"><span>Niveau {{ membre.niveau }}</span><span class="text-secondary">{{ membre.experienceNiveau }} / {{ membre.experienceNiveauSuivant }} XP</span></div>
                 <div class="progress" role="progressbar" aria-label="Progression vers le niveau {{ membre.niveau + 1 }}" aria-valuenow="{{ membre.progressionNiveau }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ membre.progressionNiveau }}%"></div></div>
             </section>
+            {% if succesAcquis is not empty %}
+                <section class="gw-panel p-4 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 text-uppercase mb-0">Succès récents</h2>
+                        <a class="small" href="{{ path('app_profil', {id: membre.id, section: 'succes'}) }}">Tout voir</a>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for deblocage in succesAcquis|slice(0, 6) %}
+                            {% set item = deblocage.succes %}
+                            {% if item %}
+                                <span class="gw-achievement text-bg-{{ item.couleur }}" title="{{ item.nom }} — {{ item.description }}"><i class="bi bi-{{ item.icone }}"></i></span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
             {% set badgesBoutique = achatsBoutique|filter(achat => achat.article.type.value == 'badge') %}
             {% if badgesBoutique is not empty %}<section class="gw-panel p-4 mb-3"><h2 class="h6 text-uppercase">Badges</h2><div class="d-flex flex-wrap gap-2">{% for achat in badgesBoutique %}<span class="badge rounded-pill text-bg-{{ achat.article.couleur }}-subtle text-{{ achat.article.couleur }}-emphasis p-2" title="{{ achat.article.description }}"><i class="bi bi-{{ achat.article.icone }} me-1"></i>{{ achat.article.nom }}</span>{% endfor %}</div></section>{% endif %}
             <section class="gw-panel p-4 mb-3">
@@ -101,6 +144,7 @@
                     <div><i class="bi bi-controller text-primary me-2"></i><strong>{{ jeux|length }}</strong> jeu{{ jeux|length > 1 ? 'x' }} publié{{ jeux|length > 1 ? 's' }}</div>
                     <div><i class="bi bi-heart-fill text-danger me-2"></i><strong>{{ membre.jeuxFavoris|length }}</strong> favori{{ membre.jeuxFavoris|length > 1 ? 's' }}</div>
                     <div><i class="bi bi-chat-square-text-fill text-primary me-2"></i><strong>{{ publications|length }}</strong> publication{{ publications|length > 1 ? 's' }}</div>
+                    <div><i class="bi bi-trophy-fill text-warning me-2"></i><strong>{{ succesAcquis|length }}</strong> succès</div>
                 </div>
             </section>
         </aside>

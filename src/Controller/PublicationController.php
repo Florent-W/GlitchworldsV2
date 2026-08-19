@@ -15,15 +15,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Service\ProgressionUtilisateur;
+use App\Service\GestionSucces;
 use App\Service\ImagePublicationUploader;
 use App\Service\CentreNotifications;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class PublicationController extends AbstractController
 {
+    use AnnonceSuccesTrait;
     #[Route('/communaute/publication', name: 'app_publication_creer', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function creer(Request $request, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression, ImagePublicationUploader $uploader): Response
+    public function creer(Request $request, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression, GestionSucces $gestionSucces, ImagePublicationUploader $uploader): Response
     {
         $publication = new Publication();
         $formulaire = $this->createForm(PublicationType::class, $publication);
@@ -43,6 +45,9 @@ final class PublicationController extends AbstractController
             $image = $formulaire->get('imageFichier')->getData();
             if ($image instanceof UploadedFile) { $publication->setImage($uploader->enregistrer($image, (int) $publication->getId())); $entityManager->flush(); }
             $this->addFlash('success', 'Ta publication est en ligne.'.(($recompenseAccordee ?? false) ? ' +20 XP et +10 points.' : ''));
+            if ($utilisateur instanceof Utilisateur) {
+                $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
+            }
         } else {
             $erreurs = [];
             foreach ($formulaire->getErrors(true) as $erreur) { $erreurs[] = $erreur->getMessage(); }

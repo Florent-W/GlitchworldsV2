@@ -181,6 +181,7 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertSelectorExists('#notifications-messages');
         self::assertSelectorExists('#profil-prive');
         self::assertSelectorExists('#contraste-renforce');
+        self::assertSelectorExists('#retour-haut');
         self::assertSelectorExists('#taille-texte');
         self::assertSelectorExists('#session-actuelle');
         self::assertSelectorExists('#suppression-compte');

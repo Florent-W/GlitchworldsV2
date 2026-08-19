@@ -19,10 +19,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/mes-jeux')]
 final class MesJeuxController extends AbstractController
 {
+    use AnnonceSuccesTrait;
     #[Route('', name: 'app_mes_jeux', methods: ['GET'])]
     public function index(JeuBibliothequeRepository $bibliotheque, ListeJeuxRepository $listes, SuccesRepository $succes, SuccesUtilisateurRepository $deblocages, GestionSucces $gestionSucces): Response
     {
-        $utilisateur = $this->membre(); $gestionSucces->verifier($utilisateur);
+        $utilisateur = $this->membre();
+        $this->annoncerSucces($gestionSucces->verifier($utilisateur));
         $acquis = $deblocages->trouverPour($utilisateur);
         return $this->render('mes_jeux/index.html.twig', ['bibliotheque' => $bibliotheque->trouverPour($utilisateur), 'listes' => $listes->trouverPour($utilisateur), 'succes' => $succes->findAll(), 'succesAcquis' => $acquis, 'codesAcquis' => array_map(static fn ($d) => $d->getSucces()?->getCode(), $acquis), 'statuts' => StatutBibliotheque::cases()]);
     }
@@ -33,7 +35,8 @@ final class MesJeuxController extends AbstractController
         $utilisateur = $this->membre(); $this->csrf('bibliotheque-'.$jeu->getId(), $request);
         $entree = $em->getRepository(JeuBibliotheque::class)->findOneBy(['utilisateur' => $utilisateur, 'jeu' => $jeu]) ?? (new JeuBibliotheque())->setUtilisateur($utilisateur)->setJeu($jeu);
         $statut = StatutBibliotheque::tryFrom($request->request->getString('statut')) ?? StatutBibliotheque::A_Jouer;
-        $entree->setStatut($statut); $em->persist($entree); $em->flush(); $succes->verifier($utilisateur);
+        $entree->setStatut($statut); $em->persist($entree); $em->flush();
+        $this->verifierEtAnnoncerSucces($utilisateur, $succes);
         $this->addFlash('success', $jeu->getNom().' est dans « Mes jeux » : '.$statut->label().'.');
         return $this->redirectToRoute('app_mes_jeux');
     }

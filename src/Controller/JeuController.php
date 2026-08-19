@@ -19,6 +19,7 @@ use App\Repository\LangueRepository;
 use App\Repository\PlateformeRepository;
 use App\Repository\UtilisateurRepository;
 use App\Service\ProgressionUtilisateur;
+use App\Service\GestionSucces;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +28,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class JeuController extends AbstractController
 {
+    use AnnonceSuccesTrait;
     #[Route('/jeux', name: 'app_jeux')]
     public function liste(
         Request $request,
@@ -83,6 +85,7 @@ final class JeuController extends AbstractController
         EntityManagerInterface $entityManager,
         ActualiteRepository $actualiteRepository,
         ProgressionUtilisateur $progression,
+        GestionSucces $gestionSucces,
         UtilisateurRepository $utilisateurRepository,
     ): Response
     {
@@ -121,6 +124,7 @@ final class JeuController extends AbstractController
             $recompense = $progression->recompenseCommentaire($auteur, 'jeu:'.$jeu->getId().':'.hash('sha256', mb_strtolower(trim($commentaire->getContenu()))));
             $entityManager->flush();
             $this->addFlash('success', 'Ton commentaire a été publié.'.($recompense ? ' +10 XP et +5 points.' : ''));
+            $this->verifierEtAnnoncerSucces($auteur, $gestionSucces);
 
             return $this->redirect($this->generateUrl('app_jeu_show', [
                 'slug' => $jeu->getSlug(),

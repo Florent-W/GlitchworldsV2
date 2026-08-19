@@ -7,6 +7,7 @@ use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
 use App\Repository\JeuRepository;
 use App\Service\ProgressionUtilisateur;
+use App\Service\GestionSucces;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class FavoriController extends AbstractController
 {
+    use AnnonceSuccesTrait;
     #[Route('/favoris', name: 'app_favoris', methods: ['GET'])]
     public function liste(Request $request, JeuRepository $jeuRepository): Response
     {
@@ -30,7 +32,7 @@ final class FavoriController extends AbstractController
     }
 
     #[Route('/jeu/{id}/favori', name: 'app_jeu_favori', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function basculer(Jeu $jeu, Request $request, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression): Response
+    public function basculer(Jeu $jeu, Request $request, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression, GestionSucces $gestionSucces): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -46,13 +48,15 @@ final class FavoriController extends AbstractController
         if ($utilisateur->aPourFavori($jeu)) {
             $utilisateur->retirerJeuFavori($jeu);
             $message = 'Le jeu a été retiré de tes favoris.';
+            $entityManager->flush();
         } else {
             $utilisateur->ajouterJeuFavori($jeu);
             $recompense = $progression->recompenseFavori($utilisateur, (int) $jeu->getId());
             $message = 'Le jeu a été ajouté à tes favoris.'.($recompense ? ' +3 XP et +1 point.' : '');
+            $entityManager->flush();
+            $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
         }
 
-        $entityManager->flush();
         $this->addFlash('success', $message);
 
         return $this->redirectToRoute('app_jeu_show', [
