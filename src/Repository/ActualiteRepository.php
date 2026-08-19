@@ -96,4 +96,13 @@ final class ActualiteRepository extends ServiceEntityRepository
             ->getQuery()->getResult();
     }
 
+    public function compterPourApercu(string $recherche): int
+    {
+        return (int) $this->createQueryBuilder('actualite')
+            ->select('COUNT(actualite.id)')
+            ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('(LOWER(actualite.titre) LIKE :recherche OR LOWER(actualite.description) LIKE :recherche)')
+            ->setParameter('recherche', '%'.mb_strtolower(trim($recherche)).'%')
+            ->getQuery()->getSingleScalarResult();
+    }
 }

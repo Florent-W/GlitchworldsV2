@@ -99,6 +99,7 @@ final class ImportLegacyJeuxCommand extends Command
              LEFT JOIN utilisateurs u ON u.id = j.id_auteur_presentation
              ORDER BY j.id ASC'
         );
+        // Note : le champ V2 « developpeur » stocke l’auteur de la présentation legacy (id_auteur_presentation).
 
         if ($rows === []) {
             $io->warning('Aucun jeu trouvé dans la base legacy.');

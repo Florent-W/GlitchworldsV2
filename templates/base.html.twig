@@ -69,23 +69,40 @@
     </head>
     <body>
         {% set current_route = app.request.attributes.get('_route') %}
+        {# Les entrées protégées par ROLE_USER restent masquées aux visiteurs :
+           sinon le clic mémorise la page refusée et la connexion y renvoie. #}
         {% set nav_items = [
             { label: 'Accueil',    icon: 'house-door-fill', route: 'app_home' },
             { label: 'Jeux',       icon: 'controller',      route: 'app_jeux' },
-            { label: 'Mes jeux',    icon: 'collection-play-fill', route: 'app_mes_jeux' },
-            { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute' },
-            { label: 'Classement', icon: 'trophy-fill',     route: 'app_classement' },
-            { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' },
-            { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages' },
-            { label: 'Notifications', icon: 'bell-fill', route: 'app_notifications' },
-            { label: 'Paramètres', icon: 'gear-fill',       route: 'app_parametres' },
-            { label: 'Boutique',   icon: 'bag-fill',        route: 'app_boutique', badge: 'New' }
+            { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' }
         ] %}
+        {% if app.user %}
+            {% set nav_items = nav_items|merge([{ label: 'Mes jeux', icon: 'collection-play-fill', route: 'app_mes_jeux' }]) %}
+        {% endif %}
+        {% set nav_items = nav_items|merge([
+            { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute' },
+            { label: 'Classement', icon: 'trophy-fill',     route: 'app_classement' }
+        ]) %}
+        {% if app.user %}
+            {% set nav_items = nav_items|merge([
+                { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages' },
+                { label: 'Notifications', icon: 'bell-fill', route: 'app_notifications' },
+                { label: 'Paramètres', icon: 'gear-fill',       route: 'app_parametres' }
+            ]) %}
+        {% endif %}
+        {% set nav_items = nav_items|merge([
+            { label: 'Boutique',   icon: 'bag-fill',        route: 'app_boutique' }
+        ]) %}
         {% if is_granted('ROLE_MODERATEUR') %}
             {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_commentaires' }]) %}
         {% endif %}
         {% if is_granted('ROLE_ADMIN') %}
             {% set nav_items = nav_items|merge([{ label: 'Administration', icon: 'speedometer2', route: 'app_administration_tableau_de_bord' }]) %}
+        {% endif %}
+        {% if app.user %}
+            {% set nav_items = nav_items|merge([{ label: 'Déconnexion', icon: 'box-arrow-right', route: 'app_deconnexion', logout: true }]) %}
+        {% else %}
+            {% set nav_items = nav_items|merge([{ label: 'Connexion', icon: 'box-arrow-in-right', route: 'app_connexion' }]) %}
         {% endif %}
 
         <div class="gw-app">
@@ -96,22 +113,41 @@
                 </a>
 
                 <search class="gw-search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion') }}">
-                    <form role="search" action="{{ path('app_recherche') }}" method="get" data-recherche-autocomplete-target="formulaire">
+                    <form role="search" action="{{ path('app_recherche') }}" method="get" data-recherche-autocomplete-target="formulaire" data-action="submit->recherche-autocomplete#memoriser">
                         <label class="visually-hidden" for="gw-search-input">Rechercher</label>
                         <i class="bi bi-search gw-search__icon" aria-hidden="true"></i>
                         <input id="gw-search-input" class="gw-search__input" type="search" name="recherche" value="{{ current_route == 'app_recherche' ? app.request.query.get('recherche') : '' }}"
                                placeholder="Rechercher un jeu, une actualité, un membre..." autocomplete="off" aria-autocomplete="list" aria-controls="gw-search-results" aria-expanded="false"
-                               data-recherche-autocomplete-target="champ" data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#rechercher">
+                               data-recherche-autocomplete-target="champ" data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#ouvrir click->recherche-autocomplete#ouvrir">
                         <div id="gw-search-results" class="gw-autocomplete d-none" role="listbox" data-recherche-autocomplete-target="resultats"></div>
                     </form>
                 </search>
 
                 <div class="gw-actions">
+                    <div class="gw-topbar-status">
+                        <a class="gw-topbar-status__messages" href="{{ app.user ? path('app_messages') : path('app_connexion') }}" aria-label="Messages" title="Messages">
+                            <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                        </a>
+                        <div class="gw-topbar-status__clock" data-controller="horloge">
+                            <time data-horloge-target="time" datetime="{{ 'now'|date('c') }}">
+                                <strong data-horloge-target="heure">{{ 'now'|date('H:i') }}</strong>
+                                <span data-horloge-target="date">{{ 'now'|format_datetime('none', 'none', 'EEEE d MMMM y', locale='fr')|capitalize }}</span>
+                            </time>
+                        </div>
+                    </div>
                     {% if app.user %}
                         <a class="gw-level-chip" href="{{ path('app_progression_historique') }}" title="Voir ma progression">
                             <span class="gw-level-chip__points"><i class="bi bi-star-fill" aria-hidden="true"></i>{{ app.user.points|number_format(0, ',', ' ') }} pts</span>
                             <span class="gw-level-chip__level">Niveau {{ app.user.niveau }}</span>
                             <span class="gw-level-chip__bar" role="progressbar" aria-label="Progression vers le niveau {{ app.user.niveau + 1 }}" aria-valuenow="{{ app.user.progressionNiveau }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ app.user.progressionNiveau }}%"></span></span>
+                        </a>
+                    {% endif %}
+                    {% if app.user %}
+                        <a class="gw-icon-btn" href="{{ path('app_notifications') }}" aria-label="Notifications{{ notifications_non_lues > 0 ? ' (' ~ notifications_non_lues ~ ' non lue' ~ (notifications_non_lues > 1 ? 's' : '') ~ ')' : '' }}" title="Notifications">
+                            <i class="bi bi-bell-fill" aria-hidden="true"></i>
+                            {% if notifications_non_lues > 0 %}
+                                <span class="gw-icon-btn__badge">{{ notifications_non_lues > 99 ? '99+' : notifications_non_lues }}</span>
+                            {% endif %}
                         </a>
                     {% endif %}
                     <button type="button" class="gw-icon-btn" aria-label="Activer ou couper les sons d'interface">
@@ -133,13 +169,18 @@
                         {% for item in nav_items %}
                             {% set is_active = item.route is not null and item.route == current_route %}
                             <li>
-                                <a class="gw-rail__item{{ is_active ? ' is-active' : '' }}"
+                                <a class="gw-rail__item{{ is_active ? ' is-active' : '' }}{{ item.logout|default(false) ? ' gw-rail__item--logout' : '' }}"
                                    href="{{ item.route ? path(item.route) : '#' }}"
-                                   {{ is_active ? 'aria-current="page"' : '' }}>
+                                   {{ is_active ? 'aria-current="page"' : '' }}
+                                   {{ item.logout|default(false) ? 'data-turbo="false"' : '' }}>
                                     <i class="bi bi-{{ item.icon }}" aria-hidden="true"></i>
                                     <span class="gw-rail__label">{{ item.label }}</span>
-                                    {% if item.badge is defined %}
-                                        <span class="gw-rail__badge">{{ item.badge }}</span>
+                                    {% set badge = item.badge|default(null) %}
+                                    {% if item.route == 'app_notifications' and notifications_non_lues > 0 %}
+                                        {% set badge = notifications_non_lues > 99 ? '99+' : notifications_non_lues %}
+                                    {% endif %}
+                                    {% if badge is not null %}
+                                        <span class="gw-rail__badge">{{ badge }}</span>
                                     {% endif %}
                                 </a>
                             </li>

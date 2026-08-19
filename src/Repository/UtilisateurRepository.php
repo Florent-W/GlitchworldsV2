@@ -48,6 +48,21 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
         return 1 === \count($utilisateurs) ? $utilisateurs[0] : null;
     }
 
+    public function trouverParPseudoExact(string $pseudo): ?Utilisateur
+    {
+        $pseudo = trim($pseudo);
+        if ($pseudo === '') {
+            return null;
+        }
+
+        return $this->createQueryBuilder('utilisateur')
+            ->andWhere('TRIM(utilisateur.pseudo) = :pseudo')
+            ->setParameter('pseudo', $pseudo)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /** @return list<Utilisateur> */
     public function rechercherParPseudo(string $recherche, int $limite = 5): array
     {
@@ -57,6 +72,15 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
             ->orderBy('utilisateur.pseudo', 'ASC')
             ->setMaxResults(max(1, min(10, $limite)))
             ->getQuery()->getResult();
+    }
+
+    public function compterParPseudo(string $recherche): int
+    {
+        return (int) $this->createQueryBuilder('utilisateur')
+            ->select('COUNT(utilisateur.id)')
+            ->andWhere('LOWER(utilisateur.pseudo) LIKE :recherche')
+            ->setParameter('recherche', '%'.mb_strtolower(trim($recherche)).'%')
+            ->getQuery()->getSingleScalarResult();
     }
 
     /** @return list<Utilisateur> */

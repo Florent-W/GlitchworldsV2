@@ -34,7 +34,7 @@ final class JeuPropositionType extends AbstractType
                 'help' => 'Tu peux utiliser le BBCode pour mettre en forme la fiche.',
                 'attr' => ['rows' => 18],
             ])
-            ->add('developpeur', null, ['label' => 'Développeur ou équipe', 'required' => false])
+            ->add('developpeur', null, ['label' => 'Auteur de la fiche', 'required' => false, 'help' => 'Pseudo ou nom de la personne qui présente ce jeu.'])
             ->add('dateSortie', DateType::class, [
                 'label' => 'Date de sortie',
                 'widget' => 'single_text',

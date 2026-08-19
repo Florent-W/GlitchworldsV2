@@ -17,6 +17,7 @@ use App\Repository\GenreRepository;
 use App\Repository\JeuRepository;
 use App\Repository\LangueRepository;
 use App\Repository\PlateformeRepository;
+use App\Repository\UtilisateurRepository;
 use App\Service\ProgressionUtilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,8 +42,29 @@ final class JeuController extends AbstractController
         $plateforme = trim((string) $request->query->get('plateforme', ''));
         $genre = trim((string) $request->query->get('genre', ''));
         $langue = trim((string) $request->query->get('langue', ''));
+        $auteur = trim((string) $request->query->get('auteur', ''));
+        if ($auteur === '') {
+            $auteur = trim((string) $request->query->get('developpeur', ''));
+        }
+        $anneeBrute = trim((string) $request->query->get('annee', ''));
+        $annee = ctype_digit($anneeBrute) ? (int) $anneeBrute : null;
+        $mesFavoris = $request->query->getBoolean('mes_favoris');
         $tri = TriJeu::tryFrom((string) $request->query->get('tri', 'recent')) ?? TriJeu::Recent;
-        $pagination = $jeuRepository->trouverApprouvesPagines($page, 20, $recherche, $categorie, $plateforme, $genre, $langue, $tri);
+        $utilisateur = $this->getUser();
+        $pagination = $jeuRepository->trouverApprouvesPagines(
+            $page,
+            20,
+            $recherche,
+            $categorie,
+            $plateforme,
+            $genre,
+            $langue,
+            $tri,
+            $auteur,
+            $annee,
+            $mesFavoris,
+            $utilisateur instanceof Utilisateur ? $utilisateur : null,
+        );
 
         return $this->render('jeu/index.html.twig', [
             ...$pagination,
@@ -50,6 +72,8 @@ final class JeuController extends AbstractController
             'plateformes' => $plateformeRepository->trouverToutes(),
             'genres' => $genreRepository->trouverTous(),
             'langues' => $langueRepository->trouverToutes(),
+            'auteurs' => $jeuRepository->listerAuteurs(),
+            'annees' => $jeuRepository->listerAnneesSortie(),
             'tris' => TriJeu::cases(),
         ]);
     }
@@ -65,6 +89,7 @@ final class JeuController extends AbstractController
         EntityManagerInterface $entityManager,
         ActualiteRepository $actualiteRepository,
         ProgressionUtilisateur $progression,
+        UtilisateurRepository $utilisateurRepository,
     ): Response
     {
         $jeu = $jeuRepository->find($id);
@@ -78,6 +103,11 @@ final class JeuController extends AbstractController
                 'slug' => $jeu->getSlug(),
                 'id' => $jeu->getId(),
             ], 301);
+        }
+
+        $auteurFiche = $jeu->getCreateur();
+        if (!$auteurFiche instanceof Utilisateur && $jeu->getDeveloppeur()) {
+            $auteurFiche = $utilisateurRepository->trouverParPseudoExact($jeu->getDeveloppeur());
         }
 
         $commentaire = new CommentaireJeu();
@@ -115,6 +145,7 @@ final class JeuController extends AbstractController
 
         return $this->render('jeu/show.html.twig', [
             'jeu' => $jeu,
+            'auteurFiche' => $auteurFiche,
             'jeuxSimilaires' => $jeuRepository->trouverSimilaires($jeu),
             'resumeAvis' => $avisRepository->trouverResume($jeu),
             'commentaires' => $commentaireJeuRepository->trouverRecents($jeu),

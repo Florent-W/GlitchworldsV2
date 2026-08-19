@@ -21,6 +21,7 @@
     {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="img-fluid rounded-4 w-100 mb-4" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="Miniature de {{ actualite.titre }}" style="max-height: 520px; object-fit: cover" loading="eager" fetchpriority="high" decoding="async">{% endif %}
     <hr>
     <div class="gw-article-content">{{ actualite.contenu|bbcode }}</div>
+    {% include '_auteur_fiche.html.twig' with { auteur: actualite.auteur } only %}
     {% if actualite.jeux is not empty %}
         <hr>
         <h2 class="h5">Jeux concernés</h2>

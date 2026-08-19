@@ -1,5 +1,8 @@
 import { Controller } from '@hotwired/stimulus';
 
+const CLE_RECENTES = 'glitchworlds-recherches-recentes';
+const MAX_RECENTES = 6;
+
 export default class extends Controller {
     static targets = ['champ', 'resultats', 'formulaire'];
     static values = { url: String };
@@ -20,11 +23,16 @@ export default class extends Controller {
         document.removeEventListener('click', this.fermerAuClic);
     }
 
+    ouvrir() {
+        this.element.classList.add('is-open');
+        this.rechercher();
+    }
+
     rechercher() {
         clearTimeout(this.delai);
         const recherche = this.champTarget.value.trim();
         if (recherche.length < 2) {
-            this.fermer();
+            this.afficherRecentes();
             return;
         }
         this.delai = setTimeout(() => this.charger(recherche), 250);
@@ -40,13 +48,15 @@ export default class extends Controller {
             if (!reponse.ok) throw new Error('Recherche indisponible');
             const donnees = await reponse.json();
             if (this.champTarget.value.trim() !== recherche) return;
-            this.afficher(donnees.resultats, recherche);
+            this.afficher(donnees, recherche);
         } catch (erreur) {
             if (erreur.name !== 'AbortError') this.fermer();
         }
     }
 
-    afficher(resultats, recherche) {
+    afficher(donnees, recherche) {
+        const resultats = donnees.resultats ?? [];
+        const totaux = donnees.totaux ?? {};
         this.index = -1;
         this.resultatsTarget.replaceChildren();
         if (resultats.length === 0) {
@@ -55,26 +65,131 @@ export default class extends Controller {
             vide.textContent = 'Aucun résultat';
             this.resultatsTarget.append(vide);
         } else {
-            resultats.forEach((resultat, index) => {
-                const lien = document.createElement('a');
-                lien.href = resultat.url;
-                lien.className = 'gw-autocomplete__item';
-                lien.id = `gw-search-option-${index}`;
-                lien.setAttribute('role', 'option');
-                const visuel = resultat.miniature
-                    ? `<img src="${this.echapper(resultat.miniature)}" alt="" loading="lazy">`
-                    : `<i class="bi bi-${this.echapper(resultat.icone)}" aria-hidden="true"></i>`;
-                lien.innerHTML = `${visuel}<span><strong>${this.echapper(resultat.titre)}</strong><small>${this.echapper(resultat.type)} · ${this.echapper(resultat.detail)}</small></span>`;
-                this.resultatsTarget.append(lien);
+            const groupes = new Map();
+            resultats.forEach(resultat => {
+                const categorie = resultat.type ?? '';
+                if (!groupes.has(categorie)) groupes.set(categorie, []);
+                groupes.get(categorie).push(resultat);
+            });
+
+            let position = 0;
+            groupes.forEach((elements, categorie) => {
+                const entete = this.creerEntete(this.libellerCategorie(categorie));
+                const total = totaux[categorie] ?? elements.length;
+                const compte = document.createElement('span');
+                compte.className = 'gw-autocomplete__count';
+                compte.textContent = total > elements.length ? `${elements.length} / ${total}` : total;
+                entete.append(compte);
+                this.resultatsTarget.append(entete);
+
+                elements.forEach(resultat => {
+                    const lien = document.createElement('a');
+                    lien.href = resultat.url;
+                    lien.className = 'gw-autocomplete__item';
+                    lien.id = `gw-search-option-${position}`;
+                    position += 1;
+                    lien.setAttribute('role', 'option');
+                    const visuel = resultat.miniature
+                        ? `<img src="${this.echapper(resultat.miniature)}" alt="" loading="lazy">`
+                        : `<i class="bi bi-${this.echapper(resultat.icone)}" aria-hidden="true"></i>`;
+                    lien.innerHTML = `${visuel}<span><strong>${this.echapper(resultat.titre)}</strong><small>${this.echapper(resultat.detail)}</small></span>`;
+                    this.resultatsTarget.append(lien);
+                });
             });
         }
+        const cumul = donnees.total ?? resultats.length;
         const complet = document.createElement('a');
         complet.href = `${this.formulaireTarget.action}?recherche=${encodeURIComponent(recherche)}`;
         complet.className = 'gw-autocomplete__all';
-        complet.textContent = `Voir tous les résultats pour « ${recherche} »`;
+        complet.textContent = cumul > 0
+            ? `Voir ${cumul > 1 ? `les ${cumul} résultats` : 'le résultat'} pour « ${recherche} »`
+            : `Voir tous les résultats pour « ${recherche} »`;
+        complet.addEventListener('click', () => this.memoriser());
         this.resultatsTarget.append(complet);
         this.resultatsTarget.classList.remove('d-none');
         this.champTarget.setAttribute('aria-expanded', 'true');
+    }
+
+    afficherRecentes() {
+        this.index = -1;
+        this.resultatsTarget.replaceChildren();
+        const recentes = this.lireRecentes();
+
+        const entete = this.creerEntete('Recherches récentes');
+        if (recentes.length > 0) {
+            const effacer = document.createElement('button');
+            effacer.type = 'button';
+            effacer.className = 'gw-autocomplete__clear';
+            effacer.textContent = 'Effacer';
+            effacer.addEventListener('click', () => this.effacerRecentes());
+            entete.append(effacer);
+        }
+        this.resultatsTarget.append(entete);
+
+        if (recentes.length === 0) {
+            const vide = document.createElement('div');
+            vide.className = 'gw-autocomplete__empty';
+            vide.textContent = 'Tape au moins 2 caractères pour lancer une recherche.';
+            this.resultatsTarget.append(vide);
+        } else {
+            recentes.forEach((terme, index) => {
+                const lien = document.createElement('a');
+                lien.href = `${this.formulaireTarget.action}?recherche=${encodeURIComponent(terme)}`;
+                lien.className = 'gw-autocomplete__item';
+                lien.id = `gw-search-option-${index}`;
+                lien.setAttribute('role', 'option');
+                lien.innerHTML = `<i class="bi bi-clock-history" aria-hidden="true"></i><span><strong>${this.echapper(terme)}</strong><small>Recherche récente</small></span>`;
+                this.resultatsTarget.append(lien);
+            });
+        }
+
+        this.resultatsTarget.classList.remove('d-none');
+        this.champTarget.setAttribute('aria-expanded', 'true');
+    }
+
+    creerEntete(libelle) {
+        const entete = document.createElement('div');
+        entete.className = 'gw-autocomplete__header';
+        const titre = document.createElement('span');
+        titre.textContent = libelle;
+        entete.append(titre);
+        return entete;
+    }
+
+    libellerCategorie(type) {
+        return { 'Jeu': 'Jeux', 'Actualité': 'Actualités', 'Membre': 'Membres' }[type] ?? type;
+    }
+
+    lireRecentes() {
+        try {
+            const stocke = JSON.parse(localStorage.getItem(CLE_RECENTES) ?? '[]');
+            return Array.isArray(stocke)
+                ? stocke.filter(terme => typeof terme === 'string' && terme.trim() !== '').slice(0, MAX_RECENTES)
+                : [];
+        } catch (erreur) {
+            return [];
+        }
+    }
+
+    memoriser() {
+        const recherche = this.champTarget.value.trim();
+        if (recherche.length < 2) return;
+        const conservees = this.lireRecentes().filter(terme => terme.toLowerCase() !== recherche.toLowerCase());
+        try {
+            localStorage.setItem(CLE_RECENTES, JSON.stringify([recherche, ...conservees].slice(0, MAX_RECENTES)));
+        } catch (erreur) {
+            // Stockage indisponible (navigation privée, quota) : la recherche reste fonctionnelle.
+        }
+    }
+
+    effacerRecentes() {
+        try {
+            localStorage.removeItem(CLE_RECENTES);
+        } catch (erreur) {
+            // Stockage indisponible : rien à nettoyer.
+        }
+        this.champTarget.focus();
+        this.afficherRecentes();
     }
 
     naviguer(event) {
@@ -92,6 +207,7 @@ export default class extends Controller {
 
     fermer() {
         this.index = -1;
+        this.element.classList.remove('is-open');
         this.resultatsTarget.classList.add('d-none');
         this.resultatsTarget.replaceChildren();
         this.champTarget.setAttribute('aria-expanded', 'false');

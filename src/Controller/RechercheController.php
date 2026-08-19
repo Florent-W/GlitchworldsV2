@@ -10,6 +10,7 @@ use App\Repository\PlateformeRepository;
 use App\Repository\LangueRepository;
 use App\Repository\GenreRepository;
 use App\Enum\TriJeu;
+use App\Entity\Utilisateur;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Asset\Packages;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,17 +30,45 @@ final class RechercheController extends AbstractController
         $plateforme = $request->query->getString('plateforme');
         $genre = $request->query->getString('genre');
         $langue = $request->query->getString('langue');
+        $auteur = trim($request->query->getString('auteur'));
+        if ($auteur === '') {
+            $auteur = trim($request->query->getString('developpeur'));
+        }
+        $anneeBrute = trim($request->query->getString('annee'));
+        $annee = ctype_digit($anneeBrute) ? (int) $anneeBrute : null;
+        $mesFavoris = $request->query->getBoolean('mes_favoris');
         $tri = TriJeu::tryFrom($request->query->getString('tri', 'recent')) ?? TriJeu::Recent;
-        $paginationJeux = '' !== $recherche && in_array($type, ['', 'jeu'], true) ? $jeuRepository->trouverApprouvesPagines(1, 12, $recherche, $categorie, $plateforme, $genre, $langue, $tri) : ['jeux' => [], 'total' => 0];
+        $utilisateur = $this->getUser();
+        $paginationJeux = '' !== $recherche && in_array($type, ['', 'jeu'], true)
+            ? $jeuRepository->trouverApprouvesPagines(
+                1,
+                12,
+                $recherche,
+                $categorie,
+                $plateforme,
+                $genre,
+                $langue,
+                $tri,
+                $auteur,
+                $annee,
+                $mesFavoris,
+                $utilisateur instanceof Utilisateur ? $utilisateur : null,
+            )
+            : ['jeux' => [], 'total' => 0];
         $actualites = '' !== $recherche && in_array($type, ['', 'actualite'], true) ? $actualiteRepository->rechercherPourApercu($recherche, 12) : [];
         $membres = '' !== $recherche && in_array($type, ['', 'membre'], true) ? $utilisateurRepository->rechercherParPseudo($recherche, 12) : [];
+        $totalActualites = '' !== $recherche && in_array($type, ['', 'actualite'], true) ? $actualiteRepository->compterPourApercu($recherche) : 0;
+        $totalMembres = '' !== $recherche && in_array($type, ['', 'membre'], true) ? $utilisateurRepository->compterParPseudo($recherche) : 0;
 
         return $this->render('recherche/index.html.twig', [
             'recherche' => $recherche,
-            'type' => $type, 'categorie' => $categorie, 'plateforme' => $plateforme, 'genre' => $genre, 'langue' => $langue, 'tri' => $tri,
+            'type' => $type, 'categorie' => $categorie, 'plateforme' => $plateforme, 'genre' => $genre, 'langue' => $langue,
+            'auteur' => $auteur, 'annee' => $annee, 'mesFavoris' => $mesFavoris, 'tri' => $tri,
             'jeux' => $paginationJeux['jeux'], 'totalJeux' => $paginationJeux['total'], 'actualites' => $actualites, 'membres' => $membres,
-            'categories' => $categorieRepository->trouverToutes(), 'plateformes' => $plateformeRepository->trouverToutes(), 'genres' => $genreRepository->trouverTous(), 'langues' => $langueRepository->trouverToutes(), 'tris' => TriJeu::cases(),
-            'totalResultats' => $paginationJeux['total'] + count($actualites) + count($membres),
+            'totalActualites' => $totalActualites, 'totalMembres' => $totalMembres,
+            'categories' => $categorieRepository->trouverToutes(), 'plateformes' => $plateformeRepository->trouverToutes(), 'genres' => $genreRepository->trouverTous(), 'langues' => $langueRepository->trouverToutes(),
+            'auteurs' => $jeuRepository->listerAuteurs(), 'annees' => $jeuRepository->listerAnneesSortie(), 'tris' => TriJeu::cases(),
+            'totalResultats' => $paginationJeux['total'] + $totalActualites + $totalMembres,
         ]);
     }
 
@@ -57,7 +86,7 @@ final class RechercheController extends AbstractController
             $type = '';
         }
         if (mb_strlen($recherche) < 2) {
-            return $this->json(['resultats' => []]);
+            return $this->json(['resultats' => [], 'totaux' => [], 'total' => 0]);
         }
 
         $resultats = [];
@@ -66,7 +95,7 @@ final class RechercheController extends AbstractController
                 'type' => 'Jeu',
                 'icone' => 'controller',
                 'titre' => $jeu->getNom(),
-                'detail' => $jeu->getDeveloppeur() ? 'Par '.$jeu->getDeveloppeur() : 'Fiche de jeu',
+                'detail' => $jeu->getDeveloppeur() ? 'Auteur : '.$jeu->getDeveloppeur() : 'Fiche de jeu',
                 'miniature' => str_starts_with((string) $jeu->getMiniature(), 'miniature.')
                     ? $assets->getUrl('uploads/jeux/'.$jeu->getId().'/'.$jeu->getMiniature())
                     : null,
@@ -98,6 +127,21 @@ final class RechercheController extends AbstractController
             ];
         }
 
-        return $this->json(['resultats' => $resultats]);
+        $totaux = [];
+        if (in_array($type, ['', 'jeu'], true)) {
+            $totaux['Jeu'] = $jeuRepository->compterPourApercu($recherche);
+        }
+        if (in_array($type, ['', 'actualite'], true)) {
+            $totaux['Actualité'] = $actualiteRepository->compterPourApercu($recherche);
+        }
+        if ('' === $type) {
+            $totaux['Membre'] = $utilisateurRepository->compterParPseudo($recherche);
+        }
+
+        return $this->json([
+            'resultats' => $resultats,
+            'totaux' => array_filter($totaux),
+            'total' => array_sum($totaux),
+        ]);
     }
 }

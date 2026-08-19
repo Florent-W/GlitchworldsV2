@@ -15,7 +15,10 @@ final class RechercheControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('content-type', 'application/json');
-        self::assertSame(['resultats' => []], json_decode($client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR));
+        self::assertSame(
+            ['resultats' => [], 'totaux' => [], 'total' => 0],
+            json_decode($client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR)
+        );
     }
 
     public function testAutocompletionTrouveUnMembreParSonPseudo(): void
@@ -33,6 +36,8 @@ final class RechercheControllerTest extends WebTestCase
         self::assertSame('Membre', $donnees['resultats'][0]['type']);
         self::assertSame('Autocompletion'.$suffixe, $donnees['resultats'][0]['titre']);
         self::assertSame('/membre/'.$id, $donnees['resultats'][0]['url']);
+        self::assertSame(1, $donnees['totaux']['Membre']);
+        self::assertSame(1, $donnees['total']);
 
         $entityManager->remove($membre); $entityManager->flush();
     }

@@ -33,7 +33,7 @@
         {% set schema = schema|merge({ datePublished: jeu.dateSortie|date('Y-m-d') }) %}
     {% endif %}
     {% if jeu.developpeur %}
-        {% set schema = schema|merge({ author: { '@type': 'Organization', name: jeu.developpeur } }) %}
+        {% set schema = schema|merge({ author: { '@type': 'Person', name: jeu.developpeur } }) %}
     {% endif %}
     {% if resumeAvis.moyenne is not null %}
         {% set schema = schema|merge({ aggregateRating: {
@@ -145,7 +145,7 @@
                 {% if jeu.developpeur %}
                     <div class="gw-quick-info__item">
                         <i class="bi bi-person-fill" aria-hidden="true"></i>
-                        <div><span>Développeur</span><strong>{{ jeu.developpeur }}</strong></div>
+                        <div><span>Auteur de la fiche</span><strong>{{ jeu.developpeur }}</strong></div>
                     </div>
                 {% endif %}
 
@@ -244,6 +244,11 @@
         {% else %}
             <p class="text-secondary mb-0">Aucune présentation disponible pour le moment.</p>
         {% endif %}
+
+        {% include '_auteur_fiche.html.twig' with {
+            auteur: auteurFiche,
+            auteurPseudo: auteurFiche ? null : jeu.developpeur
+        } only %}
     </section>
 
     {% if actualitesLiees is not empty %}

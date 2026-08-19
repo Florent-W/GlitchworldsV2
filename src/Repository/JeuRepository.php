@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Avis;
 use App\Entity\Jeu;
 use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
@@ -20,7 +21,22 @@ class JeuRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array{jeux: list<Jeu>, total: int, page: int, pages: int, parPage: int, recherche: string, categorie: string, plateforme: string, genre: string, langue: string, tri: TriJeu}
+     * @return array{
+     *     jeux: list<Jeu>,
+     *     total: int,
+     *     page: int,
+     *     pages: int,
+     *     parPage: int,
+     *     recherche: string,
+     *     categorie: string,
+     *     plateforme: string,
+     *     genre: string,
+     *     langue: string,
+     *     auteur: string,
+     *     annee: ?int,
+     *     mesFavoris: bool,
+     *     tri: TriJeu
+     * }
      */
     public function trouverApprouvesPagines(
         int $page = 1,
@@ -31,6 +47,10 @@ class JeuRepository extends ServiceEntityRepository
         string $genre = '',
         string $langue = '',
         TriJeu $tri = TriJeu::Recent,
+        string $auteur = '',
+        ?int $annee = null,
+        bool $mesFavoris = false,
+        ?Utilisateur $utilisateur = null,
     ): array {
         $page = max(1, $page);
         $parPage = max(1, min(50, $parPage));
@@ -39,6 +59,8 @@ class JeuRepository extends ServiceEntityRepository
         $plateforme = trim($plateforme);
         $genre = trim($genre);
         $langue = trim($langue);
+        $auteur = trim($auteur);
+        $mesFavoris = $mesFavoris && $utilisateur instanceof Utilisateur;
 
         $qb = $this->createQueryBuilder('j')
             ->leftJoin('j.categorie', 'c')
@@ -79,22 +101,54 @@ class JeuRepository extends ServiceEntityRepository
                 ->setParameter('langue', $langue);
         }
 
-        $total = (clone $qb)
+        if ($auteur !== '') {
+            $qb
+                ->andWhere('j.developpeur = :auteur')
+                ->setParameter('auteur', $auteur);
+        }
+
+        if ($annee !== null) {
+            $qb
+                ->andWhere('j.dateSortie >= :anneeDebut AND j.dateSortie < :anneeFin')
+                ->setParameter('anneeDebut', new \DateTimeImmutable(sprintf('%04d-01-01', $annee)))
+                ->setParameter('anneeFin', new \DateTimeImmutable(sprintf('%04d-01-01', $annee + 1)));
+        }
+
+        if ($mesFavoris) {
+            $qb
+                ->innerJoin('j.ajouteAuxFavorisPar', 'favori')
+                ->andWhere('favori = :membreFavoris')
+                ->setParameter('membreFavoris', $utilisateur);
+        }
+
+        $total = (int) (clone $qb)
             ->select('COUNT(DISTINCT j.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
-        $pages = max(1, ceil($total / $parPage));
+        $pages = max(1, (int) ceil($total / $parPage));
         if ($page > $pages) {
             $page = $pages;
         }
 
-        $qb->distinct();
-
         match ($tri) {
-            TriJeu::Recent => $qb->orderBy('j.dateSortie', 'DESC')->addOrderBy('j.id', 'DESC'),
-            TriJeu::Nom => $qb->orderBy('j.nom', 'ASC'),
-            TriJeu::Ancien => $qb->orderBy('j.dateSortie', 'ASC')->addOrderBy('j.id', 'ASC'),
+            TriJeu::Recent => $qb->distinct()->orderBy('j.dateSortie', 'DESC')->addOrderBy('j.id', 'DESC'),
+            TriJeu::Nom => $qb->distinct()->orderBy('j.nom', 'ASC'),
+            TriJeu::Ancien => $qb->distinct()->orderBy('j.dateSortie', 'ASC')->addOrderBy('j.id', 'ASC'),
+            TriJeu::Populaire => $qb
+                ->leftJoin('j.ajouteAuxFavorisPar', 'triFavori')
+                ->addSelect('COUNT(DISTINCT triFavori.id) AS HIDDEN nbFavoris')
+                ->groupBy('j.id')
+                ->addGroupBy('c.id')
+                ->orderBy('nbFavoris', 'DESC')
+                ->addOrderBy('j.nom', 'ASC'),
+            TriJeu::Note => $qb
+                ->leftJoin(Avis::class, 'triAvis', 'WITH', 'triAvis.jeu = j')
+                ->addSelect('AVG(triAvis.note) AS HIDDEN noteMoyenne')
+                ->groupBy('j.id')
+                ->addGroupBy('c.id')
+                ->orderBy('noteMoyenne', 'DESC')
+                ->addOrderBy('j.nom', 'ASC'),
         };
 
         /** @var list<Jeu> $jeux */
@@ -131,8 +185,41 @@ class JeuRepository extends ServiceEntityRepository
             'plateforme' => $plateforme,
             'genre' => $genre,
             'langue' => $langue,
+            'auteur' => $auteur,
+            'annee' => $annee,
+            'mesFavoris' => $mesFavoris,
             'tri' => $tri,
         ];
+    }
+
+    /** @return list<string> */
+    public function listerAuteurs(): array
+    {
+        /** @var list<string> $auteurs */
+        $auteurs = $this->createQueryBuilder('j')
+            ->select('DISTINCT j.developpeur')
+            ->andWhere('j.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
+            ->andWhere('j.developpeur IS NOT NULL')
+            ->andWhere("TRIM(j.developpeur) != ''")
+            ->orderBy('j.developpeur', 'ASC')
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        return $auteurs;
+    }
+
+    /** @return list<int> */
+    public function listerAnneesSortie(): array
+    {
+        $annees = $this->getEntityManager()->getConnection()->fetchFirstColumn(
+            'SELECT DISTINCT YEAR(date_sortie) AS annee
+             FROM jeu
+             WHERE statut = :statut AND date_sortie IS NOT NULL
+             ORDER BY annee DESC',
+            ['statut' => StatutJeu::Approuve->value]
+        );
+
+        return array_values(array_filter(array_map(static fn (mixed $annee): int => (int) $annee, $annees)));
     }
 
     /** @return list<Jeu> */
@@ -141,10 +228,20 @@ class JeuRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('jeu')
             ->leftJoin('jeu.categorie', 'categorie')->addSelect('categorie')
             ->andWhere('jeu.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
-            ->andWhere('(jeu.nom LIKE :recherche OR jeu.description LIKE :recherche OR jeu.developpeur LIKE :recherche)')
+            ->andWhere('(jeu.nom LIKE :recherche OR jeu.description LIKE :recherche OR jeu.slug LIKE :recherche OR jeu.developpeur LIKE :recherche)')
             ->setParameter('recherche', '%'.trim($recherche).'%')
             ->orderBy('jeu.nom', 'ASC')->setMaxResults($limite)
             ->getQuery()->getResult();
+    }
+
+    public function compterPourApercu(string $recherche): int
+    {
+        return (int) $this->createQueryBuilder('jeu')
+            ->select('COUNT(jeu.id)')
+            ->andWhere('jeu.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
+            ->andWhere('(jeu.nom LIKE :recherche OR jeu.description LIKE :recherche OR jeu.slug LIKE :recherche OR jeu.developpeur LIKE :recherche)')
+            ->setParameter('recherche', '%'.trim($recherche).'%')
+            ->getQuery()->getSingleScalarResult();
     }
 
     /**
