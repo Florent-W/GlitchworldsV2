@@ -6,7 +6,9 @@ use App\Entity\Actualite;
 use App\Entity\CommentaireActualite;
 use App\Entity\CommentaireJeu;
 use App\Entity\Jeu;
+use App\Entity\Notification;
 use App\Entity\Utilisateur;
+use App\Enum\StatutActualite;
 use App\Enum\StatutJeu;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -122,6 +124,132 @@ final class ModerationControllerTest extends WebTestCase
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $entityManager->remove($entityManager->find(Jeu::class, $jeuId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $moderateurId));
+        $entityManager->flush();
+    }
+
+    public function testApprouverUnePropositionNotifieLeCreateur(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $moderateur = (new Utilisateur())
+            ->setPseudo('ModNotif'.$suffixe)
+            ->setEmail('mod-notif-'.$suffixe.'@glitchworlds.local')
+            ->setRoles(['ROLE_MODERATEUR']);
+        $createur = (new Utilisateur())
+            ->setPseudo('CreateurNotif'.$suffixe)
+            ->setEmail('createur-notif-'.$suffixe.'@glitchworlds.local');
+        $jeu = (new Jeu())
+            ->setNom('Jeu notifié '.$suffixe)
+            ->setSlug('jeu-notifie-'.$suffixe)
+            ->setDescription('Proposition test notification.')
+            ->setCreateur($createur)
+            ->setStatut(StatutJeu::EnAttente);
+        $entityManager->persist($moderateur);
+        $entityManager->persist($createur);
+        $entityManager->persist($jeu);
+        $entityManager->flush();
+        $createurId = $createur->getId();
+        $jeuId = $jeu->getId();
+        $moderateurId = $moderateur->getId();
+
+        $client->loginUser($moderateur);
+        $crawler = $client->request('GET', '/moderation/jeux');
+        $client->submit($crawler->filter(sprintf('form[action="/moderation/jeux/%d/approuver"]', $jeuId))->form());
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $notification = $entityManager->getRepository(Notification::class)->findOneBy(['utilisateur' => $createurId]);
+        self::assertInstanceOf(Notification::class, $notification);
+        self::assertSame('Jeu approuvé', $notification->getTitre());
+        self::assertStringContainsString('Jeu notifié '.$suffixe, $notification->getMessage());
+        self::assertSame(sprintf('/jeu/jeu-notifie-%s-%d', $suffixe, $jeuId), $notification->getUrl());
+
+        $entityManager->remove($notification);
+        $entityManager->remove($entityManager->find(Jeu::class, $jeuId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $createurId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $moderateurId));
+        $entityManager->flush();
+    }
+
+    public function testRefuserUneActualiteNotifieLAuteur(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $moderateur = (new Utilisateur())
+            ->setPseudo('ModActuNotif'.$suffixe)
+            ->setEmail('mod-actu-notif-'.$suffixe.'@glitchworlds.local')
+            ->setRoles(['ROLE_MODERATEUR']);
+        $auteur = (new Utilisateur())
+            ->setPseudo('AuteurActuNotif'.$suffixe)
+            ->setEmail('auteur-actu-notif-'.$suffixe.'@glitchworlds.local');
+        $actualite = (new Actualite())
+            ->setTitre('Actualité refusée '.$suffixe)
+            ->setSlug('actualite-refusee-'.$suffixe)
+            ->setDescription('Proposition test notification.')
+            ->setContenu('Contenu de test.')
+            ->setAuteur($auteur)
+            ->setStatut(StatutActualite::EnAttente);
+        $entityManager->persist($moderateur);
+        $entityManager->persist($auteur);
+        $entityManager->persist($actualite);
+        $entityManager->flush();
+        $auteurId = $auteur->getId();
+        $actualiteId = $actualite->getId();
+        $moderateurId = $moderateur->getId();
+
+        $client->loginUser($moderateur);
+        $crawler = $client->request('GET', '/moderation/actualites');
+        $client->submit($crawler->filter(sprintf('form[action="/moderation/actualites/%d/refuser"]', $actualiteId))->form());
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $notification = $entityManager->getRepository(Notification::class)->findOneBy(['utilisateur' => $auteurId]);
+        self::assertInstanceOf(Notification::class, $notification);
+        self::assertSame('Actualité refusée', $notification->getTitre());
+        self::assertStringContainsString('Actualité refusée '.$suffixe, $notification->getMessage());
+        self::assertSame('/mon-compte', $notification->getUrl());
+
+        $entityManager->remove($notification);
+        $entityManager->remove($entityManager->find(Actualite::class, $actualiteId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $auteurId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $moderateurId));
+        $entityManager->flush();
+    }
+
+    public function testUnModerateurPeutPrevisualiserUneActualiteEnAttente(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $moderateur = (new Utilisateur())
+            ->setPseudo('ModPreview'.$suffixe)
+            ->setEmail('mod-preview-'.$suffixe.'@glitchworlds.local')
+            ->setRoles(['ROLE_MODERATEUR']);
+        $actualite = (new Actualite())
+            ->setTitre('Preview modération '.$suffixe)
+            ->setSlug('preview-moderation-'.$suffixe)
+            ->setDescription('Description pour l’aperçu modération.')
+            ->setContenu('[b]Contenu BBCode[/b] à valider.')
+            ->setStatut(StatutActualite::EnAttente);
+        $entityManager->persist($moderateur);
+        $entityManager->persist($actualite);
+        $entityManager->flush();
+        $actualiteId = $actualite->getId();
+        $moderateurId = $moderateur->getId();
+
+        $client->loginUser($moderateur);
+        $crawler = $client->request('GET', '/moderation/actualites');
+        self::assertSelectorExists(sprintf('a[href="/moderation/actualites/%d"]', $actualiteId));
+
+        $client->click($crawler->filter(sprintf('a[href="/moderation/actualites/%d"]', $actualiteId))->link());
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Preview modération '.$suffixe);
+        self::assertSelectorTextContains('.alert-warning', 'Aperçu de modération');
+        self::assertSelectorTextContains('.gw-article-content', 'Contenu BBCode');
+        self::assertSelectorExists(sprintf('form[action="/moderation/actualites/%d/approuver"]', $actualiteId));
+
+        $entityManager->remove($entityManager->find(Actualite::class, $actualiteId));
         $entityManager->remove($entityManager->find(Utilisateur::class, $moderateurId));
         $entityManager->flush();
     }

@@ -1,12 +1,47 @@
 {% extends 'base.html.twig' %}
-{% block title %}Gestion des actualités - GlitchWorlds{% endblock %}
+{% block title %}Actualités - Modération{% endblock %}
 {% block robots_meta %}noindex,nofollow{% endblock %}
 {% block body %}
-<div class="gw-admin"><aside>{% include 'administration/_navigation.html.twig' with {actualitesEnAttenteNavigation: actualitesEnAttenteNavigation|default(0)} %}</aside><section class="min-w-0">
-    <div class="d-flex align-items-center gap-3 mb-4"><i class="bi bi-newspaper text-primary fs-1"></i><div><span class="gw-eyebrow">Back-office</span><h1 class="h2 mb-1">Propositions d’actualités</h1><p class="text-secondary mb-0">{{ total }} actualité{{ total > 1 ? 's' : '' }} trouvée{{ total > 1 ? 's' : '' }}.</p></div></div>
-    <form class="gw-panel p-3 mb-4" method="get"><div class="row g-2"><div class="col-md-7"><label class="visually-hidden" for="recherche-actualite-admin">Rechercher</label><input id="recherche-actualite-admin" class="form-control" type="search" name="recherche" value="{{ recherche }}" placeholder="Titre, slug ou description"></div><div class="col-md-3"><label class="visually-hidden" for="statut-actualite-admin">Statut</label><select id="statut-actualite-admin" class="form-select" name="statut"><option value="">Tous les statuts</option>{% for statut in statuts %}<option value="{{ statut.value }}" {{ statutSelectionne == statut ? 'selected' }}>{{ statut.label }}</option>{% endfor %}</select></div><div class="col-md-2 d-grid"><button class="btn btn-primary"><i class="bi bi-search me-1"></i>Filtrer</button></div></div></form>
-    <div class="gw-panel p-3"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Actualité</th><th>Auteur</th><th>Statut</th><th>Catégorie</th><th class="text-end">Actions</th></tr></thead><tbody>
-    {% for actualite in actualites %}<tr><td><strong>{{ actualite.titre }}</strong><small class="d-block text-secondary">{{ actualite.description }}</small></td><td>{{ actualite.auteur ? actualite.auteur.pseudo : 'Compte supprimé' }}</td><td><span class="badge text-bg-{{ actualite.statut.value == 'publiee' ? 'success' : (actualite.statut.value == 'en_attente' ? 'warning' : 'secondary') }}">{{ actualite.statut.label }}</span></td><td>{{ actualite.categorie.label }}</td><td><div class="d-flex flex-wrap justify-content-end gap-1">{% if actualite.statut.value == 'en_attente' %}<form method="post" action="{{ path('app_moderation_actualite_decider', {id: actualite.id, decision: 'refuser'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('moderation-actualite-' ~ actualite.id) }}"><button class="btn btn-sm btn-outline-danger">Refuser</button></form><form method="post" action="{{ path('app_moderation_actualite_decider', {id: actualite.id, decision: 'approuver'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('moderation-actualite-' ~ actualite.id) }}"><button class="btn btn-sm btn-success">Publier</button></form>{% endif %}{% if is_granted('ROLE_ADMIN') %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_administration_actualites_modifier', {id: actualite.id}) }}" aria-label="Modifier {{ actualite.titre }}"><i class="bi bi-pencil-fill"></i></a>{% endif %}</div></td></tr>{% else %}<tr><td colspan="5" class="text-center text-secondary py-5">Aucune actualité ne correspond aux filtres.</td></tr>{% endfor %}
+<div class="gw-admin"><aside>{% include 'moderation/_navigation.html.twig' %}</aside><section class="min-w-0">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-newspaper text-primary fs-1"></i>
+            <div><span class="gw-eyebrow">Modération</span><h1 class="h2 mb-1">Actualités</h1><p class="text-secondary mb-0">{{ total }} actualité{{ total > 1 ? 's' : '' }} trouvée{{ total > 1 ? 's' : '' }}.</p></div>
+        </div>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a class="btn btn-primary" href="{{ path('app_administration_actualites_creer') }}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Créer une actualité</a>
+        {% endif %}
+    </div>
+    <form class="gw-panel p-3 mb-4" method="get"><div class="row g-2"><div class="col-md-7"><label class="visually-hidden" for="recherche-actualite-moderation">Rechercher</label><input id="recherche-actualite-moderation" class="form-control" type="search" name="recherche" value="{{ recherche }}" placeholder="Titre, slug ou description"></div><div class="col-md-3"><label class="visually-hidden" for="statut-actualite-moderation">Statut</label><select id="statut-actualite-moderation" class="form-select" name="statut"><option value="">Tous les statuts</option>{% for statut in statuts %}<option value="{{ statut.value }}" {{ statutSelectionne == statut ? 'selected' }}>{{ statut.label }}</option>{% endfor %}</select></div><div class="col-md-2 d-grid"><button class="btn btn-primary"><i class="bi bi-search me-1"></i>Filtrer</button></div></div></form>
+    <div class="gw-panel p-3"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Actualité</th><th>Auteur</th><th>Statut</th><th>Catégorie</th>{% if is_granted('ROLE_ADMIN') %}<th>Accueil</th>{% endif %}<th class="text-end">Actions</th></tr></thead><tbody>
+    {% for actualite in actualites %}
+        <tr>
+            <td><strong>{{ actualite.titre }}</strong><small class="d-block text-secondary">{{ actualite.description }}</small></td>
+            <td>{{ actualite.auteur ? actualite.auteur.pseudo : 'Compte supprimé' }}</td>
+            <td><span class="badge text-bg-{{ actualite.statut.value == 'publiee' ? 'success' : (actualite.statut.value == 'en_attente' ? 'warning' : 'secondary') }}">{{ actualite.statut.label }}</span></td>
+            <td>{{ actualite.categorie.label }}</td>
+            {% if is_granted('ROLE_ADMIN') %}
+                <td>{% if actualite.miseEnAvant %}<span class="badge text-bg-primary"><i class="bi bi-stars me-1"></i>Mise en avant</span>{% else %}<span class="text-secondary">—</span>{% endif %}</td>
+            {% endif %}
+            <td><div class="d-flex flex-wrap justify-content-end gap-1">
+                {% if actualite.statut.value == 'publiee' %}
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}" aria-label="Voir {{ actualite.titre }}"><i class="bi bi-box-arrow-up-right"></i></a>
+                {% else %}
+                    <a class="btn btn-sm btn-outline-primary" href="{{ path('app_moderation_actualite_voir', {id: actualite.id}) }}" aria-label="Examiner {{ actualite.titre }}"><i class="bi bi-eye-fill"></i></a>
+                {% endif %}
+                {% if actualite.statut.value == 'en_attente' %}
+                    <form method="post" action="{{ path('app_moderation_actualite_decider', {id: actualite.id, decision: 'refuser'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('moderation-actualite-' ~ actualite.id) }}"><button class="btn btn-sm btn-outline-danger">Refuser</button></form>
+                    <form method="post" action="{{ path('app_moderation_actualite_decider', {id: actualite.id, decision: 'approuver'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('moderation-actualite-' ~ actualite.id) }}"><button class="btn btn-sm btn-success">Publier</button></form>
+                {% endif %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a class="btn btn-sm btn-outline-primary" href="{{ path('app_administration_actualites_modifier', {id: actualite.id}) }}" aria-label="Modifier {{ actualite.titre }}"><i class="bi bi-pencil-fill"></i></a>
+                    <form method="post" action="{{ path('app_administration_actualites_supprimer', {id: actualite.id}) }}" onsubmit="return confirm('Supprimer définitivement cette actualité ?')"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-actualite-' ~ actualite.id) }}"><button class="btn btn-sm btn-outline-danger" aria-label="Supprimer {{ actualite.titre }}"><i class="bi bi-trash-fill"></i></button></form>
+                {% endif %}
+            </div></td>
+        </tr>
+    {% else %}
+        <tr><td colspan="{{ is_granted('ROLE_ADMIN') ? 6 : 5 }}" class="text-center text-secondary py-5">Aucune actualité ne correspond aux filtres.</td></tr>
+    {% endfor %}
     </tbody></table></div></div>
     {% if pages > 1 %}<nav class="mt-4" aria-label="Pagination"><ul class="pagination justify-content-center"><li class="page-item{{ page == 1 ? ' disabled' : '' }}"><a class="page-link" href="{{ path('app_moderation_actualites', {recherche: recherche, statut: statutSelectionne ? statutSelectionne.value : '', page: page - 1}) }}">Précédent</a></li><li class="page-item disabled"><span class="page-link">{{ page }} / {{ pages }}</span></li><li class="page-item{{ page == pages ? ' disabled' : '' }}"><a class="page-link" href="{{ path('app_moderation_actualites', {recherche: recherche, statut: statutSelectionne ? statutSelectionne.value : '', page: page + 1}) }}">Suivant</a></li></ul></nav>{% endif %}
 </section></div>

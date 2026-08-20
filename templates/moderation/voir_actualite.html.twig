@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Examiner {{ actualite.titre }} - GlitchWorlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 980px">
+    <nav aria-label="Fil d’Ariane">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_moderation_actualites') }}">Modération</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ actualite.titre }}</li>
+        </ol>
+    </nav>
+
+    <div class="alert alert-warning d-flex align-items-center gap-2" role="status">
+        <i class="bi bi-eye-fill" aria-hidden="true"></i>
+        <span>Aperçu de modération — cette actualité n’est pas encore publique.</span>
+    </div>
+
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-4 mb-4">
+        <div>
+            <span class="badge text-bg-{{ actualite.statut.value == 'en_attente' ? 'warning' : (actualite.statut.value == 'publiee' ? 'success' : 'secondary') }} mb-2">{{ actualite.statut.label }}</span>
+            <span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span>
+            <h1 class="h2 mb-2">{{ actualite.titre }}</h1>
+            <p class="lead text-secondary mb-0">{{ actualite.description }}</p>
+        </div>
+        <div class="d-flex flex-wrap align-items-start gap-2">
+            {% if is_granted('PROPOSITION_ACTUALITE_MODIFIER', actualite) %}
+                <a class="btn btn-outline-primary" href="{{ path('app_actualite_proposition_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil-fill me-1" aria-hidden="true"></i>Modifier</a>
+            {% endif %}
+            {% if is_granted('ROLE_ADMIN') %}
+                <a class="btn btn-outline-primary" href="{{ path('app_administration_actualites_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil-fill me-1" aria-hidden="true"></i>Modifier (admin)</a>
+            {% endif %}
+            {% if actualite.statut.value == 'en_attente' %}
+                <form method="post" action="{{ path('app_moderation_actualite_decider', { id: actualite.id, decision: 'refuser' }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('moderation-actualite-' ~ actualite.id) }}">
+                    <button class="btn btn-outline-danger" type="submit"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Refuser</button>
+                </form>
+                <form method="post" action="{{ path('app_moderation_actualite_decider', { id: actualite.id, decision: 'approuver' }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('moderation-actualite-' ~ actualite.id) }}">
+                    <button class="btn btn-success" type="submit"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Publier</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <dl class="row mb-4">
+        <dt class="col-sm-4 col-lg-3">Proposée par</dt>
+        <dd class="col-sm-8 col-lg-9">{{ actualite.auteur ? actualite.auteur.pseudo : 'Membre supprimé' }}</dd>
+        <dt class="col-sm-4 col-lg-3">Soumise le</dt>
+        <dd class="col-sm-8 col-lg-9">{{ actualite.publieeLe|format_datetime('long', 'short', locale='fr') }}</dd>
+        <dt class="col-sm-4 col-lg-3">Slug</dt>
+        <dd class="col-sm-8 col-lg-9"><code>{{ actualite.slug }}</code></dd>
+    </dl>
+
+    {% if actualite.banniere and not (actualite.banniere starts with 'legacy:') %}
+        <figure class="mb-4">
+            <img class="img-fluid rounded-4 w-100" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.banniere) }}" alt="Bannière de {{ actualite.titre }}" style="max-height: 520px; object-fit: cover" loading="lazy">
+            <figcaption class="form-text mt-2">Bannière</figcaption>
+        </figure>
+    {% endif %}
+
+    {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}
+        <figure class="mb-4">
+            <img class="img-fluid rounded-3 border" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="Miniature de {{ actualite.titre }}" style="max-width: 320px" loading="lazy">
+            <figcaption class="form-text mt-2">Miniature (vignette des listes)</figcaption>
+        </figure>
+    {% endif %}
+
+    <h2 class="h4">Aperçu du contenu</h2>
+    <div class="gw-article-content border rounded-4 p-4 mb-4 bg-body-tertiary">{{ actualite.contenu|bbcode }}</div>
+
+    {% if actualite.jeux is not empty %}
+        <h2 class="h5">Jeux concernés</h2>
+        <div class="d-flex flex-wrap gap-2 mb-0">
+            {% for jeu in actualite.jeux %}
+                <a class="gw-tag" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}"><i class="bi bi-controller me-1" aria-hidden="true"></i>{{ jeu.nom }}</a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

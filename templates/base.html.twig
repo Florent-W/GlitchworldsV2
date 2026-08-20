@@ -125,7 +125,7 @@
             { label: 'Boutique',   icon: 'bag-fill',        route: 'app_boutique' }
         ]) %}
         {% if is_granted('ROLE_MODERATEUR') %}
-            {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_commentaires' }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_accueil' }]) %}
         {% endif %}
         {% if is_granted('ROLE_ADMIN') %}
             {% set nav_items = nav_items|merge([{ label: 'Administration', icon: 'speedometer2', route: 'app_administration_tableau_de_bord' }]) %}

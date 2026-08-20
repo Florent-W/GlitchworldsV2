@@ -21,7 +21,7 @@ class Actualite
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(normalizer: 'trim')]
+    #[Assert\NotBlank(groups: ['soumission'], normalizer: 'trim')]
     #[Assert\Length(max: 255, normalizer: 'trim')]
     private string $titre = '';
 
@@ -29,12 +29,12 @@ class Actualite
     private string $slug = '';
 
     #[ORM\Column(length: 160)]
-    #[Assert\NotBlank(normalizer: 'trim')]
+    #[Assert\NotBlank(groups: ['soumission'], normalizer: 'trim')]
     #[Assert\Length(max: 160, normalizer: 'trim')]
     private string $description = '';
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(normalizer: 'trim')]
+    #[Assert\NotBlank(groups: ['soumission'], normalizer: 'trim')]
     private string $contenu = '';
 
     #[ORM\Column(enumType: CategorieActualite::class)]
@@ -88,6 +88,19 @@ class Actualite
     public function setMiniature(?string $miniature): static { $this->miniature = $miniature; return $this; }
     public function getBanniere(): ?string { return $this->banniere; }
     public function setBanniere(?string $banniere): static { $this->banniere = $banniere; return $this; }
+
+    public function getFichierVignetteListe(): ?string
+    {
+        if ($this->miniature && !str_starts_with($this->miniature, 'legacy:')) {
+            return $this->miniature;
+        }
+        if ($this->banniere && !str_starts_with($this->banniere, 'legacy:')) {
+            return $this->banniere;
+        }
+
+        return null;
+    }
+
     public function getAuteur(): ?Utilisateur { return $this->auteur; }
     public function setAuteur(?Utilisateur $auteur): static { $this->auteur = $auteur; return $this; }
     /** @return Collection<int, Jeu> */

@@ -67,7 +67,7 @@
     <div class="row g-4 mt-1">
         <div class="col-lg-8">
             <nav class="nav nav-pills gw-panel p-2 mb-3" aria-label="Sections du profil">
-                {% for cle, libelle in {apropos: 'À propos', activite: 'Activité', jeux: 'Jeux', listes: 'Listes', favoris: 'Favoris', succes: 'Succès'} %}
+                {% for cle, libelle in {apropos: 'À propos', activite: 'Activité', jeux: 'Jeux', actualites: 'Actualités', listes: 'Listes', favoris: 'Favoris', succes: 'Succès'} %}
                     <a class="nav-link {{ section == cle ? 'active' }}" href="{{ path('app_profil', {id: membre.id, section: cle}) }}">{{ libelle }}</a>
                 {% endfor %}
             </nav>
@@ -107,6 +107,20 @@
                                 {% for numero in 1..jeuxPagination.pages %}
                                     <li class="page-item{{ numero == jeuxPagination.page ? ' active' : '' }}">
                                         <a class="page-link" href="{{ path('app_profil', { id: membre.id, section: 'jeux', page: numero }) }}" {{ numero == jeuxPagination.page ? 'aria-current="page"' : '' }}>{{ numero }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% elseif section == 'actualites' %}
+                    <h2 class="h5">Actualités{% if nombreActualitesPubliees > 0 %} <span class="badge text-bg-secondary">{{ nombreActualitesPubliees }}</span>{% endif %}</h2>
+                    {{ _self.actualites(actualitesPubliees) }}
+                    {% if actualitesPagination.pages > 1 %}
+                        <nav class="mt-4" aria-label="Pagination des actualités">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% for numero in 1..actualitesPagination.pages %}
+                                    <li class="page-item{{ numero == actualitesPagination.page ? ' active' : '' }}">
+                                        <a class="page-link" href="{{ path('app_profil', { id: membre.id, section: 'actualites', page: numero }) }}" {{ numero == actualitesPagination.page ? 'aria-current="page"' : '' }}>{{ numero }}</a>
                                     </li>
                                 {% endfor %}
                             </ul>
@@ -203,6 +217,7 @@
                 <h2 class="h6 text-uppercase">Aperçu de l’activité</h2>
                 <div class="d-grid gap-3">
                     <div><i class="bi bi-controller text-primary me-2"></i><strong>{{ nombreJeuxPublies }}</strong> jeu{{ nombreJeuxPublies > 1 ? 'x' : '' }} publié{{ nombreJeuxPublies > 1 ? 's' }}</div>
+                    <div><i class="bi bi-newspaper text-primary me-2"></i><strong>{{ nombreActualitesPubliees }}</strong> actualité{{ nombreActualitesPubliees > 1 ? 's' : '' }}</div>
                     <div><i class="bi bi-heart-fill text-danger me-2"></i><strong>{{ membre.jeuxFavoris|length }}</strong> favori{{ membre.jeuxFavoris|length > 1 ? 's' : '' }}</div>
                     <div><i class="bi bi-list-ul text-primary me-2"></i><strong>{{ listes|length }}</strong> liste{{ listes|length > 1 ? 's' : '' }}</div>
                     <div><i class="bi bi-chat-square-text-fill text-primary me-2"></i><strong>{{ publications|length }}</strong> publication{{ publications|length > 1 ? 's' : '' }}</div>
@@ -240,6 +255,20 @@
                             </div>
                         </div>
                     </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro actualites(actualites) %}
+    {% if actualites is empty %}
+        <p class="text-secondary mb-0">Aucune actualité publiée pour le moment.</p>
+    {% else %}
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+            {% for actualite in actualites %}
+                <div class="col">
+                    {% include 'actualite/_carte.html.twig' with { actualite: actualite, hauteurImage: 160 } only %}
                 </div>
             {% endfor %}
         </div>

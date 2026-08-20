@@ -21,11 +21,9 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 final class AdministrationActualiteController extends AbstractController
 {
     #[Route('', name: 'liste', methods: ['GET'])]
-    public function liste(ActualiteRepository $actualiteRepository): Response
+    public function liste(): Response
     {
-        return $this->render('administration/actualite/index.html.twig', [
-            'actualites' => $actualiteRepository->findBy([], ['publieeLe' => 'DESC']),
-        ]);
+        return $this->redirectToRoute('app_moderation_actualites');
     }
 
     #[Route('/creer', name: 'creer')]
@@ -46,7 +44,7 @@ final class AdministrationActualiteController extends AbstractController
             $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
             $this->addFlash('success', 'L’actualité a été créée.');
 
-            return $this->redirectToRoute('app_administration_actualites_liste');
+            return $this->redirectToRoute('app_moderation_actualites');
         }
 
         return $this->render('administration/actualite/formulaire.html.twig', ['formulaire' => $formulaire, 'titre' => 'Créer une actualité']);
@@ -67,7 +65,7 @@ final class AdministrationActualiteController extends AbstractController
             $entityManager->flush();
             $this->addFlash('success', 'L’actualité a été modifiée.');
 
-            return $this->redirectToRoute('app_administration_actualites_liste');
+            return $this->redirectToRoute('app_moderation_actualites');
         }
 
         return $this->render('administration/actualite/formulaire.html.twig', ['formulaire' => $formulaire, 'titre' => 'Modifier l’actualité']);
@@ -85,7 +83,7 @@ final class AdministrationActualiteController extends AbstractController
         $imageUploader->supprimerImages($id);
         $this->addFlash('success', 'L’actualité et ses images ont été supprimées.');
 
-        return $this->redirectToRoute('app_administration_actualites_liste');
+        return $this->redirectToRoute('app_moderation_actualites');
     }
 
     private function creerSlugUnique(string $titre, SluggerInterface $slugger, ActualiteRepository $actualiteRepository): string

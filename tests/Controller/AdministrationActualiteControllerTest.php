@@ -94,7 +94,7 @@ final class AdministrationActualiteControllerTest extends WebTestCase
             'actualite[categorie]' => 'news',
             'actualite[statut]' => 'publiee',
         ]));
-        self::assertResponseRedirects('/administration/actualites');
+        self::assertResponseRedirects('/moderation/actualites');
 
         $actualiteRepository = self::getContainer()->get(ActualiteRepository::class);
         $actualite = $actualiteRepository->findOneBy(['titre' => 'Nouvelle actualité '.$suffixe]);

@@ -14,8 +14,8 @@
             <i class="bi bi-controller" aria-hidden="true"></i>
         {% endif %}
     {% else %}
-        {% if entite.miniature and not (entite.miniature starts with 'legacy:') %}
-            <img src="{{ asset('uploads/actualites/' ~ entite.id ~ '/' ~ entite.miniature) }}" alt="" loading="lazy" decoding="async">
+        {% if entite.fichierVignetteListe %}
+            <img src="{{ asset('uploads/actualites/' ~ entite.id ~ '/' ~ entite.fichierVignetteListe) }}" alt="" loading="lazy" decoding="async">
         {% else %}
             <i class="bi bi-newspaper" aria-hidden="true"></i>
         {% endif %}

@@ -10,6 +10,7 @@ use App\Repository\CategorieJeuRepository;
 use App\Repository\PlateformeRepository;
 use App\Repository\LangueRepository;
 use App\Repository\GenreRepository;
+use App\Enum\CategorieActualite;
 use App\Enum\TriJeu;
 use App\Entity\Utilisateur;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -35,6 +36,8 @@ final class RechercheController extends AbstractController
         $annee = ctype_digit($anneeBrute) ? (int) $anneeBrute : null;
         $mesFavoris = $request->query->getBoolean('mes_favoris');
         $tri = TriJeu::tryFrom($request->query->getString('tri', 'recent')) ?? TriJeu::Recent;
+        $categorieActualiteValeur = $request->query->getString('categorie_actualite');
+        $categorieActualite = $categorieActualiteValeur !== '' ? CategorieActualite::tryFrom($categorieActualiteValeur) : null;
         $utilisateur = $this->getUser();
         $paginationJeux = '' !== $recherche && in_array($type, ['', 'jeu'], true)
             ? $jeuRepository->trouverApprouvesPagines(
@@ -51,9 +54,9 @@ final class RechercheController extends AbstractController
                 $utilisateur instanceof Utilisateur ? $utilisateur : null,
             )
             : ['jeux' => [], 'total' => 0];
-        $actualites = '' !== $recherche && in_array($type, ['', 'actualite'], true) ? $actualiteRepository->rechercherPourApercu($recherche, 12) : [];
+        $actualites = '' !== $recherche && in_array($type, ['', 'actualite'], true) ? $actualiteRepository->rechercherPourApercu($recherche, 12, $categorieActualite) : [];
         $membres = '' !== $recherche && in_array($type, ['', 'membre'], true) ? $utilisateurRepository->rechercherParPseudo($recherche, 12) : [];
-        $totalActualites = '' !== $recherche && in_array($type, ['', 'actualite'], true) ? $actualiteRepository->compterPourApercu($recherche) : 0;
+        $totalActualites = '' !== $recherche && in_array($type, ['', 'actualite'], true) ? $actualiteRepository->compterPourApercu($recherche, $categorieActualite) : 0;
         $totalMembres = '' !== $recherche && in_array($type, ['', 'membre'], true) ? $utilisateurRepository->compterParPseudo($recherche) : 0;
 
         return $this->render('recherche/index.html.twig', [
@@ -63,6 +66,8 @@ final class RechercheController extends AbstractController
             'jeux' => $paginationJeux['jeux'], 'totalJeux' => $paginationJeux['total'], 'actualites' => $actualites, 'membres' => $membres,
             'notesJeux' => $avisRepository->trouverResumesPour($paginationJeux['jeux']),
             'totalActualites' => $totalActualites, 'totalMembres' => $totalMembres,
+            'categorieActualite' => $categorieActualite,
+            'categoriesActualite' => CategorieActualite::cases(),
             'categories' => $categorieRepository->trouverToutes(), 'plateformes' => $plateformeRepository->trouverToutes(), 'genres' => $genreRepository->trouverTous(), 'langues' => $langueRepository->trouverToutes(),
             'annees' => $jeuRepository->listerAnneesSortie(), 'tris' => TriJeu::cases(),
             'totalResultats' => $paginationJeux['total'] + $totalActualites + $totalMembres,
@@ -82,6 +87,8 @@ final class RechercheController extends AbstractController
         if (!in_array($type, ['', 'jeu', 'actualite'], true)) {
             $type = '';
         }
+        $categorieActualiteValeur = $request->query->getString('categorie_actualite');
+        $categorieActualite = $categorieActualiteValeur !== '' ? CategorieActualite::tryFrom($categorieActualiteValeur) : null;
         if (mb_strlen($recherche) < 2) {
             return $this->json(['resultats' => [], 'totaux' => [], 'total' => 0]);
         }
@@ -99,14 +106,15 @@ final class RechercheController extends AbstractController
                 'url' => $this->generateUrl('app_jeu_show', ['slug' => $jeu->getSlug(), 'id' => $jeu->getId()]),
             ];
         }
-        foreach (in_array($type, ['', 'actualite'], true) ? $actualiteRepository->rechercherPourApercu($recherche, 5) : [] as $actualite) {
+        foreach (in_array($type, ['', 'actualite'], true) ? $actualiteRepository->rechercherPourApercu($recherche, 5, $categorieActualite) : [] as $actualite) {
+            $fichierVignette = $actualite->getFichierVignetteListe();
             $resultats[] = [
                 'type' => 'Actualité',
                 'icone' => 'newspaper',
                 'titre' => $actualite->getTitre(),
                 'detail' => $actualite->getCategorie()->label(),
-                'miniature' => $actualite->getMiniature() && !str_starts_with($actualite->getMiniature(), 'legacy:')
-                    ? $assets->getUrl('uploads/actualites/'.$actualite->getId().'/'.$actualite->getMiniature())
+                'miniature' => $fichierVignette
+                    ? $assets->getUrl('uploads/actualites/'.$actualite->getId().'/'.$fichierVignette)
                     : null,
                 'url' => $this->generateUrl('app_actualite_voir', ['slug' => $actualite->getSlug(), 'id' => $actualite->getId()]),
             ];
@@ -129,7 +137,7 @@ final class RechercheController extends AbstractController
             $totaux['Jeu'] = $jeuRepository->compterPourApercu($recherche);
         }
         if (in_array($type, ['', 'actualite'], true)) {
-            $totaux['Actualité'] = $actualiteRepository->compterPourApercu($recherche);
+            $totaux['Actualité'] = $actualiteRepository->compterPourApercu($recherche, $categorieActualite);
         }
         if ('' === $type) {
             $totaux['Membre'] = $utilisateurRepository->compterParPseudo($recherche);

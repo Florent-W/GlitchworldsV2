@@ -81,7 +81,6 @@ final class PropositionJeuControllerTest extends WebTestCase
             'jeu_proposition[nom]' => $nomJeu,
             'jeu_proposition[description]' => 'Une proposition complète créée pendant le test.',
             'jeu_proposition[contenu]' => 'Présentation détaillée du jeu.',
-            'jeu_proposition[developpeur]' => 'Équipe Test',
             'jeu_proposition[categorie]' => $categorieChoisie,
             'jeu_proposition[genres]' => [$genreChoisi],
             'jeu_proposition[plateformes]' => [$plateformeChoisie],

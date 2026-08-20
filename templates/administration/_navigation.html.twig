@@ -2,21 +2,18 @@
     {% set route = app.request.attributes.get('_route') %}
     {% set liens = [
         {route: 'app_administration_tableau_de_bord', prefixe: 'app_administration_tableau', icon: 'speedometer2', label: 'Tableau de bord'},
-        {route: 'app_moderation_jeux', prefixe: 'app_moderation_jeu', icon: 'controller', label: 'Jeux'},
-        {route: 'app_moderation_actualites', prefixe: 'app_moderation_actualite', icon: 'newspaper', label: 'Propositions actualités'},
         {route: 'app_administration_membres', prefixe: 'app_administration_membres', icon: 'people-fill', label: 'Membres'},
-        {route: 'app_moderation_commentaires', prefixe: 'app_moderation_commentaires', icon: 'chat-dots-fill', label: 'Commentaires'},
-        {route: 'app_administration_actualites_liste', prefixe: 'app_administration_actualites', icon: 'newspaper', label: 'Actualités'},
-        {route: 'app_moderation_signalements', prefixe: 'app_moderation_signalement', icon: 'flag-fill', label: 'Signalements'}
-        ,{route: 'app_administration_referentiels_liste', params: {type: 'categories'}, prefixe: 'app_administration_referentiels', icon: 'tags-fill', label: 'Référentiels'}
+        {route: 'app_administration_referentiels_liste', params: {type: 'categories'}, prefixe: 'app_administration_referentiels', icon: 'tags-fill', label: 'Référentiels'}
     ] %}
     {% for lien in liens %}
         <a class="gw-admin-nav__link{{ route starts with lien.prefixe ? ' is-active' : '' }}" href="{{ path(lien.route, lien.params ?? {}) }}">
             <i class="bi bi-{{ lien.icon }}" aria-hidden="true"></i><span>{{ lien.label }}</span>
-            {% if lien.label == 'Jeux' and jeuxEnAttenteNavigation is defined and jeuxEnAttenteNavigation > 0 %}<span class="badge text-bg-warning ms-auto">{{ jeuxEnAttenteNavigation }}</span>{% endif %}
-            {% if lien.label == 'Propositions actualités' and actualitesEnAttenteNavigation is defined and actualitesEnAttenteNavigation > 0 %}<span class="badge text-bg-warning ms-auto">{{ actualitesEnAttenteNavigation }}</span>{% endif %}
         </a>
     {% endfor %}
+    {% if is_granted('ROLE_MODERATEUR') %}
+        <hr class="my-2">
+        <a class="gw-admin-nav__link" href="{{ path('app_moderation_accueil') }}"><i class="bi bi-shield-check"></i><span>Modération</span></a>
+    {% endif %}
     <hr class="my-2">
     <a class="gw-admin-nav__link" href="{{ path('app_home') }}"><i class="bi bi-arrow-left-circle"></i><span>Retour au site</span></a>
 </nav>

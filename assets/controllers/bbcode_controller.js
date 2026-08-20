@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { Tooltip } from 'bootstrap';
 import { MODELES_BBCODE } from '../bbcode_templates.js';
 
 export default class extends Controller {
@@ -8,11 +9,17 @@ export default class extends Controller {
     connect() {
         this.apercuActif = false;
         this.delaiApercu = null;
+        this.tooltips = [];
+        this.element.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((element) => {
+            this.tooltips.push(new Tooltip(element));
+        });
         this.actualiserVisibiliteTemplates();
     }
 
     disconnect() {
         window.clearTimeout(this.delaiApercu);
+        this.tooltips.forEach((tooltip) => tooltip.dispose());
+        this.tooltips = [];
     }
 
     basculerApercu() {

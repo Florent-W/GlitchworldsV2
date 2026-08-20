@@ -87,9 +87,9 @@
         <div class="list-group">
             {% for actualite in propositionsActualites %}
                 <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <div><strong>{{ actualite.titre }}</strong><span class="badge text-bg-secondary ms-2">{{ actualite.statut.label }}</span></div>
+                    <div><strong>{{ actualite.titre }}</strong><span class="badge text-bg-{{ actualite.statut.value == 'brouillon' ? 'secondary' : (actualite.statut.value == 'en_attente' ? 'warning' : 'success') }} ms-2">{{ actualite.statut.label }}</span></div>
                     {% if is_granted('PROPOSITION_ACTUALITE_MODIFIER', actualite) %}
-                        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_proposition_modifier', { id: actualite.id }) }}">Modifier la proposition</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_proposition_modifier', { id: actualite.id }) }}">{{ actualite.statut.value == 'brouillon' ? 'Continuer le brouillon' : 'Modifier la proposition' }}</a>
                     {% endif %}
                 </div>
             {% endfor %}

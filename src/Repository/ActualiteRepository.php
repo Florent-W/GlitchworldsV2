@@ -45,7 +45,7 @@ final class ActualiteRepository extends ServiceEntityRepository
     }
 
     /** @return list<Actualite> */
-    public function trouverPourJeu(Jeu $jeu, int $limite = 4): array
+    public function trouverPourJeu(Jeu $jeu, int $limite = 6): array
     {
         return $this->createQueryBuilder('actualite')
             ->innerJoin('actualite.jeux', 'jeu')
@@ -92,24 +92,41 @@ final class ActualiteRepository extends ServiceEntityRepository
     }
 
     /** @return list<Actualite> */
-    public function rechercherPourApercu(string $recherche, int $limite = 6): array
+    public function rechercherPourApercu(string $recherche, int $limite = 6, ?CategorieActualite $categorie = null): array
     {
-        return $this->createQueryBuilder('actualite')
-            ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
-            ->andWhere('(LOWER(actualite.titre) LIKE :recherche OR LOWER(actualite.description) LIKE :recherche)')
-            ->setParameter('recherche', '%'.mb_strtolower(trim($recherche)).'%')
-            ->orderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
-            ->getQuery()->getResult();
+        return $this->qbRecherche($recherche, $categorie)
+            ->orderBy('actualite.publieeLe', 'DESC')
+            ->setMaxResults($limite)
+            ->getQuery()
+            ->getResult();
     }
 
-    public function compterPourApercu(string $recherche): int
+    public function compterPourApercu(string $recherche, ?CategorieActualite $categorie = null): int
     {
-        return (int) $this->createQueryBuilder('actualite')
+        return (int) $this->qbRecherche($recherche, $categorie)
             ->select('COUNT(actualite.id)')
-            ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
-            ->andWhere('(LOWER(actualite.titre) LIKE :recherche OR LOWER(actualite.description) LIKE :recherche)')
-            ->setParameter('recherche', '%'.mb_strtolower(trim($recherche)).'%')
-            ->getQuery()->getSingleScalarResult();
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    private function qbRecherche(string $recherche, ?CategorieActualite $categorie): \Doctrine\ORM\QueryBuilder
+    {
+        $requete = $this->createQueryBuilder('actualite')
+            ->andWhere('actualite.statut = :statut')
+            ->setParameter('statut', StatutActualite::Publiee);
+
+        if ('' !== trim($recherche)) {
+            $requete
+                ->andWhere('(LOWER(actualite.titre) LIKE :recherche OR LOWER(actualite.description) LIKE :recherche)')
+                ->setParameter('recherche', '%'.mb_strtolower(trim($recherche)).'%');
+        }
+        if ($categorie !== null) {
+            $requete
+                ->andWhere('actualite.categorie = :categorie')
+                ->setParameter('categorie', $categorie);
+        }
+
+        return $requete;
     }
 
     /** Actualité publiée juste avant celle-ci (par id), pour la navigation séquentielle. */
@@ -187,5 +204,49 @@ final class ActualiteRepository extends ServiceEntityRepository
             ->getResult();
 
         return compact('actualites', 'total', 'page', 'pages');
+    }
+
+    public function compterPublieesPar(Utilisateur $utilisateur): int
+    {
+        return (int) $this->createQueryBuilder('actualite')
+            ->select('COUNT(actualite.id)')
+            ->andWhere('actualite.auteur = :auteur')
+            ->andWhere('actualite.statut = :statut')
+            ->setParameter('auteur', $utilisateur)
+            ->setParameter('statut', StatutActualite::Publiee)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /** @return array{actualites: list<Actualite>, total: int, page: int, pages: int, parPage: int} */
+    public function trouverPublieesParPagines(Utilisateur $utilisateur, int $page = 1, int $parPage = 12): array
+    {
+        $page = max(1, $page);
+        $parPage = max(1, min(48, $parPage));
+        $total = $this->compterPublieesPar($utilisateur);
+        $pages = max(1, (int) ceil($total / $parPage));
+
+        if ($page > $pages) {
+            $page = $pages;
+        }
+
+        $actualites = $this->createQueryBuilder('actualite')
+            ->andWhere('actualite.auteur = :auteur')
+            ->andWhere('actualite.statut = :statut')
+            ->setParameter('auteur', $utilisateur)
+            ->setParameter('statut', StatutActualite::Publiee)
+            ->orderBy('actualite.publieeLe', 'DESC')
+            ->setFirstResult(($page - 1) * $parPage)
+            ->setMaxResults($parPage)
+            ->getQuery()
+            ->getResult();
+
+        return [
+            'actualites' => $actualites,
+            'total' => $total,
+            'page' => $page,
+            'pages' => $pages,
+            'parPage' => $parPage,
+        ];
     }
 }

@@ -41,4 +41,39 @@ final class RechercheControllerTest extends WebTestCase
 
         $entityManager->remove($membre); $entityManager->flush();
     }
+
+    public function testLaRecherchePeutFiltrerLesActualitesParCategorie(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $actualite = (new \App\Entity\Actualite())
+            ->setTitre('Filtre catégorie '.$suffixe)
+            ->setSlug('filtre-categorie-'.$suffixe)
+            ->setDescription('Actualité tutoriel pour test de recherche.')
+            ->setContenu('Contenu.')
+            ->setCategorie(\App\Enum\CategorieActualite::Tutoriels)
+            ->setStatut(\App\Enum\StatutActualite::Publiee);
+        $autre = (new \App\Entity\Actualite())
+            ->setTitre('Filtre catégorie news '.$suffixe)
+            ->setSlug('filtre-categorie-news-'.$suffixe)
+            ->setDescription('Actualité news pour test de recherche.')
+            ->setContenu('Contenu.')
+            ->setCategorie(\App\Enum\CategorieActualite::News)
+            ->setStatut(\App\Enum\StatutActualite::Publiee);
+        $entityManager->persist($actualite);
+        $entityManager->persist($autre);
+        $entityManager->flush();
+        $idActualite = $actualite->getId();
+        $idAutre = $autre->getId();
+
+        $client->request('GET', '/recherche?recherche='.$suffixe.'&type=actualite&categorie_actualite=tutoriels');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Filtre catégorie '.$suffixe);
+        self::assertSelectorTextNotContains('body', 'Filtre catégorie news '.$suffixe);
+
+        $entityManager->remove($entityManager->find(\App\Entity\Actualite::class, $idActualite));
+        $entityManager->remove($entityManager->find(\App\Entity\Actualite::class, $idAutre));
+        $entityManager->flush();
+    }
 }

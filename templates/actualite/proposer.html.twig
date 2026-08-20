@@ -10,7 +10,7 @@
         <i class="bi bi-newspaper text-primary fs-1" aria-hidden="true"></i>
         <div>
             <h1 class="h2 mb-1">{{ modification ? 'Modifier l’actualité' : 'Proposer une actualité' }}</h1>
-            <p class="text-secondary mb-0">{{ modification ? 'Mets à jour le contenu avant validation.' : 'Partage une news, un glitch, un mod ou un tutoriel avec la communauté.' }}</p>
+            <p class="text-secondary mb-0">{{ modification ? 'Mets à jour le contenu avant validation.' : 'Partage une news, un glitch, un mod ou un tutoriel avec la communauté. Tu peux enregistrer un brouillon et l’envoyer plus tard.' }}</p>
         </div>
     </div>
 
@@ -29,7 +29,8 @@
         {{ form_row(formulaire.jeux) }}
         {{ form_row(formulaire.categorie) }}
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <a class="btn btn-outline-secondary btn-lg" href="{{ path('app_actualites') }}">Annuler</a>
+            <a class="btn btn-outline-secondary btn-lg" href="{{ path('app_compte') }}">Annuler</a>
+            {% if formulaire.brouillon is defined %}{{ form_widget(formulaire.brouillon) }}{% endif %}
             {{ form_widget(formulaire.envoyer) }}
         </div>
     {{ form_end(formulaire) }}

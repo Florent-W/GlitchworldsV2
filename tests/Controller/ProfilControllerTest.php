@@ -167,4 +167,34 @@ final class ProfilControllerTest extends WebTestCase
         $entityManager->remove($entityManager->find(Utilisateur::class, $membreId));
         $entityManager->flush();
     }
+
+    public function testLeProfilAfficheLesActualitesPubliees(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $membre = (new Utilisateur())->setPseudo('AuteurActuProfil'.$suffixe)->setEmail('auteur-profil-'.$suffixe.'@test.local');
+        $actualite = (new \App\Entity\Actualite())
+            ->setTitre('Actualité publiée '.$suffixe)
+            ->setSlug('actualite-publiee-'.$suffixe)
+            ->setDescription('Visible sur le profil public.')
+            ->setContenu('Contenu de test.')
+            ->setAuteur($membre)
+            ->setStatut(\App\Enum\StatutActualite::Publiee);
+        $entityManager->persist($membre);
+        $entityManager->persist($actualite);
+        $entityManager->flush();
+        $membreId = $membre->getId();
+        $actualiteId = $actualite->getId();
+
+        $client->request('GET', '/membre/'.$membreId.'?section=actualites');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h2', 'Actualités');
+        self::assertSelectorTextContains('body', 'Actualité publiée '.$suffixe);
+
+        $entityManager->remove($entityManager->find(\App\Entity\Actualite::class, $actualiteId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $membreId));
+        $entityManager->flush();
+    }
 }

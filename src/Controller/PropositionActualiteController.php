@@ -35,16 +35,20 @@ final class PropositionActualiteController extends AbstractController
 
         $actualite = (new Actualite())
             ->setAuteur($utilisateur)
-            ->setStatut(StatutActualite::EnAttente);
+            ->setStatut(StatutActualite::Brouillon);
         $formulaire = $this->createForm(ActualitePropositionType::class, $actualite);
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
-            $actualite->setSlug($this->creerSlugUnique($actualite->getTitre(), $slugger, $actualiteRepository));
+            $enBrouillon = $formulaire->has('brouillon') && $formulaire->get('brouillon')->isClicked();
+            $actualite->setStatut($enBrouillon ? StatutActualite::Brouillon : StatutActualite::EnAttente);
+            $actualite->setSlug($this->creerSlugUnique($this->titrePourSlug($actualite), $slugger, $actualiteRepository));
             $entityManager->persist($actualite);
             $entityManager->flush();
             $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
-            $this->addFlash('success', 'Ton actualité a été envoyée pour validation.');
+            $this->addFlash('success', $enBrouillon
+                ? 'Ton brouillon a été enregistré. Tu pourras l’envoyer pour validation quand tu seras prêt.'
+                : 'Ton actualité a été envoyée pour validation.');
 
             return $this->redirectToRoute('app_compte');
         }
@@ -61,15 +65,27 @@ final class PropositionActualiteController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted(PropositionActualiteVoter::MODIFIER, $actualite);
 
+        $enAttente = $actualite->getStatut() === StatutActualite::EnAttente;
         $formulaire = $this->createForm(ActualitePropositionType::class, $actualite, [
-            'bouton_libelle' => 'Enregistrer les modifications',
+            'bouton_libelle' => $enAttente ? 'Enregistrer les modifications' : 'Envoyer pour validation',
+            'afficher_brouillon' => !$enAttente,
         ]);
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            if ($formulaire->has('brouillon') && $formulaire->get('brouillon')->isClicked()) {
+                $actualite->setStatut(StatutActualite::Brouillon);
+            } elseif ($formulaire->get('envoyer')->isClicked() && $actualite->getStatut() === StatutActualite::Brouillon) {
+                $actualite->setStatut(StatutActualite::EnAttente);
+            }
+
             $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
             $entityManager->flush();
-            $this->addFlash('success', 'L’actualité a été modifiée.');
+            $this->addFlash('success', $actualite->getStatut() === StatutActualite::Brouillon
+                ? 'Ton brouillon a été enregistré.'
+                : ($actualite->getStatut() === StatutActualite::EnAttente
+                    ? 'L’actualité a été modifiée.'
+                    : 'L’actualité a été mise à jour.'));
 
             if ($actualite->getStatut() === StatutActualite::Publiee) {
                 return $this->redirectToRoute('app_actualite_voir', [
@@ -107,6 +123,13 @@ final class PropositionActualiteController extends AbstractController
         if ($banniere instanceof UploadedFile || $miniature instanceof UploadedFile) {
             $entityManager->flush();
         }
+    }
+
+    private function titrePourSlug(Actualite $actualite): string
+    {
+        $titre = trim($actualite->getTitre());
+
+        return $titre !== '' ? $titre : 'brouillon-'.bin2hex(random_bytes(4));
     }
 
     private function creerSlugUnique(string $titre, SluggerInterface $slugger, ActualiteRepository $actualiteRepository): string

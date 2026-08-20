@@ -84,4 +84,33 @@ final class PropositionActualiteControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('a[href="/actualite/proposer"]'));
     }
+
+    public function testUnMembrePeutEnregistrerUnBrouillon(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $utilisateur = (new Utilisateur())->setPseudo('BrouillonActu')->setEmail('brouillon-actu-'.$suffixe.'@glitchworlds.local');
+        $entityManager->persist($utilisateur);
+        $entityManager->flush();
+        $idUtilisateur = $utilisateur->getId();
+
+        $client->loginUser($utilisateur);
+        $crawler = $client->request('GET', '/actualite/proposer');
+        $client->submit($crawler->selectButton('Enregistrer le brouillon')->form([
+            'actualite_proposition[titre]' => 'Brouillon '.$suffixe,
+            'actualite_proposition[categorie]' => CategorieActualite::News->value,
+        ]));
+
+        self::assertResponseRedirects('/mon-compte');
+
+        $entityManager->clear();
+        $actualite = $entityManager->getRepository(Actualite::class)->findOneBy(['titre' => 'Brouillon '.$suffixe]);
+        self::assertInstanceOf(Actualite::class, $actualite);
+        self::assertSame(StatutActualite::Brouillon, $actualite->getStatut());
+
+        $entityManager->remove($actualite);
+        $entityManager->remove($entityManager->find(Utilisateur::class, $idUtilisateur));
+        $entityManager->flush();
+    }
 }

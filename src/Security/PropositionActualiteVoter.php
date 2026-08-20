@@ -32,6 +32,6 @@ final class PropositionActualiteVoter extends Voter
         }
 
         return $subject->getAuteur() === $utilisateur
-            && $subject->getStatut() === StatutActualite::EnAttente;
+            && in_array($subject->getStatut(), [StatutActualite::Brouillon, StatutActualite::EnAttente], true);
     }
 }

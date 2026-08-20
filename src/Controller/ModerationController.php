@@ -23,10 +23,17 @@ use App\Enum\StatutSignalement;
 use App\Entity\Signalement;
 use App\Entity\Utilisateur;
 use App\Service\JournalModeration;
+use App\Service\NotificationPropositionModeration;
 
 #[Route('/moderation', name: 'app_moderation_')]
 final class ModerationController extends AbstractController
 {
+    #[Route('', name: 'accueil', methods: ['GET'])]
+    public function accueil(): Response
+    {
+        return $this->redirectToRoute('app_moderation_jeux');
+    }
+
     #[Route('/commentaires', name: 'commentaires', methods: ['GET'])]
     public function commentaires(
         CommentaireJeuRepository $commentaireJeuRepository,
@@ -68,6 +75,7 @@ final class ModerationController extends AbstractController
         ProgressionUtilisateur $progression,
         GestionSucces $gestionSucces,
         JournalModeration $journal,
+        NotificationPropositionModeration $notificationProposition,
     ): Response {
         if ($jeu->getStatut() !== StatutJeu::EnAttente) {
             throw $this->createNotFoundException('Cette proposition n’est plus en attente.');
@@ -82,6 +90,7 @@ final class ModerationController extends AbstractController
         }
         $moderateur = $this->getUser();
         $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, $decision, 'jeu', $jeu->getId(), ($decision === 'approuver' ? 'Approbation' : 'Refus').' du jeu '.$jeu->getNom());
+        $notificationProposition->notifierJeu($jeu, $decision === 'approuver');
         $entityManager->flush();
         if ($decision === 'approuver' && $jeu->getCreateur() instanceof Utilisateur) {
             // Notification au créateur via GestionSucces ; pas de flash côté modérateur.
@@ -105,7 +114,6 @@ final class ModerationController extends AbstractController
             'recherche' => $recherche,
             'statutSelectionne' => $statut,
             'statuts' => StatutActualite::cases(),
-            'actualitesEnAttenteNavigation' => $actualiteRepository->compterEnAttente(),
         ]);
     }
 
@@ -116,6 +124,7 @@ final class ModerationController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         JournalModeration $journal,
+        NotificationPropositionModeration $notificationProposition,
     ): Response {
         if ($actualite->getStatut() !== StatutActualite::EnAttente) {
             throw $this->createNotFoundException('Cette proposition n’est plus en attente.');
@@ -139,10 +148,19 @@ final class ModerationController extends AbstractController
             $actualite->getId(),
             ($decision === 'approuver' ? 'Approbation' : 'Refus').' de l’actualité '.$actualite->getTitre(),
         );
+        $notificationProposition->notifierActualite($actualite, $decision === 'approuver');
         $entityManager->flush();
         $this->addFlash('success', $decision === 'approuver' ? 'L’actualité a été publiée.' : 'L’actualité a été refusée.');
 
         return $this->redirectToRoute('app_moderation_actualites');
+    }
+
+    #[Route('/actualites/{id}', name: 'actualite_voir', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function voirActualite(Actualite $actualite): Response
+    {
+        return $this->render('moderation/voir_actualite.html.twig', [
+            'actualite' => $actualite,
+        ]);
     }
 
     #[Route('/jeux/{id}/statut', name: 'jeu_statut', methods: ['POST'])]

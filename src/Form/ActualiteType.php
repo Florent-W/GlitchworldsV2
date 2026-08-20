@@ -98,6 +98,7 @@ final class ActualiteType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Actualite::class,
             'bouton_libelle' => 'Enregistrer',
+            'validation_groups' => ['Default', 'soumission'],
         ]);
         $resolver->setAllowedTypes('bouton_libelle', 'string');
     }

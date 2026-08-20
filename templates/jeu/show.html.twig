@@ -123,6 +123,11 @@
                         <a class="btn btn-light btn-lg" href="#a-propos">
                             <i class="bi bi-info-circle me-2" aria-hidden="true"></i>Plus d'infos
                         </a>
+                        {% if actualitesLiees is not empty %}
+                            <a class="btn btn-outline-light btn-lg" href="#actualites-liees">
+                                <i class="bi bi-newspaper me-2" aria-hidden="true"></i>{{ actualitesLiees|length }} actualité{{ actualitesLiees|length > 1 ? 's' : '' }}
+                            </a>
+                        {% endif %}
                         {% if app.user %}
                             <form method="post" action="{{ path('app_mes_jeux_ajouter', { id: jeu.id }) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('bibliotheque-' ~ jeu.id) }}">
@@ -215,6 +220,25 @@
                     <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
                     <div><span>Statut</span><strong>{{ jeu.statut.label }}</strong></div>
                 </div>
+
+                {% if actualitesLiees is not empty %}
+                    <div class="border-top pt-3 mt-2">
+                        <h3 class="h6 text-uppercase text-secondary mb-2">Actualités</h3>
+                        <ul class="list-unstyled d-grid gap-2 mb-0">
+                            {% for actualite in actualitesLiees|slice(0, 3) %}
+                                <li>
+                                    <a class="text-decoration-none" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">
+                                        <span class="badge text-bg-primary me-1">{{ actualite.categorie.label }}</span>
+                                        <span class="small">{{ actualite.titre }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        {% if actualitesLiees|length > 3 %}
+                            <a class="small d-inline-block mt-2" href="#actualites-liees">Voir les {{ actualitesLiees|length }} actualités</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </section>
         </aside>
     </div>
@@ -258,6 +282,26 @@
         } only %}
     </section>
 
+    {% if actualitesLiees is not empty %}
+        <section id="actualites-liees" class="gw-panel p-4 mt-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-newspaper text-primary fs-4" aria-hidden="true"></i>
+                    <h2 class="h4 mb-0">Actualités sur ce jeu</h2>
+                    <span class="badge text-bg-secondary">{{ actualitesLiees|length }}</span>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href="{{ path('app_actualites') }}">Toutes les actualités</a>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                {% for actualite in actualitesLiees %}
+                    <div class="col">
+                        {% include 'actualite/_carte.html.twig' with { actualite: actualite, hauteurImage: 200 } only %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
     {% include '_navigation_sequentielle.html.twig' with {
         label: 'Naviguer entre les jeux',
         precedent: jeuPrecedent,
@@ -268,17 +312,6 @@
         sens_suivant: 'Jeu suivant',
         son_survol: 'survol-jeu'
     } only %}
-
-    {% if actualitesLiees is not empty %}
-        <section class="gw-panel p-4 mt-4">
-            <div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-newspaper text-primary fs-4" aria-hidden="true"></i><h2 class="h4 mb-0">Actualités liées</h2></div>
-            <div class="row g-3">
-                {% for actualite in actualitesLiees %}
-                    <div class="col-md-6"><article class="border rounded-4 p-3 h-100"><span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span><h3 class="h6"><a href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h3><p class="small text-secondary mb-0">{{ actualite.description }}</p></article></div>
-                {% endfor %}
-            </div>
-        </section>
-    {% endif %}
 
     <section id="commentaires" class="gw-panel p-4 mt-4" aria-labelledby="commentaires-title">
             <div class="d-flex align-items-center justify-content-between gap-3 mb-3">

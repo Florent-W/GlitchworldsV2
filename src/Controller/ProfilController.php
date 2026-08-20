@@ -6,6 +6,7 @@ use App\Entity\Utilisateur;
 use App\Form\BiographieProfilType;
 use App\Repository\AvisRepository;
 use App\Repository\JeuRepository;
+use App\Repository\ActualiteRepository;
 use App\Repository\ListeJeuxRepository;
 use App\Repository\PublicationRepository;
 use App\Repository\AchatBoutiqueRepository;
@@ -28,6 +29,7 @@ final class ProfilController extends AbstractController
         Request $request,
         PublicationRepository $publications,
         JeuRepository $jeux,
+        ActualiteRepository $actualites,
         ListeJeuxRepository $listesJeux,
         AchatBoutiqueRepository $achats,
         SuccesRepository $succesRepository,
@@ -35,7 +37,7 @@ final class ProfilController extends AbstractController
         AvisRepository $avisRepository,
     ): Response {
         $section = $request->query->getString('section', 'apropos');
-        if (!in_array($section, ['apropos', 'activite', 'jeux', 'listes', 'favoris', 'succes'], true)) {
+        if (!in_array($section, ['apropos', 'activite', 'jeux', 'actualites', 'listes', 'favoris', 'succes'], true)) {
             $section = 'apropos';
         }
 
@@ -54,6 +56,10 @@ final class ProfilController extends AbstractController
             ? $jeux->trouverApprouvesParPagines($membre, max(1, (int) $request->query->get('page', 1)))
             : ['jeux' => [], 'total' => $nombreJeuxPublies, 'page' => 1, 'pages' => 1, 'parPage' => 12];
         $jeuxPublies = $jeuxPagination['jeux'];
+        $nombreActualitesPubliees = $actualites->compterPublieesPar($membre);
+        $actualitesPagination = $section === 'actualites'
+            ? $actualites->trouverPublieesParPagines($membre, max(1, (int) $request->query->get('page', 1)))
+            : ['actualites' => [], 'total' => $nombreActualitesPubliees, 'page' => 1, 'pages' => 1, 'parPage' => 12];
 
         $formulaireBiographie = null;
         $utilisateur = $this->getUser();
@@ -69,6 +75,9 @@ final class ProfilController extends AbstractController
             'nombreJeuxPublies' => $nombreJeuxPublies,
             'jeux' => $jeuxPublies,
             'jeuxPagination' => $jeuxPagination,
+            'nombreActualitesPubliees' => $nombreActualitesPubliees,
+            'actualitesPubliees' => $actualitesPagination['actualites'],
+            'actualitesPagination' => $actualitesPagination,
             'listes' => $listes,
             'notesJeux' => $avisRepository->trouverResumesPour([...$jeuxPublies, ...$jeuxFavoris, ...$jeuxDesListes]),
             'achatsBoutique' => $achats->trouverPourUtilisateur($membre),
