@@ -28,10 +28,14 @@
     {% if actualites is empty %}
         <div class="alert alert-info mb-0">Aucune actualité dans cette catégorie.</div>
     {% else %}
-        <div class="row g-4">
+        <div class="gw-disposition gw-disposition--grille" data-controller="disposition">
+            <div class="d-flex justify-content-end mb-3">
+                {% include '_disposition_boutons.html.twig' with { label: 'Disposition des actualités' } only %}
+            </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 gw-collection gw-collection--actualites">
             {% for actualite in actualites %}
-                <div class="col-md-6 col-xl-4">
-                    <article class="card h-100 border-0 shadow-sm">
+                <div class="col">
+                    <article class="card h-100 border-0 shadow-sm overflow-hidden gw-article-card">
                         {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}
                             <img class="card-img-top object-fit-cover" style="height: 190px" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="Miniature de {{ actualite.titre }}" loading="lazy">
                         {% endif %}
@@ -56,6 +60,7 @@
                 {% endfor %}
             </ul></nav>
         {% endif %}
+        </div>
     {% endif %}
 </section>
 {% endblock %}

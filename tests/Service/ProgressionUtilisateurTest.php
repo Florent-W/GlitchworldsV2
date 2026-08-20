@@ -12,21 +12,18 @@ final class ProgressionUtilisateurTest extends TestCase
     {
         $utilisateur = (new Utilisateur())->setExperience(175);
 
-        self::assertSame(2, $utilisateur->getNiveau());
-        self::assertSame(75, $utilisateur->getExperienceNiveau());
-        self::assertSame(150, $utilisateur->getExperienceNiveauSuivant());
-        self::assertSame(50, $utilisateur->getProgressionNiveau());
+        self::assertSame(3, $utilisateur->getNiveau());
+        self::assertSame(80, $utilisateur->getExperienceNiveau());
+        self::assertSame(85, $utilisateur->getExperienceNiveauSuivant());
+        self::assertSame(94, $utilisateur->getProgressionNiveau());
     }
 
-    public function testUnePublicationRapporteExperienceEtPoints(): void
+    public function testDeuxCentsPointsDeProgressionAtteignentLeNiveauQuatre(): void
     {
-        $utilisateur = (new Utilisateur())->setExperience(95)->setPoints(40);
+        $utilisateur = (new Utilisateur())->setExperience(200);
 
-        (new ProgressionUtilisateur())->recompensePublication($utilisateur);
-
-        self::assertSame(115, $utilisateur->getExperience());
-        self::assertSame(50, $utilisateur->getPoints());
-        self::assertSame(2, $utilisateur->getNiveau());
-        self::assertSame(15, $utilisateur->getExperienceNiveau());
+        self::assertSame(4, $utilisateur->getNiveau());
+        self::assertSame(20, $utilisateur->getExperienceNiveau());
+        self::assertSame(110, $utilisateur->getExperienceNiveauSuivant());
     }
 }

@@ -83,8 +83,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => 0])]
     private bool $reductionAnimations = false;
 
-    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
-    private array $notifications = ['email' => true, 'messages' => true, 'communaute' => true];
+    #[ORM\Column(type: Types::JSON)]
+    private array $notifications = ['email' => true, 'messages' => true, 'communaute' => true,];
 
     #[ORM\Column(options: ['default' => 0])]
     private bool $profilPrive = false;
@@ -95,7 +95,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 16, options: ['default' => 'normal'])]
     private string $tailleTexte = 'normal';
 
-    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    #[ORM\Column(options: ['default' => 1])]
+    private bool $videoBackgroundActive = true;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private bool $videoBackgroundSoundActive = false;
+
+    #[ORM\Column(type: Types::JSON)]
     private array $sessionsConnectees = [];
 
     #[ORM\Column(length: 64, nullable: true, unique: true)]
@@ -284,6 +290,28 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function isReductionAnimations(): bool { return $this->reductionAnimations; }
     public function setReductionAnimations(bool $reductionAnimations): static { $this->reductionAnimations = $reductionAnimations; return $this; }
     /** @return array{email?: bool, messages?: bool, communaute?: bool} */
+    public function isVideoBackgroundActive(): bool
+    {
+        return $this->videoBackgroundActive;
+    }
+
+    public function setVideoBackgroundActive(bool $videoBackgroundActive): static
+    {
+        $this->videoBackgroundActive = $videoBackgroundActive;
+        return $this;
+    }
+
+    public function isVideoBackgroundSoundActive(): bool
+    {
+        return $this->videoBackgroundSoundActive;
+    }
+
+    public function setVideoBackgroundSoundActive(bool $videoBackgroundSoundActive): static
+    {
+        $this->videoBackgroundSoundActive = $videoBackgroundSoundActive;
+        return $this;
+    }
+    
     public function getNotifications(): array { return ['email' => (bool) ($this->notifications['email'] ?? true), 'messages' => (bool) ($this->notifications['messages'] ?? true), 'communaute' => (bool) ($this->notifications['communaute'] ?? true)]; }
     /** @param array<string, mixed> $notifications */
     public function setNotifications(array $notifications): static { $this->notifications = ['email' => (bool) ($notifications['email'] ?? true), 'messages' => (bool) ($notifications['messages'] ?? true), 'communaute' => (bool) ($notifications['communaute'] ?? true)]; return $this; }
@@ -328,7 +356,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function getExperienceNiveauSuivant(): int { return self::experienceRequisePourNiveau($this->getNiveau()); }
     public function getProgressionNiveau(): int { return (int) floor(($this->getExperienceNiveau() / $this->getExperienceNiveauSuivant()) * 100); }
 
-    private static function experienceRequisePourNiveau(int $niveau): int { return 100 + (($niveau - 1) * 50); }
+    private static function experienceRequisePourNiveau(int $niveau): int { return 35 + (($niveau - 1) * 25); }
 
     /** @return Collection<int, self> */
     public function getAbonnements(): Collection { return $this->abonnements; }

@@ -30,6 +30,8 @@ final class ParametresController extends AbstractController
                 'palette' => $utilisateur->getPalette(),
                 'mode' => $utilisateur->getMode(),
                 'reductionAnimations' => $utilisateur->isReductionAnimations(),
+                'videoBackgroundActive' => $utilisateur->isVideoBackgroundActive(),
+'videoBackgroundSoundActive' => $utilisateur->isVideoBackgroundSoundActive(),
                 'notifications' => $utilisateur->getNotifications(),
                 'profilPrive' => $utilisateur->isProfilPrive(),
                 'contrasteRenforce' => $utilisateur->isContrasteRenforce(),
@@ -58,6 +60,14 @@ final class ParametresController extends AbstractController
             ->setContrasteRenforce((bool) ($payload['contrasteRenforce'] ?? $utilisateur->isContrasteRenforce()))
             ->setTailleTexte((string) ($payload['tailleTexte'] ?? $utilisateur->getTailleTexte()));
 
+        if (isset($payload['videoBackgroundActive'])) {
+            $utilisateur->setVideoBackgroundActive((bool) $payload['videoBackgroundActive']);
+        }
+
+        if (isset($payload['videoBackgroundSoundActive'])) {
+            $utilisateur->setVideoBackgroundSoundActive((bool) $payload['videoBackgroundSoundActive']);
+        }    
+
         if (isset($payload['notifications']) && is_array($payload['notifications'])) {
             $utilisateur->setNotifications($payload['notifications']);
         }
@@ -71,6 +81,8 @@ final class ParametresController extends AbstractController
                 'palette' => $utilisateur->getPalette(),
                 'mode' => $utilisateur->getMode(),
                 'reductionAnimations' => $utilisateur->isReductionAnimations(),
+                'videoBackgroundActive' => $utilisateur->isVideoBackgroundActive(),
+                'videoBackgroundSoundActive' => $utilisateur->isVideoBackgroundSoundActive(),
                 'notifications' => $utilisateur->getNotifications(),
                 'profilPrive' => $utilisateur->isProfilPrive(),
                 'contrasteRenforce' => $utilisateur->isContrasteRenforce(),

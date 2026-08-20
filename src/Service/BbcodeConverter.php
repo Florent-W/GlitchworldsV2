@@ -24,6 +24,12 @@ final class BbcodeConverter
 
     private function remplacerBalises(string $contenu, bool $avecLien): string
     {
+        $contenu = preg_replace_callback(
+            '#\[gallery\](.*?)\[/gallery\]#s',
+            fn (array $correspondance): string => '<div class="gw-bbcode-gallery gallery">'.$this->convertirContenuGalerie($correspondance[1]).'</div>',
+            $contenu
+        ) ?? $contenu;
+
         $remplacements = [
             '[i]' => '<em>',
             '[/i]' => '</em>',
@@ -57,8 +63,6 @@ final class BbcodeConverter
             '[/TableauEntréeColonne]' => '</th>',
             '[TableauEntréeLigne]' => '<th scope="row">',
             '[/TableauEntréeLigne]' => '</th>',
-            '[gallery]' => '<div class="gw-bbcode-gallery">',
-            '[/gallery]' => '</div>',
             '[section]' => '<section class="gw-bbcode-section">',
             '[/section]' => '</section>',
         ];
@@ -68,14 +72,14 @@ final class BbcodeConverter
         $contenu = preg_replace('#\[gaucheFlottant](.*?)\[/gaucheFlottant]#s', '<div class="gw-bbcode-float gw-bbcode-float--left">$1</div>', $contenu) ?? $contenu;
         $contenu = preg_replace('#\[droiteFlottant](.*?)\[/droiteFlottant]#s', '<div class="gw-bbcode-float gw-bbcode-float--right">$1</div>', $contenu) ?? $contenu;
 
-        $contenu = preg_replace(
-            '#\[image2=(.+?),([1-9]\d{0,2})\](.+?)\[/image2]#s',
-            '<img class="img-fluid" style="float: $1; max-height: $2px; max-width: $2px;" src="/images/$3" alt="" loading="lazy" decoding="async">',
+        $contenu = preg_replace_callback(
+            '#\[image2=([^,\]]+),([1-9]\d{0,2})\](.+?)\[/image2]#s',
+            fn (array $correspondance): string => $this->imageInline($correspondance[1], $correspondance[3], (int) $correspondance[2]),
             $contenu
         ) ?? $contenu;
-        $contenu = preg_replace(
-            '#\[image2=(.+?)](.+?)\[/image2]#s',
-            '<img class="img-fluid" style="float: $1; max-height: 900px;" src="/images/$2" alt="" loading="lazy" decoding="async">',
+        $contenu = preg_replace_callback(
+            '#\[image2=([^,\]]+)\](.+?)\[/image2]#s',
+            fn (array $correspondance): string => $this->imageInline($correspondance[1], $correspondance[2]),
             $contenu
         ) ?? $contenu;
         $contenu = preg_replace_callback(
@@ -106,7 +110,10 @@ final class BbcodeConverter
 
         $contenu = preg_replace_callback(
             '#\[video](.+?)\[/video]#s',
-            fn (array $correspondance): string => sprintf('<iframe width="640" height="360" class="ratio ratio-16x9" src="%s" title="Vidéo" allowfullscreen loading="lazy"></iframe>', $this->securiserVideo($correspondance[1])),
+            fn (array $correspondance): string => sprintf(
+                '<div class="gw-bbcode-video ratio ratio-16x9"><iframe src="%s" title="Vidéo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>',
+                $this->securiserVideo($correspondance[1]),
+            ),
             $contenu
         ) ?? $contenu;
 
@@ -140,6 +147,99 @@ final class BbcodeConverter
         $contenu = preg_replace('#\[TableauEntrée](.*?)\[/TableauEntrée]#s', '<div>$1</div>', $contenu) ?? $contenu;
 
         return $contenu;
+    }
+
+    private function convertirContenuGalerie(string $contenu): string
+    {
+        $contenu = preg_replace_callback(
+            '#\[image2=([^,\]]+),([1-9]\d{0,2})\](.+?)\[/image2]#s',
+            fn (array $correspondance): string => $this->imageGalerie($correspondance[1], $correspondance[3], (int) $correspondance[2]),
+            $contenu
+        ) ?? $contenu;
+        $contenu = preg_replace_callback(
+            '#\[image2=([^,\]]+)\](.+?)\[/image2]#s',
+            fn (array $correspondance): string => $this->imageGalerie($correspondance[1], $correspondance[2]),
+            $contenu
+        ) ?? $contenu;
+        $contenu = preg_replace_callback(
+            '#\[image](.+?)\[/image]#s',
+            fn (array $correspondance): string => $this->imageGalerieUrl($correspondance[1]),
+            $contenu
+        ) ?? $contenu;
+
+        return $contenu;
+    }
+
+    private function imageInline(string $alignement, string $fichier, ?int $tailleMax = null): string
+    {
+        $fichier = trim(html_entity_decode($fichier, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+        if (
+            '' === $fichier
+            || str_contains($fichier, '..')
+            || !preg_match('/\.(?:avif|gif|jpe?g|png|webp)$/i', $fichier)
+        ) {
+            return '';
+        }
+
+        $url = htmlspecialchars('/images/'.$fichier, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $style = $this->styleImageInline($alignement, $tailleMax);
+
+        return sprintf(
+            '<img class="img-fluid" style="%s" src="%s" alt="" loading="lazy" decoding="async">',
+            $style,
+            $url,
+        );
+    }
+
+    private function imageGalerie(string $alignement, string $fichier, ?int $tailleMax = null): string
+    {
+        $fichier = trim(html_entity_decode($fichier, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+        if (
+            '' === $fichier
+            || str_contains($fichier, '..')
+            || !preg_match('/\.(?:avif|gif|jpe?g|png|webp)$/i', $fichier)
+        ) {
+            return '';
+        }
+
+        $url = htmlspecialchars('/images/'.$fichier, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $style = $this->styleImageInline($alignement, $tailleMax);
+
+        return sprintf(
+            '<div class="gw-lg-item" data-src="%1$s" data-responsive-src="%1$s" style="%2$s"><a href="#%3$s" onclick="return false;"><img class="img-fluid mw-100" src="%1$s" alt="" loading="lazy" decoding="async"></a></div>',
+            $url,
+            $style,
+            htmlspecialchars(basename($fichier), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        );
+    }
+
+    private function imageGalerieUrl(string $url): string
+    {
+        $url = $this->securiserUrl($url);
+        if ('#' === $url) {
+            return '';
+        }
+
+        return sprintf(
+            '<div class="gw-lg-item" data-src="%1$s" data-responsive-src="%1$s"><a href="%1$s"><img class="img-fluid mw-100" src="%1$s" alt="" loading="lazy" decoding="async"></a></div>',
+            $url,
+        );
+    }
+
+    private function styleImageInline(string $alignement, ?int $tailleMax = null): string
+    {
+        $alignement = mb_strtolower(trim(html_entity_decode($alignement, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')));
+        $style = 'display:inline-block; margin-block:10px;';
+        if ('none' !== $alignement && '' !== $alignement) {
+            $style .= ' float: '.htmlspecialchars($alignement, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').';';
+        }
+        if (null !== $tailleMax) {
+            $style .= sprintf(' max-height:%dpx; max-width:%dpx;', $tailleMax, $tailleMax);
+        } else {
+            $style .= ' max-height:900px;';
+        }
+
+        return $style;
     }
 
     private function securiserUrl(string $url, bool $autoriserEmail = false): string

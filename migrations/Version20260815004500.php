@@ -9,7 +9,7 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version20260815004500 extends AbstractMigration
 {
-    public function getDescription(): string { return 'Aligne les index de la relation jeux–actualités.'; }
+    public function getDescription(): string { return 'Aligne les index de la relation jeux-actualites.'; }
 
     public function up(Schema $schema): void
     {

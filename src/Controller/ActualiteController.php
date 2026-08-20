@@ -36,7 +36,7 @@ final class ActualiteController extends AbstractController
     }
 
     #[Route('/actualite/{slug}-{id}', name: 'app_actualite_voir', requirements: ['slug' => '[a-z0-9\-]+', 'id' => '\d+'], methods: ['GET'])]
-    public function voir(string $slug, Actualite $actualite, Request $request, CommentaireActualiteRepository $commentaireRepository, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression, GestionSucces $gestionSucces): Response
+    public function voir(string $slug, Actualite $actualite, Request $request, ActualiteRepository $actualiteRepository, CommentaireActualiteRepository $commentaireRepository, EntityManagerInterface $entityManager, ProgressionUtilisateur $progression, GestionSucces $gestionSucces): Response
     {
         if ($actualite->getStatut() !== StatutActualite::Publiee) {
             throw $this->createNotFoundException('Cette actualité n’existe pas.');
@@ -75,6 +75,8 @@ final class ActualiteController extends AbstractController
 
         return $this->render('actualite/voir.html.twig', [
             'actualite' => $actualite,
+            'actualitePrecedente' => $actualiteRepository->trouverPrecedente($actualite),
+            'actualiteSuivante' => $actualiteRepository->trouverSuivante($actualite),
             'commentaires' => $commentaireRepository->trouverRecents($actualite),
             'totalCommentaires' => $commentaireRepository->count(['actualite' => $actualite]),
             'formulaireCommentaire' => $formulaire,

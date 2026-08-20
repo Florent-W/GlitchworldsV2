@@ -27,6 +27,17 @@
         <h2 class="h5">Jeux concernés</h2>
         <div class="d-flex flex-wrap gap-2">{% for jeu in actualite.jeux %}<a class="gw-tag" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}"><i class="bi bi-controller me-1" aria-hidden="true"></i>{{ jeu.nom }}</a>{% endfor %}</div>
     {% endif %}
+
+    {% include '_navigation_sequentielle.html.twig' with {
+        label: 'Naviguer entre les actualités',
+        precedent: actualitePrecedente,
+        suivant: actualiteSuivante,
+        route: 'app_actualite_voir',
+        type: 'actualite',
+        sens_precedent: 'Actualité précédente',
+        sens_suivant: 'Actualité suivante',
+        son_survol: 'survol-article'
+    } only %}
 </article>
 
 <section id="commentaires" class="gw-panel p-4 mt-4 mx-auto" style="max-width: 980px">

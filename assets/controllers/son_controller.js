@@ -59,6 +59,7 @@ export default class extends Controller {
         window.addEventListener('glitchworlds:son', this.surEvenement);
         window.addEventListener('glitchworlds:theme-change', this.surTheme);
         this.appliquerEtat();
+        this.notifierChangement();
     }
 
     disconnect() {
@@ -75,6 +76,7 @@ export default class extends Controller {
         this.actif = !this.actif;
         localStorage.setItem(CLE, this.actif ? '1' : '0');
         this.appliquerEtat();
+        this.notifierChangement();
 
         // Même geste utilisateur : on peut débloquer AudioContext et jouer la confirmation.
         if (this.actif) {
@@ -308,5 +310,11 @@ export default class extends Controller {
         if (this.hasIconeTarget) {
             this.iconeTarget.className = `bi ${this.actif ? 'bi-volume-up-fill' : 'bi-volume-mute-fill'}`;
         }
+    }
+
+    notifierChangement() {
+        window.dispatchEvent(new CustomEvent('glitchworlds:sons-change', {
+            detail: { actif: this.actif },
+        }));
     }
 }

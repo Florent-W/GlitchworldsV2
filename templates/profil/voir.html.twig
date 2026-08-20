@@ -8,13 +8,30 @@
     <header class="gw-profile__hero gw-panel overflow-hidden">
         <div class="gw-profile__banner"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}></div>
         <div class="gw-profile__identity px-3 px-lg-4 pb-4">
-            <div class="gw-profile__avatar">
-                {% if membre.avatar starts with 'avatar.' %}
-                    <img src="{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.avatar) }}" alt="Avatar de {{ membre.pseudo }}">
-                {% else %}
-                    <span>{{ membre.pseudo|first|upper }}</span>
-                {% endif %}
-            </div>
+            {% if app.user == membre %}
+                <div class="gw-profile__avatar gw-profile__avatar--editable" data-controller="avatar-profil">
+                    <form method="post" action="{{ path('app_compte_avatar') }}" enctype="multipart/form-data" data-avatar-profil-target="form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('avatar-profil') }}">
+                        <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-avatar-profil-target="input" data-action="change->avatar-profil#envoyer">
+                        <button type="button" class="gw-profile__avatar-btn" data-action="avatar-profil#ouvrir" aria-label="Changer la photo de profil" title="Changer la photo de profil">
+                            {% if membre.avatar starts with 'avatar.' %}
+                                <img src="{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.avatar) }}" alt="Avatar de {{ membre.pseudo }}">
+                            {% else %}
+                                <span>{{ membre.pseudo|first|upper }}</span>
+                            {% endif %}
+                            <span class="gw-profile__avatar-overlay" aria-hidden="true"><i class="bi bi-camera-fill"></i><span>Modifier</span></span>
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="gw-profile__avatar">
+                    {% if membre.avatar starts with 'avatar.' %}
+                        <img src="{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.avatar) }}" alt="Avatar de {{ membre.pseudo }}">
+                    {% else %}
+                        <span>{{ membre.pseudo|first|upper }}</span>
+                    {% endif %}
+                </div>
+            {% endif %}
             <div class="flex-grow-1 pt-3">
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <h1 class="h2 mb-0">{{ membre.pseudo }}</h1>
@@ -50,7 +67,7 @@
     <div class="row g-4 mt-1">
         <div class="col-lg-8">
             <nav class="nav nav-pills gw-panel p-2 mb-3" aria-label="Sections du profil">
-                {% for cle, libelle in {apropos: 'À propos', activite: 'Activité', jeux: 'Jeux', favoris: 'Favoris', succes: 'Succès'} %}
+                {% for cle, libelle in {apropos: 'À propos', activite: 'Activité', jeux: 'Jeux', listes: 'Listes', favoris: 'Favoris', succes: 'Succès'} %}
                     <a class="nav-link {{ section == cle ? 'active' }}" href="{{ path('app_profil', {id: membre.id, section: cle}) }}">{{ libelle }}</a>
                 {% endfor %}
             </nav>
@@ -65,7 +82,7 @@
                     </div>
                     <hr>
                     <h2 class="h5">Jeux préférés</h2>
-                    {{ _self.jeux(membre.jeuxFavoris|slice(0, 5)) }}
+                    {{ _self.jeux(membre.jeuxFavoris|slice(0, 5), notesJeux) }}
                 {% elseif section == 'activite' %}
                     <h2 class="h5">Publications récentes</h2>
                     {% for publication in publications %}
@@ -75,8 +92,45 @@
                         </article>
                     {% else %}<p class="text-secondary mb-0">Aucune publication pour le moment.</p>{% endfor %}
                 {% elseif section == 'jeux' %}
-                    <h2 class="h5">Jeux publiés</h2>
-                    {{ _self.jeux(jeux) }}
+                    <h2 class="h5">Jeux publiés{% if nombreJeuxPublies > 0 %} <span class="badge text-bg-secondary">{{ nombreJeuxPublies }}</span>{% endif %}</h2>
+                    {{ _self.jeux(jeux, notesJeux) }}
+                    {% if jeuxPagination.pages > 1 %}
+                        <nav class="mt-4" aria-label="Pagination des jeux publiés">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% for numero in 1..jeuxPagination.pages %}
+                                    <li class="page-item{{ numero == jeuxPagination.page ? ' active' : '' }}">
+                                        <a class="page-link" href="{{ path('app_profil', { id: membre.id, section: 'jeux', page: numero }) }}" {{ numero == jeuxPagination.page ? 'aria-current="page"' : '' }}>{{ numero }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% elseif section == 'listes' %}
+                    <h2 class="h5">Listes de jeux{% if listes is not empty %} <span class="badge text-bg-secondary">{{ listes|length }}</span>{% endif %}</h2>
+                    {% if app.user == membre %}
+                        <p class="text-secondary small">Gère tes listes depuis <a href="{{ path('app_mes_jeux', {_fragment: 'listes'}) }}">Mes jeux</a>.</p>
+                    {% endif %}
+                    {% if listes is empty %}
+                        <p class="text-secondary mb-0">Aucune liste pour le moment.</p>
+                    {% else %}
+                        <div class="vstack gap-4">
+                            {% for liste in listes %}
+                                {% set jeuxVisibles = liste.jeux|filter(jeu => jeu.statut.value == 'approuve') %}
+                                <article class="border rounded-4 p-3 p-md-4">
+                                    <header class="mb-3">
+                                        <h3 class="h6 mb-1">{{ liste.nom }}</h3>
+                                        {% if liste.description %}<p class="text-secondary small mb-0">{{ liste.description }}</p>{% endif %}
+                                        <p class="small text-secondary mb-0 mt-1">{{ jeuxVisibles|length }} jeu{{ jeuxVisibles|length > 1 ? 'x' : '' }}</p>
+                                    </header>
+                                    {% if jeuxVisibles is empty %}
+                                        <p class="text-secondary small mb-0">Cette liste ne contient pas encore de jeu visible.</p>
+                                    {% else %}
+                                        {{ _self.jeux(jeuxVisibles, notesJeux) }}
+                                    {% endif %}
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 {% elseif section == 'succes' %}
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="h5 mb-0">Succès</h2>
@@ -106,7 +160,7 @@
                     </div>
                 {% else %}
                     <h2 class="h5">Jeux favoris</h2>
-                    {{ _self.jeux(membre.jeuxFavoris) }}
+                    {{ _self.jeux(membre.jeuxFavoris, notesJeux) }}
                 {% endif %}
             </section>
         </div>
@@ -126,7 +180,7 @@
                         {% for deblocage in succesAcquis|slice(0, 6) %}
                             {% set item = deblocage.succes %}
                             {% if item %}
-                                <span class="gw-achievement text-bg-{{ item.couleur }}" title="{{ item.nom }} — {{ item.description }}"><i class="bi bi-{{ item.icone }}"></i></span>
+                                <span class="gw-achievement text-bg-{{ item.couleur }}" title="{{ item.nom }} - {{ item.description }}"><i class="bi bi-{{ item.icone }}"></i></span>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -141,9 +195,10 @@
             <section class="gw-panel p-4">
                 <h2 class="h6 text-uppercase">Aperçu de l’activité</h2>
                 <div class="d-grid gap-3">
-                    <div><i class="bi bi-controller text-primary me-2"></i><strong>{{ jeux|length }}</strong> jeu{{ jeux|length > 1 ? 'x' }} publié{{ jeux|length > 1 ? 's' }}</div>
-                    <div><i class="bi bi-heart-fill text-danger me-2"></i><strong>{{ membre.jeuxFavoris|length }}</strong> favori{{ membre.jeuxFavoris|length > 1 ? 's' }}</div>
-                    <div><i class="bi bi-chat-square-text-fill text-primary me-2"></i><strong>{{ publications|length }}</strong> publication{{ publications|length > 1 ? 's' }}</div>
+                    <div><i class="bi bi-controller text-primary me-2"></i><strong>{{ nombreJeuxPublies }}</strong> jeu{{ nombreJeuxPublies > 1 ? 'x' : '' }} publié{{ nombreJeuxPublies > 1 ? 's' }}</div>
+                    <div><i class="bi bi-heart-fill text-danger me-2"></i><strong>{{ membre.jeuxFavoris|length }}</strong> favori{{ membre.jeuxFavoris|length > 1 ? 's' : '' }}</div>
+                    <div><i class="bi bi-list-ul text-primary me-2"></i><strong>{{ listes|length }}</strong> liste{{ listes|length > 1 ? 's' : '' }}</div>
+                    <div><i class="bi bi-chat-square-text-fill text-primary me-2"></i><strong>{{ publications|length }}</strong> publication{{ publications|length > 1 ? 's' : '' }}</div>
                     <div><i class="bi bi-trophy-fill text-warning me-2"></i><strong>{{ succesAcquis|length }}</strong> succès</div>
                 </div>
             </section>
@@ -152,14 +207,33 @@
 </div>
 {% endblock %}
 
-{% macro jeux(jeux) %}
-    {% if jeux is empty %}<p class="text-secondary mb-0">Aucun jeu à afficher.</p>{% else %}
-        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3">
+{% macro jeux(jeux, notes) %}
+    {% if jeux is empty %}
+        <p class="text-secondary mb-0">Aucun jeu à afficher.</p>
+    {% else %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
             {% for jeu in jeux %}
-                <div class="col"><a class="gw-profile-game" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id}) }}">
-                    {% if jeu.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Miniature de {{ jeu.nom }}" loading="lazy">{% else %}<span><i class="bi bi-controller"></i></span>{% endif %}
-                    <strong>{{ jeu.nom }}</strong>
-                </a></div>
+                <div class="col">
+                    <article class="gw-game-card h-100" data-son-survol="survol-jeu">
+                        <a class="gw-game-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" aria-label="Voir {{ jeu.nom }}">
+                            {% if jeu.miniature starts with 'miniature.' %}
+                                <img class="w-100 h-100 object-fit-cover" src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Miniature de {{ jeu.nom }}" loading="lazy" decoding="async">
+                            {% else %}
+                                <i class="bi bi-controller" aria-hidden="true"></i>
+                                <span>Voir la fiche</span>
+                            {% endif %}
+                            {% include 'jeu/_note_badge.html.twig' with { note: notes[jeu.id]|default(null) } only %}
+                        </a>
+                        <div class="gw-game-card__body">
+                            <h3 class="gw-game-card__title"><a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3>
+                            {% if jeu.dateSortie %}<p class="gw-game-card__developer mb-2"><i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ jeu.dateSortie|date('Y') }}</p>{% endif %}
+                            <div class="gw-game-card__tags">
+                                {% if jeu.categorie %}<span class="gw-tag">{{ jeu.categorie.nom }}</span>{% endif %}
+                                {% for genre in jeu.genres|slice(0, 2) %}<span class="gw-tag">{{ genre.nom }}</span>{% endfor %}
+                            </div>
+                        </div>
+                    </article>
+                </div>
             {% endfor %}
         </div>
     {% endif %}

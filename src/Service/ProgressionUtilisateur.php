@@ -27,7 +27,19 @@ final class ProgressionUtilisateur
     public function recompenseNote(Utilisateur $utilisateur, int $jeuId): bool { return $this->crediter($utilisateur, 'note', 'note:'.$jeuId, 'Première note sur un jeu', 5, 2); }
     public function recompenseFavori(Utilisateur $utilisateur, int $jeuId): bool { return $this->crediter($utilisateur, 'favori', 'favori:'.$jeuId, 'Premier ajout d’un jeu aux favoris', 3, 1); }
     public function recompenseAnciennete(Utilisateur $utilisateur): bool { $annees = $utilisateur->getInscritLe()->diff(new \DateTimeImmutable())->y; return $annees > 0 && $this->crediter($utilisateur, 'anciennete', 'anciennete:'.$annees, $annees.' an'.($annees > 1 ? 's' : '').' d’ancienneté', 25, 10); }
-    public function recompenseSucces(Utilisateur $utilisateur, Succes $succes): bool { return $this->crediter($utilisateur, 'succes', 'succes:'.$succes->getCode(), 'Succès : '.$succes->getNom(), 0, $succes->getPoints()); }
+    public function recompenseSucces(Utilisateur $utilisateur, Succes $succes): bool
+    {
+        $points = $succes->getPoints();
+        $experience = $points > 0 ? $points : 15;
+
+        return $this->crediter($utilisateur, 'succes', 'succes:'.$succes->getCode(), 'Succès : '.$succes->getNom(), $experience, $points);
+    }
+
+    /** Crédite une action importée sans plafond journalier (clé préfixée legacy:). */
+    public function crediterHistorique(Utilisateur $utilisateur, string $categorie, string $cle, string $libelle, int $experience, int $points): bool
+    {
+        return $this->crediter($utilisateur, $categorie, 'legacy:'.$cle, $libelle, $experience, $points, null);
+    }
     public function debiterBoutique(Utilisateur $utilisateur, int $articleId, string $nom, int $points): void { if ($utilisateur->getPoints() < $points) { throw new \DomainException('Tu n’as pas assez de points pour cet achat.'); } $this->appliquer($utilisateur, 'boutique', $utilisateur->getId().':achat:'.$articleId, 'Achat : '.$nom, 0, -$points); }
 
     private function crediter(Utilisateur $utilisateur, string $categorie, string $cle, string $libelle, int $experience, int $points, ?int $plafondJournalier = null): bool

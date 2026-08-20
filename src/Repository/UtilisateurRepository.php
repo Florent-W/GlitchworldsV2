@@ -84,6 +84,17 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
     }
 
     /** @return list<Utilisateur> */
+    public function trouverRecents(int $limite = 6): array
+    {
+        return $this->createQueryBuilder('utilisateur')
+            ->orderBy('utilisateur.inscritLe', 'DESC')
+            ->addOrderBy('utilisateur.id', 'DESC')
+            ->setMaxResults(max(1, min(20, $limite)))
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return list<Utilisateur> */
     public function trouverEnLigne(int $limite = 8): array
     {
         return $this->createQueryBuilder('utilisateur')

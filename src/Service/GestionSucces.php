@@ -28,7 +28,7 @@ final readonly class GestionSucces
      *
      * @return list<SuccesUtilisateur>
      */
-    public function verifier(Utilisateur $utilisateur): array
+    public function verifier(Utilisateur $utilisateur, bool $notifier = true): array
     {
         $criteres = $this->evaluerCriteres($utilisateur);
         $debloques = [];
@@ -49,13 +49,15 @@ final readonly class GestionSucces
                 ->setSucces($succes);
             $this->entityManager->persist($deblocage);
             $this->progression->recompenseSucces($utilisateur, $succes);
-            $this->notifications->ajouter(
-                $utilisateur,
-                'Succès débloqué',
-                $succes->getNom().' — +'.$succes->getPoints().' points',
-                'trophy-fill',
-                '/mes-jeux#succes',
-            );
+            if ($notifier) {
+                $this->notifications->ajouter(
+                    $utilisateur,
+                    'Succès débloqué',
+                    $succes->getNom().' (+'.$succes->getPoints().' points)',
+                    'trophy-fill',
+                    '/mes-jeux#succes',
+                );
+            }
             $debloques[] = $deblocage;
         }
 

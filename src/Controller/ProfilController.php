@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Repository\AvisRepository;
 use App\Repository\JeuRepository;
+use App\Repository\ListeJeuxRepository;
 use App\Repository\PublicationRepository;
 use App\Repository\AchatBoutiqueRepository;
 use App\Repository\SuccesRepository;
@@ -25,22 +27,42 @@ final class ProfilController extends AbstractController
         Request $request,
         PublicationRepository $publications,
         JeuRepository $jeux,
+        ListeJeuxRepository $listesJeux,
         AchatBoutiqueRepository $achats,
         SuccesRepository $succesRepository,
         SuccesUtilisateurRepository $deblocages,
+        AvisRepository $avisRepository,
     ): Response {
         $section = $request->query->getString('section', 'apropos');
-        if (!in_array($section, ['apropos', 'activite', 'jeux', 'favoris', 'succes'], true)) {
+        if (!in_array($section, ['apropos', 'activite', 'jeux', 'listes', 'favoris', 'succes'], true)) {
             $section = 'apropos';
         }
 
+        $listes = $listesJeux->trouverPour($membre);
+        $jeuxDesListes = [];
+        foreach ($listes as $liste) {
+            foreach ($liste->getJeux() as $jeu) {
+                $jeuxDesListes[] = $jeu;
+            }
+        }
+
         $succesAcquis = $deblocages->trouverPour($membre);
+        $nombreJeuxPublies = $jeux->compterApprouvesPar($membre);
+        $jeuxFavoris = $membre->getJeuxFavoris()->toArray();
+        $jeuxPagination = $section === 'jeux'
+            ? $jeux->trouverApprouvesParPagines($membre, max(1, (int) $request->query->get('page', 1)))
+            : ['jeux' => [], 'total' => $nombreJeuxPublies, 'page' => 1, 'pages' => 1, 'parPage' => 12];
+        $jeuxPublies = $jeuxPagination['jeux'];
 
         return $this->render('profil/voir.html.twig', [
             'membre' => $membre,
             'section' => $section,
             'publications' => $publications->trouverPourAuteur($membre),
-            'jeux' => $jeux->trouverApprouvesPar($membre),
+            'nombreJeuxPublies' => $nombreJeuxPublies,
+            'jeux' => $jeuxPublies,
+            'jeuxPagination' => $jeuxPagination,
+            'listes' => $listes,
+            'notesJeux' => $avisRepository->trouverResumesPour([...$jeuxPublies, ...$jeuxFavoris, ...$jeuxDesListes]),
             'achatsBoutique' => $achats->trouverPourUtilisateur($membre),
             'succes' => $succesRepository->findAll(),
             'succesAcquis' => $succesAcquis,

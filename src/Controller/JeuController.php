@@ -37,6 +37,7 @@ final class JeuController extends AbstractController
         PlateformeRepository $plateformeRepository,
         GenreRepository $genreRepository,
         LangueRepository $langueRepository,
+        AvisRepository $avisRepository,
     ): Response {
         $page = $request->query->getInt('page', 1);
         $recherche = trim((string) $request->query->get('recherche', ''));
@@ -65,6 +66,7 @@ final class JeuController extends AbstractController
 
         return $this->render('jeu/index.html.twig', [
             ...$pagination,
+            'notesJeux' => $avisRepository->trouverResumesPour($pagination['jeux']),
             'categories' => $categorieJeuRepository->trouverToutes(),
             'plateformes' => $plateformeRepository->trouverToutes(),
             'genres' => $genreRepository->trouverTous(),
@@ -141,10 +143,15 @@ final class JeuController extends AbstractController
             'action' => $this->generateUrl('app_jeu_noter', ['id' => $jeu->getId()]),
         ]);
 
+        $jeuxSimilaires = $jeuRepository->trouverSimilaires($jeu);
+
         return $this->render('jeu/show.html.twig', [
             'jeu' => $jeu,
             'auteurFiche' => $auteurFiche,
-            'jeuxSimilaires' => $jeuRepository->trouverSimilaires($jeu),
+            'jeuxSimilaires' => $jeuxSimilaires,
+            'notesSimilaires' => $avisRepository->trouverResumesPour($jeuxSimilaires),
+            'jeuPrecedent' => $jeuRepository->trouverPrecedent($jeu),
+            'jeuSuivant' => $jeuRepository->trouverSuivant($jeu),
             'resumeAvis' => $avisRepository->trouverResume($jeu),
             'commentaires' => $commentaireJeuRepository->trouverRecents($jeu),
             'totalCommentaires' => $commentaireJeuRepository->compterPourJeu($jeu),

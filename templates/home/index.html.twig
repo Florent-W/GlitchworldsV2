@@ -4,16 +4,21 @@
 {% block meta_description %}Découvre les fangames, hacks et créations de la communauté GlitchWorlds.{% endblock %}
 
 {% block body %}
-<div class="gw-home-shell">
-    <section class="gw-game-hero mb-4">
+<div class="gw-home-shell gw-disposition gw-disposition--grille" data-controller="disposition">
+    <section class="gw-game-hero gw-game-hero--home mb-4">
         <div class="gw-game-hero__content">
-            <span class="gw-game-hero__category">GlitchWorlds</span>
+            <span class="gw-game-hero__category"><i class="bi bi-broadcast me-1" aria-hidden="true"></i>GlitchWorlds</span>
             <h1>Play. Hack. Rewrite Reality.</h1>
             <p class="gw-game-hero__lead">Explore des fangames, partage tes découvertes et construis ta collection avec la communauté.</p>
             <div class="d-flex flex-wrap gap-2 mt-4">
                 <a class="btn btn-light btn-lg" href="{{ path('app_jeux') }}"><i class="bi bi-controller me-2" aria-hidden="true"></i>Découvrir les jeux</a>
                 {% if not app.user %}<a class="btn btn-outline-light btn-lg" href="{{ path('app_inscription') }}">Rejoindre la communauté</a>{% endif %}
             </div>
+            <ul class="gw-game-hero__stats" aria-label="GlitchWorlds en chiffres">
+                <li><strong>{{ totalJeux }}</strong><span>jeux</span></li>
+                <li><strong>{{ totalMembres }}</strong><span>membres</span></li>
+                <li><strong>{{ totalCommentaires }}</strong><span>commentaires</span></li>
+            </ul>
         </div>
         <i class="bi bi-globe2 gw-game-hero__icon" aria-hidden="true"></i>
     </section>
@@ -33,29 +38,23 @@
     </section>
     {% endif %}
 
-    <section class="row row-cols-1 row-cols-md-3 g-3 mb-4 gw-home-stats" aria-label="Statistiques GlitchWorlds">
-        <div class="col"><div class="gw-panel p-3 h-100"><i class="bi bi-controller text-primary fs-3" aria-hidden="true"></i><strong class="d-block fs-3">{{ totalJeux }}</strong><span class="text-secondary">Jeux approuvés</span></div></div>
-        <div class="col"><div class="gw-panel p-3 h-100"><i class="bi bi-people-fill text-primary fs-3" aria-hidden="true"></i><strong class="d-block fs-3">{{ totalMembres }}</strong><span class="text-secondary">Membres</span></div></div>
-        <div class="col"><div class="gw-panel p-3 h-100"><i class="bi bi-chat-dots-fill text-primary fs-3" aria-hidden="true"></i><strong class="d-block fs-3">{{ totalCommentaires }}</strong><span class="text-secondary">Commentaires</span></div></div>
-    </section>
+    {% if populaires is not empty or nouveautes is not empty or dernieresActualites is not empty %}
+        <div class="d-flex justify-content-end mb-3">
+            {% include '_disposition_boutons.html.twig' with { label: 'Disposition des jeux et actualités' } only %}
+        </div>
+    {% endif %}
 
-{% macro listeJeux(titre, icone, jeux) %}
+{% macro listeJeux(titre, icone, jeux, notes) %}
     {% if jeux is not empty %}
         <section class="gw-panel p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
                 <h2 class="h4 mb-0"><i class="bi bi-{{ icone }} text-primary me-2" aria-hidden="true"></i>{{ titre }}</h2>
                 <a href="{{ path('app_jeux') }}">Voir tout</a>
             </div>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3 gw-collection gw-collection--jeux">
                 {% for jeu in jeux %}
                     <div class="col">
-                        <article class="gw-similar-card h-100">
-                            <a class="gw-similar-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}"><i class="bi bi-controller" aria-hidden="true"></i></a>
-                            <div class="p-3">
-                                <h3 class="h6 mb-1"><a class="text-decoration-none text-body" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3>
-                                {% if jeu.categorie %}<span class="gw-tag">{{ jeu.categorie.nom }}</span>{% endif %}
-                            </div>
-                        </article>
+                        {% include 'jeu/_carte.html.twig' with { jeu: jeu, note: notes[jeu.id]|default(null) } only %}
                     </div>
                 {% endfor %}
             </div>
@@ -63,8 +62,8 @@
     {% endif %}
 {% endmacro %}
 
-{{ _self.listeJeux('Jeux populaires', 'star-fill', populaires) }}
-{{ _self.listeJeux('Nouveautés', 'stars', nouveautes) }}
+{{ _self.listeJeux('Jeux populaires', 'star-fill', populaires, notesJeux) }}
+{{ _self.listeJeux('Nouveautés', 'stars', nouveautes, notesJeux) }}
 
 {% if dernieresActualites is not empty %}
     <section class="gw-panel p-4 mb-4">
@@ -72,15 +71,78 @@
             <h2 class="h4 mb-0"><i class="bi bi-newspaper text-primary me-2" aria-hidden="true"></i>Dernières actualités</h2>
             <a href="{{ path('app_actualites') }}">Voir tout</a>
         </div>
-        <div class="row row-cols-1 row-cols-md-2 g-3">
+        <div class="row row-cols-1 row-cols-md-2 g-3 gw-collection gw-collection--actualites">
             {% for actualite in dernieresActualites %}
                 <div class="col">
-                    <article class="card border-0 shadow-sm h-100 overflow-hidden">
+                    <article class="card border-0 shadow-sm h-100 overflow-hidden gw-article-card">
                         {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="card-img-top object-fit-cover" style="height: 180px" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="" loading="lazy">{% endif %}
                         <div class="card-body"><span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span><h3 class="h5"><a class="stretched-link text-decoration-none" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h3><p class="text-secondary mb-2">{{ actualite.description }}</p><small class="text-secondary">{{ actualite.publieeLe|date('d/m/Y') }}</small></div>
                     </article>
                 </div>
             {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+{% if activiteRecente is not empty or nouveauxMembres is not empty %}
+    <section class="gw-panel p-4 mb-4" aria-labelledby="activite-communaute-title">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+            <h2 id="activite-communaute-title" class="h4 mb-0"><i class="bi bi-people-fill text-primary me-2" aria-hidden="true"></i>Activité de la communauté</h2>
+            <a href="{{ path('app_communaute') }}">Voir la communauté</a>
+        </div>
+        <div class="row g-4">
+            {% if activiteRecente is not empty %}
+                <div class="col-lg-7">
+                    <h3 class="h6 text-secondary text-uppercase mb-3" style="letter-spacing: .06em">Derniers commentaires</h3>
+                    <ul class="gw-activity list-unstyled mb-0">
+                        {% for item in activiteRecente %}
+                            <li class="gw-activity__item">
+                                <span class="gw-activity__avatar" aria-hidden="true">
+                                    {% if item.auteur and item.auteur.avatar starts with 'avatar.' %}
+                                        <img src="{{ asset('uploads/utilisateurs/' ~ item.auteur.id ~ '/' ~ item.auteur.avatar) }}" alt="" loading="lazy">
+                                    {% else %}
+                                        {{ item.auteur ? item.auteur.pseudo|first|upper : '?' }}
+                                    {% endif %}
+                                </span>
+                                <div class="gw-activity__body">
+                                    <p class="mb-1">
+                                        <strong>{{ item.auteur ? item.auteur.pseudo : 'Membre' }}</strong>
+                                        a commenté
+                                        <a href="{{ item.url }}">{{ item.cible }}</a>
+                                        <span class="gw-activity__type">{{ item.type == 'jeu' ? 'Jeu' : 'Actu' }}</span>
+                                    </p>
+                                    <p class="gw-activity__extrait mb-1">« {{ item.extrait }} »</p>
+                                    <time class="small text-secondary" datetime="{{ item.date|date('c') }}">{{ item.date|format_datetime('medium', 'short', locale='fr') }}</time>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if nouveauxMembres is not empty %}
+                <div class="col-lg-{{ activiteRecente is not empty ? '5' : '12' }}">
+                    <h3 class="h6 text-secondary text-uppercase mb-3" style="letter-spacing: .06em">Nouveaux membres</h3>
+                    <ul class="gw-members list-unstyled mb-0">
+                        {% for membre in nouveauxMembres %}
+                            <li>
+                                <a class="gw-members__item" href="{{ path('app_profil', { id: membre.id }) }}">
+                                    <span class="gw-activity__avatar" aria-hidden="true">
+                                        {% if membre.avatar starts with 'avatar.' %}
+                                            <img src="{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.avatar) }}" alt="" loading="lazy">
+                                        {% else %}
+                                            {{ membre.pseudo|first|upper }}
+                                        {% endif %}
+                                    </span>
+                                    <span class="gw-members__meta">
+                                        <strong>{{ membre.pseudo }}</strong>
+                                        <span class="small text-secondary">Inscrit le {{ membre.inscritLe|date('d/m/Y') }}</span>
+                                    </span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
         </div>
     </section>
 {% endif %}

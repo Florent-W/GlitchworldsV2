@@ -6,6 +6,7 @@ use App\Entity\Utilisateur;
 use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class SecuriteControllerTest extends WebTestCase
@@ -271,6 +272,45 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertSame(sprintf('nouveau-%s@glitchworlds.local', $suffixe), $utilisateur->getEmail());
 
         $entityManager->remove($utilisateur);
+        $entityManager->flush();
+    }
+
+    public function testUnMembrePeutChangerSonAvatarDepuisSonProfil(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $utilisateur = (new Utilisateur())
+            ->setPseudo('AvatarUpload'.$suffixe)
+            ->setEmail(sprintf('avatar-upload-%s@glitchworlds.local', $suffixe));
+        $entityManager->persist($utilisateur);
+        $entityManager->flush();
+        $utilisateurId = $utilisateur->getId();
+
+        $fichierTemporaire = tempnam(sys_get_temp_dir(), 'avatar-test-');
+        file_put_contents($fichierTemporaire, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='));
+
+        $client->loginUser($utilisateur);
+        $crawler = $client->request('GET', '/membre/'.$utilisateurId);
+        $token = $crawler->filter('form[action="/mon-compte/avatar"] input[name="_token"]')->attr('value');
+
+        $client->request('POST', '/mon-compte/avatar', [
+            '_token' => $token,
+        ], [
+            'avatar' => new UploadedFile($fichierTemporaire, 'avatar.png', 'image/png', null, true),
+        ]);
+
+        self::assertResponseRedirects('/membre/'.$utilisateurId);
+        $client->followRedirect();
+        self::assertSelectorExists('.alert-success');
+
+        $entityManager->clear();
+        $recharge = $entityManager->find(Utilisateur::class, $utilisateurId);
+        self::assertNotNull($recharge->getAvatar());
+        self::assertStringStartsWith('avatar.', $recharge->getAvatar());
+
+        @unlink($fichierTemporaire);
+        $entityManager->remove($recharge);
         $entityManager->flush();
     }
 

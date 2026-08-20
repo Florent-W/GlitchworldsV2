@@ -219,6 +219,38 @@ class JeuRepository extends ServiceEntityRepository
     }
 
     /**
+     * Jeu approuvé juste avant celui-ci (par id), pour la navigation séquentielle (héritage legacy).
+     */
+    public function trouverPrecedent(Jeu $jeu): ?Jeu
+    {
+        return $this->createQueryBuilder('j')
+            ->andWhere('j.statut = :statut')
+            ->andWhere('j.id < :id')
+            ->setParameter('statut', StatutJeu::Approuve)
+            ->setParameter('id', $jeu->getId())
+            ->orderBy('j.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Jeu approuvé juste après celui-ci (par id), pour la navigation séquentielle (héritage legacy).
+     */
+    public function trouverSuivant(Jeu $jeu): ?Jeu
+    {
+        return $this->createQueryBuilder('j')
+            ->andWhere('j.statut = :statut')
+            ->andWhere('j.id > :id')
+            ->setParameter('statut', StatutJeu::Approuve)
+            ->setParameter('id', $jeu->getId())
+            ->orderBy('j.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * @return list<Jeu>
      */
     public function trouverSimilaires(Jeu $jeu, int $limite = 4): array
@@ -364,14 +396,66 @@ class JeuRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function compterApprouvesPar(Utilisateur $utilisateur): int
+    {
+        return (int) $this->createQueryBuilder('j')
+            ->select('COUNT(j.id)')
+            ->andWhere('j.createur = :utilisateur')
+            ->andWhere('j.statut = :statut')
+            ->setParameter('utilisateur', $utilisateur)
+            ->setParameter('statut', StatutJeu::Approuve)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /** @return list<Jeu> */
-    public function trouverApprouvesPar(Utilisateur $utilisateur, int $limite = 20): array
+    public function trouverApprouvesPar(Utilisateur $utilisateur, ?int $limite = null): array
+    {
+        $qb = $this->qbApprouvesPar($utilisateur);
+
+        if ($limite !== null) {
+            $qb->setMaxResults(max(1, min(200, $limite)));
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return array{jeux: list<Jeu>, total: int, page: int, pages: int, parPage: int}
+     */
+    public function trouverApprouvesParPagines(Utilisateur $utilisateur, int $page = 1, int $parPage = 12): array
+    {
+        $page = max(1, $page);
+        $parPage = max(1, min(48, $parPage));
+        $total = $this->compterApprouvesPar($utilisateur);
+        $pages = max(1, (int) ceil($total / $parPage));
+
+        if ($page > $pages) {
+            $page = $pages;
+        }
+
+        $jeux = $this->qbApprouvesPar($utilisateur)
+            ->setFirstResult(($page - 1) * $parPage)
+            ->setMaxResults($parPage)
+            ->getQuery()
+            ->getResult();
+
+        return [
+            'jeux' => $jeux,
+            'total' => $total,
+            'page' => $page,
+            'pages' => $pages,
+            'parPage' => $parPage,
+        ];
+    }
+
+    private function qbApprouvesPar(Utilisateur $utilisateur): \Doctrine\ORM\QueryBuilder
     {
         return $this->createQueryBuilder('j')
             ->leftJoin('j.categorie', 'categorie')->addSelect('categorie')
+            ->leftJoin('j.genres', 'genres')->addSelect('genres')
             ->andWhere('j.createur = :utilisateur')->setParameter('utilisateur', $utilisateur)
             ->andWhere('j.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
-            ->orderBy('j.creeLe', 'DESC')->setMaxResults(max(1, min(50, $limite)))
-            ->getQuery()->getResult();
+            ->orderBy('j.creeLe', 'DESC');
     }
 }

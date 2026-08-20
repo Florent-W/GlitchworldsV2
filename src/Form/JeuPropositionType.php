@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -80,6 +81,14 @@ final class JeuPropositionType extends AbstractType
                         mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
                         mimeTypesMessage: 'Choisis uniquement des images JPG, PNG, WebP ou GIF.',
                     )]),
+                ],
+            ])
+            ->add('videoBackground', UrlType::class, [
+                'label' => 'Vidéo en arrière-plan',
+                'required' => false,
+                'help' => 'URL YouTube de la vidéo utilisée en arrière-plan sur la fiche du jeu.',
+                'attr' => [
+                    'placeholder' => 'https://www.youtube.com/watch?v=...',
                 ],
             ])
             ->add('envoyer', SubmitType::class, [

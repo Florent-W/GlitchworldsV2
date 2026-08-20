@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Jeu;
 use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
+use App\Repository\AvisRepository;
 use App\Repository\JeuRepository;
 use App\Service\ProgressionUtilisateur;
 use App\Service\GestionSucces;
@@ -18,17 +19,22 @@ final class FavoriController extends AbstractController
 {
     use AnnonceSuccesTrait;
     #[Route('/favoris', name: 'app_favoris', methods: ['GET'])]
-    public function liste(Request $request, JeuRepository $jeuRepository): Response
+    public function liste(Request $request, JeuRepository $jeuRepository, AvisRepository $avisRepository): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
             throw $this->createAccessDeniedException();
         }
 
-        return $this->render('favori/index.html.twig', $jeuRepository->trouverFavorisPagines(
+        $pagination = $jeuRepository->trouverFavorisPagines(
             $utilisateur,
             $request->query->getInt('page', 1),
-        ));
+        );
+
+        return $this->render('favori/index.html.twig', [
+            ...$pagination,
+            'notesJeux' => $avisRepository->trouverResumesPour($pagination['jeux']),
+        ]);
     }
 
     #[Route('/jeu/{id}/favori', name: 'app_jeu_favori', requirements: ['id' => '\d+'], methods: ['POST'])]

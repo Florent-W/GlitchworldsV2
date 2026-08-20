@@ -35,6 +35,60 @@ final class ActualiteControllerTest extends WebTestCase
         $entityManager->flush();
     }
 
+    public function testLaNavigationSequentielleExposeLesLiensPrevNext(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+
+        $precedente = (new Actualite())
+            ->setTitre('Actualité précédente '.$suffixe)
+            ->setSlug('actualite-precedente-'.$suffixe)
+            ->setDescription('Article précédent.')
+            ->setContenu('Contenu.')
+            ->setCategorie(CategorieActualite::News)
+            ->setStatut(StatutActualite::Publiee);
+        $courante = (new Actualite())
+            ->setTitre('Actualité courante '.$suffixe)
+            ->setSlug('actualite-courante-'.$suffixe)
+            ->setDescription('Article courant.')
+            ->setContenu('Contenu.')
+            ->setCategorie(CategorieActualite::News)
+            ->setStatut(StatutActualite::Publiee);
+        $suivante = (new Actualite())
+            ->setTitre('Actualité suivante '.$suffixe)
+            ->setSlug('actualite-suivante-'.$suffixe)
+            ->setDescription('Article suivant.')
+            ->setContenu('Contenu.')
+            ->setCategorie(CategorieActualite::News)
+            ->setStatut(StatutActualite::Publiee);
+
+        $entityManager->persist($precedente);
+        $entityManager->persist($courante);
+        $entityManager->persist($suivante);
+        $entityManager->flush();
+
+        $crawler = $client->request('GET', sprintf('/actualite/%s-%d', $courante->getSlug(), $courante->getId()));
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-controller~="navigation-sequentielle"]');
+        self::assertCount(1, $crawler->filter('a[rel="prev"]'));
+        self::assertCount(1, $crawler->filter('a[rel="next"]'));
+        self::assertStringContainsString(
+            sprintf('/actualite/%s-%d', $precedente->getSlug(), $precedente->getId()),
+            (string) $crawler->filter('a[rel="prev"]')->attr('href')
+        );
+        self::assertStringContainsString(
+            sprintf('/actualite/%s-%d', $suivante->getSlug(), $suivante->getId()),
+            (string) $crawler->filter('a[rel="next"]')->attr('href')
+        );
+
+        $entityManager->remove($precedente);
+        $entityManager->remove($courante);
+        $entityManager->remove($suivante);
+        $entityManager->flush();
+    }
+
     public function testLaListeNExposeQueLesActualitesPubliees(): void
     {
         $client = self::createClient();

@@ -5,6 +5,7 @@ use App\Entity\JeuBibliotheque;
 use App\Entity\ListeJeux;
 use App\Entity\Utilisateur;
 use App\Enum\StatutBibliotheque;
+use App\Repository\AvisRepository;
 use App\Repository\JeuBibliothequeRepository;
 use App\Repository\ListeJeuxRepository;
 use App\Repository\SuccesRepository;
@@ -21,12 +22,25 @@ final class MesJeuxController extends AbstractController
 {
     use AnnonceSuccesTrait;
     #[Route('', name: 'app_mes_jeux', methods: ['GET'])]
-    public function index(JeuBibliothequeRepository $bibliotheque, ListeJeuxRepository $listes, SuccesRepository $succes, SuccesUtilisateurRepository $deblocages, GestionSucces $gestionSucces): Response
+    public function index(JeuBibliothequeRepository $bibliotheque, ListeJeuxRepository $listes, SuccesRepository $succes, SuccesUtilisateurRepository $deblocages, GestionSucces $gestionSucces, AvisRepository $avisRepository): Response
     {
         $utilisateur = $this->membre();
         $this->annoncerSucces($gestionSucces->verifier($utilisateur));
         $acquis = $deblocages->trouverPour($utilisateur);
-        return $this->render('mes_jeux/index.html.twig', ['bibliotheque' => $bibliotheque->trouverPour($utilisateur), 'listes' => $listes->trouverPour($utilisateur), 'succes' => $succes->findAll(), 'succesAcquis' => $acquis, 'codesAcquis' => array_map(static fn ($d) => $d->getSucces()?->getCode(), $acquis), 'statuts' => StatutBibliotheque::cases()]);
+        $bibliothequeJeux = $bibliotheque->trouverPour($utilisateur);
+
+        return $this->render('mes_jeux/index.html.twig', [
+            'bibliotheque' => $bibliothequeJeux,
+            'notesJeux' => $avisRepository->trouverResumesPour(array_values(array_filter(
+                array_map(static fn ($entree) => $entree->getJeu(), $bibliothequeJeux),
+                static fn ($jeu) => $jeu !== null,
+            ))),
+            'listes' => $listes->trouverPour($utilisateur),
+            'succes' => $succes->findAll(),
+            'succesAcquis' => $acquis,
+            'codesAcquis' => array_map(static fn ($d) => $d->getSucces()?->getCode(), $acquis),
+            'statuts' => StatutBibliotheque::cases(),
+        ]);
     }
 
     #[Route('/jeu/{id}', name: 'app_mes_jeux_ajouter', requirements: ['id' => '\d+'], methods: ['POST'])]

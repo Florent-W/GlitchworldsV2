@@ -1,0 +1,14 @@
+{% if jeu.miniature starts with 'miniature.' %}
+    <div class="gw-game-cover-wrap{% if variante|default('contenu') == 'hero' %} gw-game-cover-wrap--hero{% endif %}{% if classes|default('') %} {{ classes }}{% endif %}">
+        <span class="gw-game-cover">
+            <img
+                class="gw-game-cover__img"
+                src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}"
+                alt="Miniature de {{ jeu.nom }}"
+                loading="{{ loading|default('lazy') }}"
+                {% if fetchpriority|default(false) %}fetchpriority="high"{% endif %}
+                decoding="async"
+            >
+        </span>
+    </div>
+{% endif %}

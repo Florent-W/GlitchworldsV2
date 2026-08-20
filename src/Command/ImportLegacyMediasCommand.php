@@ -113,6 +113,7 @@ final class ImportLegacyMediasCommand extends Command
             $racineLegacy.'/portfoliov1/Jeux',
             $racineLegacy.'/images',
             $racineLegacy.'/Glitchworld/images',
+            $this->projectDir.'/images',
             $this->projectDir.'/Articles',
             $this->projectDir.'/Jeux',
         ];

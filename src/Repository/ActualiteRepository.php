@@ -105,4 +105,32 @@ final class ActualiteRepository extends ServiceEntityRepository
             ->setParameter('recherche', '%'.mb_strtolower(trim($recherche)).'%')
             ->getQuery()->getSingleScalarResult();
     }
+
+    /** Actualité publiée juste avant celle-ci (par id), pour la navigation séquentielle. */
+    public function trouverPrecedente(Actualite $actualite): ?Actualite
+    {
+        return $this->createQueryBuilder('actualite')
+            ->andWhere('actualite.statut = :statut')
+            ->andWhere('actualite.id < :id')
+            ->setParameter('statut', StatutActualite::Publiee)
+            ->setParameter('id', $actualite->getId())
+            ->orderBy('actualite.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /** Actualité publiée juste après celle-ci (par id), pour la navigation séquentielle. */
+    public function trouverSuivante(Actualite $actualite): ?Actualite
+    {
+        return $this->createQueryBuilder('actualite')
+            ->andWhere('actualite.statut = :statut')
+            ->andWhere('actualite.id > :id')
+            ->setParameter('statut', StatutActualite::Publiee)
+            ->setParameter('id', $actualite->getId())
+            ->orderBy('actualite.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

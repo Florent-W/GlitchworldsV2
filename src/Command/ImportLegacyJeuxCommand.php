@@ -81,7 +81,7 @@ final class ImportLegacyJeuxCommand extends Command
         );
 
         $avis = $legacy->fetchAllAssociative(
-            'SELECT id, contenu, id_jeu, date_avis, note FROM avis ORDER BY id ASC'
+            'SELECT id, contenu, id_jeu, id_utilisateur, date_avis, note FROM avis ORDER BY id ASC'
         );
 
         $utilisateurs = $legacy->fetchAllAssociative(
@@ -94,7 +94,7 @@ final class ImportLegacyJeuxCommand extends Command
 
         $rows = $legacy->fetchAllAssociative(
             'SELECT j.id, j.nom, j.contenu, j.nom_miniature, j.date_sortie, j.url, j.nom_banniere, j.approuver, j.description,
-                    j.id_categorie, u.pseudo AS developpeur
+                    j.id_categorie, j.id_auteur_presentation, u.pseudo AS developpeur
              FROM jeu j
              LEFT JOIN utilisateurs u ON u.id = j.id_auteur_presentation
              ORDER BY j.id ASC'
@@ -193,6 +193,9 @@ final class ImportLegacyJeuxCommand extends Command
                 'cree_le' => $now,
                 'modifie_le' => $now,
             ];
+            if ($item['createur_id'] !== null && (bool) $this->connection->fetchOne('SELECT 1 FROM utilisateur WHERE id = ?', [$item['createur_id']])) {
+                $payload['createur_id'] = $item['createur_id'];
+            }
 
             $exists = (bool) $this->connection->fetchOne('SELECT 1 FROM jeu WHERE id = ?', [$item['id']]);
 
@@ -251,6 +254,7 @@ final class ImportLegacyJeuxCommand extends Command
         $prepares = [];
         foreach ($lignes as $ligne) {
             $categorieId = $ligne['id_categorie'] ?? null;
+            $createurId = $ligne['id_auteur_presentation'] ?? null;
             $prepares[] = [
                 'id' => (int) $ligne['id'],
                 'nom' => (string) $ligne['nom'],
@@ -262,6 +266,7 @@ final class ImportLegacyJeuxCommand extends Command
                 'miniature' => $this->chaineOuNull($ligne['nom_miniature'] ?? null),
                 'banniere' => $this->chaineOuNull($ligne['nom_banniere'] ?? null),
                 'developpeur' => $this->chaineOuNull($ligne['developpeur'] ?? null),
+                'createur_id' => $createurId !== null && $createurId !== '' ? (int) $createurId : null,
                 'categorie_id' => $categorieId !== null && $categorieId !== '' ? (int) $categorieId : null,
             ];
         }
@@ -526,7 +531,7 @@ final class ImportLegacyJeuxCommand extends Command
     }
 
     /**
-     * @param list<array{id: int|string, contenu: string, id_jeu: int|string, date_avis: string, note: float|string}> $avis
+     * @param list<array{id: int|string, contenu: string, id_jeu: int|string, id_utilisateur: int|string|null, date_avis: string, note: float|string}> $avis
      */
     private function importerAvis(array $avis): void
     {
@@ -544,6 +549,10 @@ final class ImportLegacyJeuxCommand extends Command
                 'note' => $item['note'],
                 'date_avis' => $item['date_avis'],
             ];
+            $auteurId = $item['id_utilisateur'] ?? null;
+            if ($auteurId !== null && $auteurId !== '' && (bool) $this->connection->fetchOne('SELECT 1 FROM utilisateur WHERE id = ?', [(int) $auteurId])) {
+                $payload['auteur_id'] = (int) $auteurId;
+            }
 
             $exists = (bool) $this->connection->fetchOne('SELECT 1 FROM avis WHERE id = ?', [$id]);
             if ($exists) {

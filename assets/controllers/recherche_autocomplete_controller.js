@@ -108,6 +108,7 @@ export default class extends Controller {
         this.resultatsTarget.append(complet);
         this.resultatsTarget.classList.remove('d-none');
         this.champTarget.setAttribute('aria-expanded', 'true');
+        this.element.classList.add('is-open');
     }
 
     afficherRecentes() {
@@ -145,6 +146,7 @@ export default class extends Controller {
 
         this.resultatsTarget.classList.remove('d-none');
         this.champTarget.setAttribute('aria-expanded', 'true');
+        this.element.classList.add('is-open');
     }
 
     creerEntete(libelle) {

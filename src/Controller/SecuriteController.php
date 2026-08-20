@@ -24,6 +24,8 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -108,6 +110,44 @@ final class SecuriteController extends AbstractController
         return $this->render('securite/modifier_compte.html.twig', [
             'formulaire' => $formulaire,
         ]);
+    }
+
+    #[Route('/mon-compte/avatar', name: 'app_compte_avatar', methods: ['POST'])]
+    public function modifierAvatar(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ImageProfilUploader $uploader,
+        ValidatorInterface $validator,
+    ): Response {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+        if (!$this->isCsrfTokenValid('avatar-profil', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $fichier = $request->files->get('avatar');
+        if (!$fichier instanceof UploadedFile) {
+            $this->addFlash('danger', 'Aucune image sélectionnée.');
+
+            return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
+        }
+
+        $violations = $validator->validate($fichier, [
+            new File(maxSize: '5M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp']),
+        ]);
+        if (\count($violations) > 0) {
+            $this->addFlash('danger', (string) $violations->get(0)->getMessage());
+
+            return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
+        }
+
+        $utilisateur->setAvatar($uploader->enregistrer($fichier, $utilisateur, 'avatar'));
+        $entityManager->flush();
+        $this->addFlash('success', 'Ta photo de profil a été mise à jour.');
+
+        return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
     }
 
     #[Route('/mon-compte/mot-de-passe', name: 'app_compte_mot_de_passe')]

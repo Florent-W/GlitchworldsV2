@@ -84,6 +84,10 @@ class Jeu
     #[ORM\Column(enumType: StatutJeu::class)]
     private StatutJeu $statut = StatutJeu::Brouillon;
 
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Url(message: 'L’URL de la vidéo de fond n’est pas valide.')]
+    private ?string $videoBackground = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $miniature = null;
 
@@ -317,6 +321,18 @@ class Jeu
     public function setStatut(StatutJeu $statut): static
     {
         $this->statut = $statut;
+
+        return $this;
+    }
+
+    public function getVideoBackground(): ?string
+    {
+        return $this->videoBackground;
+    }
+
+    public function setVideoBackground(?string $videoBackground): static
+    {
+        $this->videoBackground = $videoBackground;
 
         return $this;
     }

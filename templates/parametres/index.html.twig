@@ -4,7 +4,7 @@
 {% block robots_meta %}noindex,nofollow{% endblock %}
 
 {% block body %}
-<section class="gw-settings" data-controller="theme preferences" data-preferences-sync-url="{{ path('app_parametres_preferences') }}" data-preferences-theme="{{ preferences.theme }}" data-preferences-reduction="{{ preferences.reductionAnimations ? 'true' : 'false' }}" data-preferences-notifications='{{ preferences.notifications|json_encode|raw }}' data-preferences-profil-prive="{{ preferences.profilPrive ? 'true' : 'false' }}" data-preferences-contraste="{{ preferences.contrasteRenforce ? 'true' : 'false' }}" data-preferences-taille="{{ preferences.tailleTexte }}">
+<section class="gw-settings" data-controller="theme preferences" data-preferences-sync-url="{{ path('app_parametres_preferences') }}" data-preferences-theme="{{ preferences.theme }}" data-preferences-reduction="{{ preferences.reductionAnimations ? 'true' : 'false' }}" data-preferences-video-background="{{ preferences.videoBackgroundActive }}" data-preferences-video-background-sound="{{ preferences.videoBackgroundSoundActive }}" data-preferences-notifications='{{ preferences.notifications|json_encode|raw }}' data-preferences-profil-prive="{{ preferences.profilPrive ? 'true' : 'false' }}" data-preferences-contraste="{{ preferences.contrasteRenforce ? 'true' : 'false' }}" data-preferences-taille="{{ preferences.tailleTexte }}">
     <header class="gw-page-heading mb-4">
         <div>
             <span class="gw-eyebrow"><i class="bi bi-gear-fill" aria-hidden="true"></i> Mon espace</span>
@@ -118,6 +118,21 @@
                         <div class="flex-grow-1"><label class="form-check-label fw-semibold" for="reduction-mouvement">Réduire les animations</label><small class="d-block text-secondary">Désactive les transitions et effets de déplacement.</small></div>
                         <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="reduction-mouvement" data-preferences-target="mouvement" data-action="preferences#changerMouvement">
                     </div>
+                    <div class="form-check form-switch d-flex align-items-start gap-3 ps-0">
+    <div class="flex-grow-1">
+        <label class="form-check-label fw-semibold" for="video-background">Vidéos en arrière-plan</label>
+        <small class="d-block text-secondary">Affiche les vidéos de fond disponibles sur les fiches de jeux.</small>
+    </div>
+    <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="video-background" data-preferences-target="videoBackground" data-action="preferences#changerVideoBackground">
+    </div>
+
+    <div class="form-check form-switch d-flex align-items-start gap-3 ps-0">
+        <div class="flex-grow-1">
+            <label class="form-check-label fw-semibold" for="video-background-sound">Son des vidéos en arrière-plan</label>
+            <small class="d-block text-secondary">Active le son des vidéos de fond.</small>
+        </div>
+        <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="video-background-sound" data-preferences-target="videoBackgroundSound" data-action="preferences#changerVideoBackgroundSound">
+    </div>
                     <div class="form-check form-switch d-flex align-items-start gap-3 ps-0">
                         <div class="flex-grow-1"><label class="form-check-label fw-semibold" for="contraste-renforce">Contraste renforcé</label><small class="d-block text-secondary">Améliore la lisibilité sur les éléments faibles.</small></div>
                         <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="contraste-renforce" data-preferences-target="contraste" data-action="preferences#changerContraste">

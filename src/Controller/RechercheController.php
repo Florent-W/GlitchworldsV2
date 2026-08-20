@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\ActualiteRepository;
+use App\Repository\AvisRepository;
 use App\Repository\JeuRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\CategorieJeuRepository;
@@ -21,7 +22,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class RechercheController extends AbstractController
 {
     #[Route('/recherche', name: 'app_recherche', methods: ['GET'])]
-    public function rechercher(Request $request, JeuRepository $jeuRepository, ActualiteRepository $actualiteRepository, UtilisateurRepository $utilisateurRepository, CategorieJeuRepository $categorieRepository, PlateformeRepository $plateformeRepository, GenreRepository $genreRepository, LangueRepository $langueRepository): Response
+    public function rechercher(Request $request, JeuRepository $jeuRepository, ActualiteRepository $actualiteRepository, UtilisateurRepository $utilisateurRepository, CategorieJeuRepository $categorieRepository, PlateformeRepository $plateformeRepository, GenreRepository $genreRepository, LangueRepository $langueRepository, AvisRepository $avisRepository): Response
     {
         $recherche = trim($request->query->getString('recherche'));
         $type = $request->query->getString('type');
@@ -60,6 +61,7 @@ final class RechercheController extends AbstractController
             'type' => $type, 'categorie' => $categorie, 'plateforme' => $plateforme, 'genre' => $genre, 'langue' => $langue,
             'annee' => $annee, 'mesFavoris' => $mesFavoris, 'tri' => $tri,
             'jeux' => $paginationJeux['jeux'], 'totalJeux' => $paginationJeux['total'], 'actualites' => $actualites, 'membres' => $membres,
+            'notesJeux' => $avisRepository->trouverResumesPour($paginationJeux['jeux']),
             'totalActualites' => $totalActualites, 'totalMembres' => $totalMembres,
             'categories' => $categorieRepository->trouverToutes(), 'plateformes' => $plateformeRepository->trouverToutes(), 'genres' => $genreRepository->trouverTous(), 'langues' => $langueRepository->trouverToutes(),
             'annees' => $jeuRepository->listerAnneesSortie(), 'tris' => TriJeu::cases(),

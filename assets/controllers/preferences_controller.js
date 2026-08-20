@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['mouvement', 'contraste', 'taille', 'retourHaut', 'notificationsEmail', 'notificationsMessages', 'notificationsCommunaute', 'profilPrive'];
+static targets = ['mouvement', 'videoBackground', 'videoBackgroundSound', 'contraste', 'taille', 'retourHaut', 'notificationsEmail', 'notificationsMessages', 'notificationsCommunaute', 'profilPrive'];
 
     connect() {
         this.syncUrl = this.element.dataset.preferencesSyncUrl || null;
@@ -37,6 +37,9 @@ export default class extends Controller {
             : valeur;
         this.appliquerMouvement(this.mouvementTarget.checked, false);
 
+        this.videoBackgroundTarget.checked = this.element.dataset.preferencesVideoBackground === '1';
+        this.videoBackgroundSoundTarget.checked = this.element.dataset.preferencesVideoBackgroundSound === '1';
+
         const contraste = this.element.dataset.preferencesContraste === 'true';
         this.contrasteTarget.checked = contraste;
         this.appliquerContraste(contraste, false);
@@ -63,6 +66,14 @@ export default class extends Controller {
     changerMouvement() {
         this.appliquerMouvement(this.mouvementTarget.checked, true);
         this.sauvegarder({ reductionAnimations: this.mouvementTarget.checked });
+    }
+
+    changerVideoBackground() {
+        this.sauvegarder({ videoBackgroundActive: this.videoBackgroundTarget.checked });
+    }
+
+    changerVideoBackgroundSound() {
+        this.sauvegarder({ videoBackgroundSoundActive: this.videoBackgroundSoundTarget.checked });
     }
 
     changerContraste() {

@@ -25,6 +25,52 @@ final class ProfilControllerTest extends WebTestCase
         $entityManager->remove($membre); $entityManager->flush();
     }
 
+    public function testUnMembreVoitUnBoutonPourChangerSonAvatarSurSonProfil(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $membre = (new Utilisateur())->setPseudo('AvatarProfil'.$suffixe)->setEmail('avatar-'.$suffixe.'@test.local');
+        $entityManager->persist($membre);
+        $entityManager->flush();
+        $membreId = $membre->getId();
+
+        $client->loginUser($membre);
+        $client->request('GET', '/membre/'.$membreId);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-controller="avatar-profil"]');
+        self::assertSelectorExists('form[action="/mon-compte/avatar"] input[name="avatar"]');
+        self::assertSelectorExists('button[aria-label="Changer la photo de profil"]');
+
+        $entityManager->remove($membre);
+        $entityManager->flush();
+    }
+
+    public function testUnMembreNeVoitPasLeChangementDAvatarSurLeProfilDUnAutre(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $membre = (new Utilisateur())->setPseudo('Cible'.$suffixe)->setEmail('cible-'.$suffixe.'@test.local');
+        $visiteur = (new Utilisateur())->setPseudo('Visiteur'.$suffixe)->setEmail('visiteur-'.$suffixe.'@test.local');
+        $entityManager->persist($membre);
+        $entityManager->persist($visiteur);
+        $entityManager->flush();
+        $membreId = $membre->getId();
+
+        $client->loginUser($visiteur);
+        $client->request('GET', '/membre/'.$membreId);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('[data-controller="avatar-profil"]');
+        self::assertSelectorNotExists('form[action="/mon-compte/avatar"]');
+
+        $entityManager->remove($visiteur);
+        $entityManager->remove($membre);
+        $entityManager->flush();
+    }
+
     public function testUnMembrePeutSuivrePuisNePlusSuivreUnAutreMembre(): void
     {
         $client = self::createClient();
@@ -49,6 +95,46 @@ final class ProfilControllerTest extends WebTestCase
 
         $entityManager->remove($entityManager->find(Utilisateur::class, $abonneId));
         $entityManager->remove($entityManager->find(Utilisateur::class, $suiviId));
+        $entityManager->flush();
+    }
+
+    public function testLeProfilAfficheLesListesDUnAutreMembre(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $auteur = (new Utilisateur())->setPseudo('Listes'.$suffixe)->setEmail('listes-'.$suffixe.'@test.local');
+        $visiteur = (new Utilisateur())->setPseudo('VisiteurListes'.$suffixe)->setEmail('visiteur-listes-'.$suffixe.'@test.local');
+        $jeu = (new \App\Entity\Jeu())
+            ->setNom('Jeu de liste publique')
+            ->setSlug('jeu-liste-publique-'.$suffixe)
+            ->setDescription('Visible dans une liste de profil.')
+            ->setStatut(\App\Enum\StatutJeu::Approuve);
+        $liste = (new \App\Entity\ListeJeux())
+            ->setUtilisateur($auteur)
+            ->setNom('Fangames RPG')
+            ->setDescription('Mes recommandations');
+        $liste->ajouterJeu($jeu);
+
+        $entityManager->persist($auteur);
+        $entityManager->persist($visiteur);
+        $entityManager->persist($jeu);
+        $entityManager->persist($liste);
+        $entityManager->flush();
+        $auteurId = $auteur->getId();
+
+        $client->loginUser($visiteur);
+        $client->request('GET', '/membre/'.$auteurId.'?section=listes');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h2', 'Listes de jeux');
+        self::assertSelectorTextContains('body', 'Fangames RPG');
+        self::assertSelectorTextContains('body', 'Jeu de liste publique');
+
+        $entityManager->remove($liste);
+        $entityManager->remove($jeu);
+        $entityManager->remove($visiteur);
+        $entityManager->remove($auteur);
         $entityManager->flush();
     }
 }
