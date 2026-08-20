@@ -3,15 +3,13 @@
 namespace App\Form;
 
 use App\Entity\Actualite;
-use App\Enum\CategorieActualite;
-use App\Enum\StatutActualite;
 use App\Entity\Jeu;
+use App\Enum\CategorieActualite;
 use App\Enum\StatutJeu;
 use App\Repository\JeuRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -19,7 +17,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 
-final class ActualiteType extends AbstractType
+final class ActualitePropositionType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -27,7 +25,7 @@ final class ActualiteType extends AbstractType
             ->add('titre', null, ['label' => 'Titre'])
             ->add('description', TextareaType::class, [
                 'label' => 'Description courte',
-                'help' => 'Utilisée dans la liste et pour le référencement.',
+                'help' => 'Utilisée dans la liste et pour le référencement (160 caractères maximum).',
                 'attr' => ['rows' => 3, 'maxlength' => 160],
             ])
             ->add('contenu', TextareaType::class, [
@@ -73,23 +71,11 @@ final class ActualiteType extends AbstractType
             ->add('categorie', EnumType::class, [
                 'class' => CategorieActualite::class,
                 'choice_label' => static fn (CategorieActualite $categorie): string => $categorie->label(),
+                'label' => 'Catégorie',
             ])
-            ->add('statut', EnumType::class, [
-                'class' => StatutActualite::class,
-                'choice_label' => static fn (StatutActualite $statut): string => match ($statut) {
-                    StatutActualite::Brouillon => 'Brouillon',
-                    StatutActualite::EnAttente => 'En attente',
-                    StatutActualite::Publiee => 'Publiée',
-                },
-            ])
-            ->add('miseEnAvant', CheckboxType::class, [
-                'label' => 'Mettre en avant sur l’accueil',
-                'required' => false,
-                'help' => 'Les actualités mises en avant apparaissent avant les dernières publications.',
-            ])
-            ->add('enregistrer', SubmitType::class, [
+            ->add('envoyer', SubmitType::class, [
                 'label' => $options['bouton_libelle'],
-                'attr' => ['class' => 'btn btn-primary'],
+                'attr' => ['class' => 'btn btn-primary btn-lg'],
             ]);
     }
 
@@ -97,7 +83,7 @@ final class ActualiteType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Actualite::class,
-            'bouton_libelle' => 'Enregistrer',
+            'bouton_libelle' => 'Envoyer pour validation',
         ]);
         $resolver->setAllowedTypes('bouton_libelle', 'string');
     }

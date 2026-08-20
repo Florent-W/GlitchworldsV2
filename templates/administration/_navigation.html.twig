@@ -3,6 +3,7 @@
     {% set liens = [
         {route: 'app_administration_tableau_de_bord', prefixe: 'app_administration_tableau', icon: 'speedometer2', label: 'Tableau de bord'},
         {route: 'app_moderation_jeux', prefixe: 'app_moderation_jeu', icon: 'controller', label: 'Jeux'},
+        {route: 'app_moderation_actualites', prefixe: 'app_moderation_actualite', icon: 'newspaper', label: 'Propositions actualités'},
         {route: 'app_administration_membres', prefixe: 'app_administration_membres', icon: 'people-fill', label: 'Membres'},
         {route: 'app_moderation_commentaires', prefixe: 'app_moderation_commentaires', icon: 'chat-dots-fill', label: 'Commentaires'},
         {route: 'app_administration_actualites_liste', prefixe: 'app_administration_actualites', icon: 'newspaper', label: 'Actualités'},
@@ -13,6 +14,7 @@
         <a class="gw-admin-nav__link{{ route starts with lien.prefixe ? ' is-active' : '' }}" href="{{ path(lien.route, lien.params ?? {}) }}">
             <i class="bi bi-{{ lien.icon }}" aria-hidden="true"></i><span>{{ lien.label }}</span>
             {% if lien.label == 'Jeux' and jeuxEnAttenteNavigation is defined and jeuxEnAttenteNavigation > 0 %}<span class="badge text-bg-warning ms-auto">{{ jeuxEnAttenteNavigation }}</span>{% endif %}
+            {% if lien.label == 'Propositions actualités' and actualitesEnAttenteNavigation is defined and actualitesEnAttenteNavigation > 0 %}<span class="badge text-bg-warning ms-auto">{{ actualitesEnAttenteNavigation }}</span>{% endif %}
         </a>
     {% endfor %}
     <hr class="my-2">

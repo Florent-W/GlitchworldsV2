@@ -131,4 +131,38 @@ final class ActualiteControllerTest extends WebTestCase
         $entityManager->remove($brouillon);
         $entityManager->flush();
     }
+
+    public function testLaRouteGlitchsEstAccessibleDepuisLaNavigation(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $glitch = (new Actualite())
+            ->setTitre('Glitch public '.$suffixe)
+            ->setSlug('glitch-public-'.$suffixe)
+            ->setDescription('Un glitch visible dans la section dédiée.')
+            ->setCategorie(CategorieActualite::Glitchs)
+            ->setStatut(StatutActualite::Publiee);
+        $news = (new Actualite())
+            ->setTitre('News publique '.$suffixe)
+            ->setSlug('news-publique-'.$suffixe)
+            ->setDescription('Une news hors section glitchs.')
+            ->setCategorie(CategorieActualite::News)
+            ->setStatut(StatutActualite::Publiee);
+
+        $entityManager->persist($glitch);
+        $entityManager->persist($news);
+        $entityManager->flush();
+
+        $client->request('GET', '/actualites/glitchs');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Glitchs');
+        self::assertSelectorTextContains('body', 'Glitch public '.$suffixe);
+        self::assertSelectorTextNotContains('body', 'News publique '.$suffixe);
+        self::assertSelectorExists('a.gw-rail__item[href="/actualites/glitchs"]');
+
+        $entityManager->remove($glitch);
+        $entityManager->remove($news);
+        $entityManager->flush();
+    }
 }

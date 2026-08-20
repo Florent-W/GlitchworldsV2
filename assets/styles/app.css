@@ -497,6 +497,78 @@ body {
     backdrop-filter: blur(10px);
 }
 
+.gw-rail__viewport {
+    display: contents;
+}
+
+.gw-rail__suite {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .gw-rail {
+        max-height: calc(100dvh - 7.5rem);
+        padding-bottom: 0.45rem;
+    }
+
+    .gw-rail__viewport {
+        display: block;
+        position: relative;
+        max-height: calc(100dvh - 8.5rem);
+    }
+
+    .gw-rail__list {
+        max-height: calc(100dvh - 8.5rem);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        padding-bottom: 0.15rem;
+    }
+
+    .gw-rail__list::-webkit-scrollbar {
+        display: none;
+    }
+
+    .gw-rail__suite {
+        position: absolute;
+        left: 0;
+        right: 0;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        border: 0;
+        cursor: pointer;
+        color: var(--gw-primary);
+    }
+
+    .gw-rail__suite--haut {
+        top: 0;
+        align-items: flex-start;
+        padding: 0.15rem 0 1.4rem;
+        background: linear-gradient(to bottom, var(--gw-surface) 58%, transparent);
+    }
+
+    .gw-rail__suite--bas {
+        bottom: 0;
+        align-items: flex-end;
+        padding: 1.4rem 0 0.15rem;
+        background: linear-gradient(to top, var(--gw-surface) 58%, transparent);
+    }
+
+    .gw-rail__suite[hidden] {
+        display: none;
+    }
+
+    .gw-rail__suite i {
+        font-size: 1.15rem;
+        line-height: 1;
+    }
+
+    .gw-rail__suite:hover {
+        color: var(--gw-primary-dark, var(--gw-primary));
+    }
+}
+
 .gw-rail__list {
     display: flex;
     flex-direction: column;
@@ -1987,6 +2059,113 @@ form.is-open.position-relative {
 .gw-similar-card__visual { position: relative; }
 .gw-game-card__visual { position: relative; overflow: hidden; }
 
+@media (min-width: 768px) {
+    .gw-disposition--double .gw-collection.row > .col {
+        flex: 0 0 50%;
+        max-width: 50%;
+        width: 50%;
+    }
+}
+
+.gw-disposition--double {
+    --gw-double-thumb-w: clamp(104px, 15vw, 136px);
+    --gw-double-thumb-h: clamp(136px, 22vw, 172px);
+}
+
+.gw-disposition--double .gw-similar-card,
+.gw-disposition--double .gw-game-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gw-disposition--double .gw-similar-card:hover,
+.gw-disposition--double .gw-game-card:hover {
+    transform: none;
+}
+
+.gw-disposition--double .gw-similar-card__visual,
+.gw-disposition--double .gw-game-card__visual {
+    flex: 0 0 var(--gw-double-thumb-w);
+    width: var(--gw-double-thumb-w);
+    min-height: 0;
+    height: auto;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0;
+    border-radius: var(--gw-radius-md) 0 0 var(--gw-radius-md);
+}
+
+.gw-disposition--double .gw-similar-card__visual:has(img),
+.gw-disposition--double .gw-game-card__visual:has(img) {
+    background: transparent;
+}
+
+.gw-disposition--double .gw-similar-card__visual:not(:has(img)),
+.gw-disposition--double .gw-game-card__visual:not(:has(img)) {
+    min-height: var(--gw-double-thumb-h);
+}
+
+.gw-disposition--double .gw-similar-card__visual img,
+.gw-disposition--double .gw-game-card__visual img {
+    display: block;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100%;
+    max-height: var(--gw-double-thumb-h);
+    object-fit: contain !important;
+    object-position: center;
+}
+
+.gw-disposition--double .gw-similar-card > .p-3,
+.gw-disposition--double .gw-game-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.75rem 0.75rem 0.75rem 0;
+}
+
+.gw-disposition--double .gw-game-card__title {
+    font-size: 0.925rem;
+}
+
+.gw-disposition--double .gw-game-card__developer,
+.gw-disposition--double .gw-game-card__description {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.gw-disposition--double .gw-article-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gw-disposition--double .gw-article-card .card-img-top {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: var(--gw-double-thumb-w);
+    height: auto !important;
+    max-height: var(--gw-double-thumb-h);
+    min-height: 0;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 0;
+    align-self: center;
+}
+
+.gw-disposition--double .gw-article-card .card-body {
+    flex: 1;
+    min-width: 0;
+    padding: 0.75rem 0.75rem 0.75rem 0;
+}
+
 .gw-disposition--liste .gw-collection--jeux .col,
 .gw-disposition--liste .gw-collection--actualites .col {
     flex: 0 0 100%;
@@ -2116,13 +2295,15 @@ form.is-open.position-relative {
 /* --- Navigation Jeu précédent / suivant (héritage legacy) ------- */
 .gw-jeu-nav {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 1rem;
 }
 .gw-jeu-nav__link {
     display: flex;
     align-items: center;
     gap: 0.9rem;
+    min-width: 0;
+    overflow: hidden;
     padding: 0.75rem;
     border: 1px solid var(--gw-border);
     border-radius: var(--gw-radius-md);
@@ -2155,9 +2336,22 @@ form.is-open.position-relative {
     background: linear-gradient(135deg, var(--gw-primary-dark), var(--gw-secondary));
 }
 .gw-jeu-nav__visual img { width: 100%; height: 100%; object-fit: cover; }
-.gw-jeu-nav__texte { display: flex; min-width: 0; flex-direction: column; gap: 0.15rem; }
+.gw-jeu-nav__texte {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 0.15rem;
+    overflow: hidden;
+}
 .gw-jeu-nav__sens { color: var(--gw-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-.gw-jeu-nav__titre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gw-jeu-nav__titre {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 @media (max-width: 575.98px) {
     .gw-jeu-nav { grid-template-columns: 1fr; }

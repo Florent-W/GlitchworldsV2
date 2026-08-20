@@ -46,6 +46,9 @@ class Actualite
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $miniature = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $banniere = null;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Utilisateur $auteur = null;
@@ -83,6 +86,8 @@ class Actualite
     public function setStatut(StatutActualite $statut): static { $this->statut = $statut; return $this; }
     public function getMiniature(): ?string { return $this->miniature; }
     public function setMiniature(?string $miniature): static { $this->miniature = $miniature; return $this; }
+    public function getBanniere(): ?string { return $this->banniere; }
+    public function setBanniere(?string $banniere): static { $this->banniere = $banniere; return $this; }
     public function getAuteur(): ?Utilisateur { return $this->auteur; }
     public function setAuteur(?Utilisateur $auteur): static { $this->auteur = $auteur; return $this; }
     /** @return Collection<int, Jeu> */

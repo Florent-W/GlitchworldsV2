@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\CommentaireActualite;
 use App\Entity\CommentaireJeu;
+use App\Enum\CategorieActualite;
 use App\Enum\StatutJeu;
 use App\Repository\AvisRepository;
 use App\Repository\CommentaireJeuRepository;
@@ -35,6 +36,7 @@ final class HomeController extends AbstractController
             'populaires' => $populaires,
             'notesJeux' => $avisRepository->trouverResumesPour([...$populaires, ...$nouveautes]),
             'dernieresActualites' => $actualiteRepository->trouverDernieres(),
+            'derniersGlitchs' => $actualiteRepository->trouverDernieres(4, CategorieActualite::Glitchs),
             'actualitesMisesEnAvant' => $actualiteRepository->trouverMisesEnAvant(),
             'activiteRecente' => $this->construireActiviteRecente(
                 $commentaireJeuRepository->trouverDerniersPublics(6),

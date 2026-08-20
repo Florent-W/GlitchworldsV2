@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Form\BiographieProfilType;
 use App\Repository\AvisRepository;
 use App\Repository\JeuRepository;
 use App\Repository\ListeJeuxRepository;
@@ -54,9 +55,16 @@ final class ProfilController extends AbstractController
             : ['jeux' => [], 'total' => $nombreJeuxPublies, 'page' => 1, 'pages' => 1, 'parPage' => 12];
         $jeuxPublies = $jeuxPagination['jeux'];
 
+        $formulaireBiographie = null;
+        $utilisateur = $this->getUser();
+        if ($utilisateur instanceof Utilisateur && $utilisateur === $membre) {
+            $formulaireBiographie = $this->createForm(BiographieProfilType::class, $membre)->createView();
+        }
+
         return $this->render('profil/voir.html.twig', [
             'membre' => $membre,
             'section' => $section,
+            'formulaireBiographie' => $formulaireBiographie,
             'publications' => $publications->trouverPourAuteur($membre),
             'nombreJeuxPublies' => $nombreJeuxPublies,
             'jeux' => $jeuxPublies,
@@ -93,5 +101,24 @@ final class ProfilController extends AbstractController
         }
 
         return $this->redirectToRoute('app_profil', ['id' => $membre->getId()]);
+    }
+
+    #[Route('/membre/{id}/biographie', name: 'app_profil_biographie', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function modifierBiographie(Utilisateur $membre, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur || $utilisateur !== $membre) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $formulaire = $this->createForm(BiographieProfilType::class, $membre);
+        $formulaire->handleRequest($request);
+
+        if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Ta présentation a été mise à jour.');
+        }
+
+        return $this->redirectToRoute('app_profil', ['id' => $membre->getId(), 'section' => 'apropos']);
     }
 }

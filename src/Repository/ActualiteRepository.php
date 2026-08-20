@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Actualite;
+use App\Entity\Utilisateur;
 use App\Enum\CategorieActualite;
 use App\Enum\StatutActualite;
 use App\Entity\Jeu;
@@ -56,13 +57,18 @@ final class ActualiteRepository extends ServiceEntityRepository
     }
 
     /** @return list<Actualite> */
-    public function trouverDernieres(int $limite = 4): array
+    public function trouverDernieres(int $limite = 4, ?CategorieActualite $categorie = null): array
     {
-        return $this->createQueryBuilder('actualite')
+        $requete = $this->createQueryBuilder('actualite')
             ->leftJoin('actualite.auteur', 'auteur')->addSelect('auteur')
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
-            ->orderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
-            ->getQuery()->getResult();
+            ->orderBy('actualite.publieeLe', 'DESC');
+
+        if ($categorie !== null) {
+            $requete->andWhere('actualite.categorie = :categorie')->setParameter('categorie', $categorie);
+        }
+
+        return $requete->setMaxResults($limite)->getQuery()->getResult();
     }
 
     /** @return list<Actualite> */
@@ -132,5 +138,54 @@ final class ActualiteRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /** @return list<Actualite> */
+    public function trouverPropositions(Utilisateur $utilisateur): array
+    {
+        return $this->createQueryBuilder('actualite')
+            ->andWhere('actualite.auteur = :auteur')
+            ->setParameter('auteur', $utilisateur)
+            ->orderBy('actualite.publieeLe', 'DESC')
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function compterEnAttente(): int
+    {
+        return (int) $this->createQueryBuilder('actualite')
+            ->select('COUNT(actualite.id)')
+            ->andWhere('actualite.statut = :statut')
+            ->setParameter('statut', StatutActualite::EnAttente)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /** @return array{actualites: list<Actualite>, total: int, page: int, pages: int} */
+    public function trouverPourModeration(string $recherche, ?StatutActualite $statut, int $page, int $parPage = 20): array
+    {
+        $page = max(1, $page);
+        $requete = $this->createQueryBuilder('actualite')
+            ->leftJoin('actualite.auteur', 'auteur')->addSelect('auteur');
+        if ($recherche !== '') {
+            $requete
+                ->andWhere('(actualite.titre LIKE :recherche OR actualite.slug LIKE :recherche OR actualite.description LIKE :recherche)')
+                ->setParameter('recherche', '%'.$recherche.'%');
+        }
+        if ($statut !== null) {
+            $requete->andWhere('actualite.statut = :statut')->setParameter('statut', $statut);
+        }
+        $total = (int) (clone $requete)->select('COUNT(actualite.id)')->getQuery()->getSingleScalarResult();
+        $pages = max(1, (int) ceil($total / $parPage));
+        $page = min($page, $pages);
+        $actualites = $requete
+            ->orderBy('actualite.publieeLe', 'DESC')
+            ->setFirstResult(($page - 1) * $parPage)
+            ->setMaxResults($parPage)
+            ->getQuery()
+            ->getResult();
+
+        return compact('actualites', 'total', 'page', 'pages');
     }
 }

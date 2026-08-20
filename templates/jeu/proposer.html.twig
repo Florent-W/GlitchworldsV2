@@ -2,6 +2,7 @@
 
 {% block title %}{{ modification ? 'Modifier la fiche' : 'Proposer un jeu' }} - GlitchWorlds{% endblock %}
 {% block robots_meta %}noindex,nofollow{% endblock %}
+{% block body_attributes %} data-turbo="false"{% endblock %}
 
 {% block body %}
 <section class="gw-panel p-4">
@@ -14,13 +15,22 @@
         <div class="row g-4">
             <div class="col-xl-7">
                 {{ form_row(formulaire.nom) }}
-                {{ form_row(formulaire.description) }}
-                {% include '_editeur_bbcode.html.twig' with { champ: formulaire.contenu } only %}
+        {{ form_row(formulaire.description) }}
+        {% include '_editeur_bbcode.html.twig' with { champ: formulaire.contenu, templates: 'jeu' } only %}
                 <div class="row g-3">
                     <div class="col-md-6">{{ form_row(formulaire.developpeur) }}</div>
                     <div class="col-md-6">{{ form_row(formulaire.dateSortie) }}</div>
                 </div>
                 {{ form_row(formulaire.categorie) }}
+                {{ form_row(formulaire.videoBackground) }}
+                {{ form_row(formulaire.banniereFichier) }}
+                {% if modification and formulaire.vars.data.banniere starts with 'banniere.' %}
+                    <img class="img-fluid rounded-3 border mb-3" src="{{ asset('uploads/jeux/' ~ formulaire.vars.data.id ~ '/' ~ formulaire.vars.data.banniere) }}" alt="Bannière actuelle" loading="lazy">
+                {% endif %}
+                {{ form_row(formulaire.miniatureFichier) }}
+                {% if modification and formulaire.vars.data.miniature starts with 'miniature.' %}
+                    <img class="img-fluid rounded-3 border mb-3" src="{{ asset('uploads/jeux/' ~ formulaire.vars.data.id ~ '/' ~ formulaire.vars.data.miniature) }}" alt="Miniature actuelle" loading="lazy">
+                {% endif %}
             </div>
             <div class="col-xl-5">
                 <div class="gw-panel p-3 mb-3">
@@ -41,7 +51,7 @@
                 </div>
                 <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.genres) }}</div>
                 <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.plateformes) }}</div>
-                <div class="gw-panel p-3">{{ form_row(formulaire.langues) }}</div>
+                <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.langues) }}</div>
             </div>
         </div>
         <div class="d-flex justify-content-end gap-2 mt-4">
@@ -50,4 +60,13 @@
         </div>
     {{ form_end(formulaire) }}
 </section>
+<script>
+(function (form) {
+    if (!form) return;
+    const avertir = () => { window.onbeforeunload = (e) => { e.preventDefault(); e.returnValue = ''; }; };
+    form.addEventListener('input', avertir);
+    form.addEventListener('change', avertir);
+    form.addEventListener('submit', () => { window.onbeforeunload = null; });
+})(document.querySelector('form[name="jeu_proposition"]'));
+</script>
 {% endblock %}

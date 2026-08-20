@@ -18,7 +18,8 @@
     <h1 class="display-6">{{ actualite.titre }}</h1>
     <p class="lead text-secondary">{{ actualite.description }}</p>
     <p class="small text-secondary">Publié le {{ actualite.publieeLe|format_datetime('long', 'none', locale='fr') }}{% if actualite.auteur %} par {{ actualite.auteur.pseudo }}{% endif %}</p>
-    {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="img-fluid rounded-4 w-100 mb-4" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="Miniature de {{ actualite.titre }}" style="max-height: 520px; object-fit: cover" loading="eager" fetchpriority="high" decoding="async">{% endif %}
+    {% set imageArticle = actualite.banniere and not (actualite.banniere starts with 'legacy:') ? actualite.banniere : (actualite.miniature and not (actualite.miniature starts with 'legacy:') ? actualite.miniature : null) %}
+    {% if imageArticle %}<img class="img-fluid rounded-4 w-100 mb-4" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ imageArticle) }}" alt="Illustration de {{ actualite.titre }}" style="max-height: 520px; object-fit: cover" loading="eager" fetchpriority="high" decoding="async">{% endif %}
     <hr>
     <div class="gw-article-content">{{ actualite.contenu|bbcode }}</div>
     {% include '_auteur_fiche.html.twig' with { auteur: actualite.auteur } only %}

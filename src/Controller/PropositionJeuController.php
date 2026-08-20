@@ -50,6 +50,7 @@ final class PropositionJeuController extends AbstractController
             $entityManager->persist($jeu);
             $entityManager->flush();
             $this->enregistrerGalerie($jeu, $formulaire->get('imagesGalerie')->getData(), $galerieUploader);
+            $this->enregistrerHabillages($jeu, $formulaire, $galerieUploader);
             $entityManager->flush();
             $this->addFlash('success', 'Ta proposition a été envoyée pour validation.');
 
@@ -79,6 +80,7 @@ final class PropositionJeuController extends AbstractController
                 }
             }
             $this->enregistrerGalerie($jeu, $formulaire->get('imagesGalerie')->getData(), $galerieUploader);
+            $this->enregistrerHabillages($jeu, $formulaire, $galerieUploader);
             $entityManager->flush();
             $this->addFlash('success', 'La fiche a été modifiée.');
 
@@ -101,6 +103,23 @@ final class PropositionJeuController extends AbstractController
         $placesRestantes = max(0, 8 - count($jeu->getGalerie()));
         foreach (array_slice($images, 0, $placesRestantes) as $image) {
             $jeu->addImageGalerie($uploader->enregistrer($image, (int) $jeu->getId()));
+        }
+    }
+
+    private function enregistrerHabillages(Jeu $jeu, \Symfony\Component\Form\FormInterface $formulaire, JeuGalerieUploader $uploader): void
+    {
+        if (null === $jeu->getId()) {
+            return;
+        }
+
+        $miniature = $formulaire->get('miniatureFichier')->getData();
+        if ($miniature instanceof UploadedFile) {
+            $jeu->setMiniature($uploader->enregistrerHabillage($miniature, (int) $jeu->getId(), 'miniature'));
+        }
+
+        $banniere = $formulaire->get('banniereFichier')->getData();
+        if ($banniere instanceof UploadedFile) {
+            $jeu->setBanniere($uploader->enregistrerHabillage($banniere, (int) $jeu->getId(), 'banniere'));
         }
     }
 

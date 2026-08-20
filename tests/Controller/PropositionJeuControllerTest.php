@@ -49,6 +49,11 @@ final class PropositionJeuControllerTest extends WebTestCase
         $client->loginUser($utilisateur);
         $crawler = $client->request('GET', '/jeu/proposer');
         self::assertSelectorExists('[data-controller="bbcode"]');
+        self::assertSelectorExists('button[data-bbcode-id-param="presentation_pokemon"]');
+        self::assertSelectorExists('body[data-turbo="false"]');
+        self::assertStringContainsString('onbeforeunload', (string) $client->getResponse()->getContent());
+        self::assertSelectorExists('input[name="jeu_proposition[miniatureFichier]"]');
+        self::assertSelectorExists('input[name="jeu_proposition[banniereFichier]"]');
         self::assertSelectorExists('[data-action="bbcode#video"]');
         self::assertSelectorExists('[data-action="bbcode#tableau"]');
         self::assertSelectorTextContains('[data-action="bbcode#basculerApercu"]', 'Afficher l’aperçu');
@@ -67,7 +72,12 @@ final class PropositionJeuControllerTest extends WebTestCase
         $genreChoisi = $crawler->filter('input[name="jeu_proposition[genres][]"]')->first()->attr('value');
         $plateformeChoisie = $crawler->filter('input[name="jeu_proposition[plateformes][]"]')->first()->attr('value');
         $langueChoisie = $crawler->filter('input[name="jeu_proposition[langues][]"]')->first()->attr('value');
-        $client->submit($crawler->selectButton('Envoyer pour validation')->form([
+        $miniatureTemporaire = tempnam(sys_get_temp_dir(), 'miniature-test-');
+        $banniereTemporaire = tempnam(sys_get_temp_dir(), 'banniere-test-');
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+        file_put_contents($miniatureTemporaire, $png);
+        file_put_contents($banniereTemporaire, $png);
+        $form = $crawler->selectButton('Envoyer pour validation')->form([
             'jeu_proposition[nom]' => $nomJeu,
             'jeu_proposition[description]' => 'Une proposition complète créée pendant le test.',
             'jeu_proposition[contenu]' => 'Présentation détaillée du jeu.',
@@ -76,7 +86,10 @@ final class PropositionJeuControllerTest extends WebTestCase
             'jeu_proposition[genres]' => [$genreChoisi],
             'jeu_proposition[plateformes]' => [$plateformeChoisie],
             'jeu_proposition[langues]' => [$langueChoisie],
-        ]));
+        ]);
+        $form['jeu_proposition[miniatureFichier]']->upload($miniatureTemporaire);
+        $form['jeu_proposition[banniereFichier]']->upload($banniereTemporaire);
+        $client->submit($form);
 
         self::assertResponseRedirects('/mon-compte');
 
@@ -86,6 +99,10 @@ final class PropositionJeuControllerTest extends WebTestCase
         self::assertSame(StatutJeu::EnAttente, $jeu->getStatut());
         self::assertSame($ids['utilisateur'], $jeu->getCreateur()?->getId());
         self::assertSame('mon-jeu-symfony-'.$suffixe, $jeu->getSlug());
+        self::assertStringStartsWith('miniature.', (string) $jeu->getMiniature());
+        self::assertStringStartsWith('banniere.', (string) $jeu->getBanniere());
+        self::assertFileExists(self::getContainer()->getParameter('kernel.project_dir').'/public/uploads/jeux/'.$jeu->getId().'/'.$jeu->getMiniature());
+        self::assertFileExists(self::getContainer()->getParameter('kernel.project_dir').'/public/uploads/jeux/'.$jeu->getId().'/'.$jeu->getBanniere());
         self::assertCount(1, $jeu->getGenres());
         $jeuId = $jeu->getId();
 
@@ -104,6 +121,9 @@ final class PropositionJeuControllerTest extends WebTestCase
         self::assertSame(StatutJeu::EnAttente, $jeu->getStatut());
         $entityManager->remove($jeu);
         $entityManager->flush();
+
+        @unlink($miniatureTemporaire);
+        @unlink($banniereTemporaire);
 
         foreach ([Utilisateur::class => 'utilisateur', CategorieJeu::class => 'categorie', Genre::class => 'genre', Plateforme::class => 'plateforme', Langue::class => 'langue'] as $classe => $cle) {
             $entityManager->remove($entityManager->find($classe, $ids[$cle]));

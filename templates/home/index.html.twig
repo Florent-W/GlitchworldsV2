@@ -4,7 +4,7 @@
 {% block meta_description %}Découvre les fangames, hacks et créations de la communauté GlitchWorlds.{% endblock %}
 
 {% block body %}
-<div class="gw-home-shell gw-disposition gw-disposition--grille" data-controller="disposition">
+<div class="gw-home-shell gw-disposition gw-disposition--grille" data-controller="disposition" data-disposition-mode="grille">
     <section class="gw-game-hero gw-game-hero--home mb-4">
         <div class="gw-game-hero__content">
             <span class="gw-game-hero__category"><i class="bi bi-broadcast me-1" aria-hidden="true"></i>GlitchWorlds</span>
@@ -12,6 +12,7 @@
             <p class="gw-game-hero__lead">Explore des fangames, partage tes découvertes et construis ta collection avec la communauté.</p>
             <div class="d-flex flex-wrap gap-2 mt-4">
                 <a class="btn btn-light btn-lg" href="{{ path('app_jeux') }}"><i class="bi bi-controller me-2" aria-hidden="true"></i>Découvrir les jeux</a>
+                <a class="btn btn-outline-light btn-lg" href="{{ path('app_actualites_glitchs') }}"><i class="bi bi-lightning-charge-fill me-2" aria-hidden="true"></i>Explorer les glitchs</a>
                 {% if not app.user %}<a class="btn btn-outline-light btn-lg" href="{{ path('app_inscription') }}">Rejoindre la communauté</a>{% endif %}
             </div>
             <ul class="gw-game-hero__stats" aria-label="GlitchWorlds en chiffres">
@@ -38,7 +39,7 @@
     </section>
     {% endif %}
 
-    {% if populaires is not empty or nouveautes is not empty or dernieresActualites is not empty %}
+    {% if populaires is not empty or nouveautes is not empty or dernieresActualites is not empty or derniersGlitchs is not empty %}
         <div class="d-flex justify-content-end mb-3">
             {% include '_disposition_boutons.html.twig' with { label: 'Disposition des jeux et actualités' } only %}
         </div>
@@ -65,24 +66,29 @@
 {{ _self.listeJeux('Jeux populaires', 'star-fill', populaires, notesJeux) }}
 {{ _self.listeJeux('Nouveautés', 'stars', nouveautes, notesJeux) }}
 
-{% if dernieresActualites is not empty %}
-    <section class="gw-panel p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
-            <h2 class="h4 mb-0"><i class="bi bi-newspaper text-primary me-2" aria-hidden="true"></i>Dernières actualités</h2>
-            <a href="{{ path('app_actualites') }}">Voir tout</a>
-        </div>
-        <div class="row row-cols-1 row-cols-md-2 g-3 gw-collection gw-collection--actualites">
-            {% for actualite in dernieresActualites %}
-                <div class="col">
-                    <article class="card border-0 shadow-sm h-100 overflow-hidden gw-article-card">
-                        {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="card-img-top object-fit-cover" style="height: 180px" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="" loading="lazy">{% endif %}
-                        <div class="card-body"><span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span><h3 class="h5"><a class="stretched-link text-decoration-none" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h3><p class="text-secondary mb-2">{{ actualite.description }}</p><small class="text-secondary">{{ actualite.publieeLe|date('d/m/Y') }}</small></div>
-                    </article>
-                </div>
-            {% endfor %}
-        </div>
-    </section>
-{% endif %}
+{% macro listeActualites(titre, icone, actualites, lienVoirTout) %}
+    {% if actualites is not empty %}
+        <section class="gw-panel p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-{{ icone }} text-primary me-2" aria-hidden="true"></i>{{ titre }}</h2>
+                <a href="{{ lienVoirTout }}">Voir tout</a>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 g-3 gw-collection gw-collection--actualites">
+                {% for actualite in actualites %}
+                    <div class="col">
+                        <article class="card border-0 shadow-sm h-100 overflow-hidden gw-article-card">
+                            {% if actualite.miniature and not (actualite.miniature starts with 'legacy:') %}<img class="card-img-top object-fit-cover" style="height: 180px" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.miniature) }}" alt="" loading="lazy">{% endif %}
+                            <div class="card-body"><span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span><h3 class="h5"><a class="stretched-link text-decoration-none" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h3><p class="text-secondary mb-2">{{ actualite.description }}</p><small class="text-secondary">{{ actualite.publieeLe|date('d/m/Y') }}</small></div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+{% endmacro %}
+
+{{ _self.listeActualites('Dernières actualités', 'newspaper', dernieresActualites, path('app_actualites')) }}
+{{ _self.listeActualites('Derniers glitchs', 'lightning-charge-fill', derniersGlitchs, path('app_actualites_glitchs')) }}
 
 {% if activiteRecente is not empty or nouveauxMembres is not empty %}
     <section class="gw-panel p-4 mb-4" aria-labelledby="activite-communaute-title">

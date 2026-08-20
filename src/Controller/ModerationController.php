@@ -3,10 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\Jeu;
+use App\Entity\Actualite;
 use App\Enum\StatutJeu;
+use App\Enum\StatutActualite;
 use App\Repository\CommentaireActualiteRepository;
 use App\Repository\CommentaireJeuRepository;
 use App\Repository\JeuRepository;
+use App\Repository\ActualiteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -87,6 +90,59 @@ final class ModerationController extends AbstractController
         $this->addFlash('success', $decision === 'approuver' ? 'Le jeu a été approuvé.' : 'Le jeu a été refusé.');
 
         return $this->redirectToRoute('app_moderation_jeux');
+    }
+
+    #[Route('/actualites', name: 'actualites', methods: ['GET'])]
+    public function actualites(Request $request, ActualiteRepository $actualiteRepository): Response
+    {
+        $recherche = trim($request->query->getString('recherche'));
+        $statutValeur = $request->query->getString('statut');
+        $statut = $statutValeur !== '' ? StatutActualite::tryFrom($statutValeur) : null;
+        $resultat = $actualiteRepository->trouverPourModeration($recherche, $statut, $request->query->getInt('page', 1));
+
+        return $this->render('moderation/actualites.html.twig', [
+            ...$resultat,
+            'recherche' => $recherche,
+            'statutSelectionne' => $statut,
+            'statuts' => StatutActualite::cases(),
+            'actualitesEnAttenteNavigation' => $actualiteRepository->compterEnAttente(),
+        ]);
+    }
+
+    #[Route('/actualites/{id}/{decision}', name: 'actualite_decider', requirements: ['id' => '\d+', 'decision' => 'approuver|refuser'], methods: ['POST'])]
+    public function deciderActualite(
+        Actualite $actualite,
+        string $decision,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        JournalModeration $journal,
+    ): Response {
+        if ($actualite->getStatut() !== StatutActualite::EnAttente) {
+            throw $this->createNotFoundException('Cette proposition n’est plus en attente.');
+        }
+        if (!$this->isCsrfTokenValid('moderation-actualite-'.$actualite->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        if ($decision === 'approuver') {
+            $actualite->setStatut(StatutActualite::Publiee);
+            $actualite->setPublieeLe(new \DateTimeImmutable());
+        } else {
+            $actualite->setStatut(StatutActualite::Brouillon);
+        }
+
+        $moderateur = $this->getUser();
+        $journal->ajouter(
+            $moderateur instanceof Utilisateur ? $moderateur : null,
+            $decision,
+            'actualite',
+            $actualite->getId(),
+            ($decision === 'approuver' ? 'Approbation' : 'Refus').' de l’actualité '.$actualite->getTitre(),
+        );
+        $entityManager->flush();
+        $this->addFlash('success', $decision === 'approuver' ? 'L’actualité a été publiée.' : 'L’actualité a été refusée.');
+
+        return $this->redirectToRoute('app_moderation_actualites');
     }
 
     #[Route('/jeux/{id}/statut', name: 'jeu_statut', methods: ['POST'])]

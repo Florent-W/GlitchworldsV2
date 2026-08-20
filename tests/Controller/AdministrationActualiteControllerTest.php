@@ -82,6 +82,9 @@ final class AdministrationActualiteControllerTest extends WebTestCase
         $client->loginUser($administrateur);
         $crawler = $client->request('GET', '/administration/actualites/creer');
         self::assertSelectorExists('[data-controller="bbcode"]');
+        self::assertSelectorExists('button[data-bbcode-id-param="glitch"]');
+        self::assertSelectorExists('body[data-turbo="false"]');
+        self::assertStringContainsString('onbeforeunload', (string) $client->getResponse()->getContent());
         self::assertSelectorExists('[data-action="bbcode#tableau"]');
         self::assertSelectorExists('select[data-bbcode-modele-ouvrant="[titre={valeur}]"]');
         $client->submit($crawler->selectButton('Créer l’actualité')->form([

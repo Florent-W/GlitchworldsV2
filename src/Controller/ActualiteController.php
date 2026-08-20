@@ -21,10 +21,22 @@ use App\Service\GestionSucces;
 final class ActualiteController extends AbstractController
 {
     use AnnonceSuccesTrait;
+    #[Route('/actualites/glitchs', name: 'app_actualites_glitchs', methods: ['GET'])]
+    public function glitchs(Request $request, ActualiteRepository $actualiteRepository): Response
+    {
+        return $this->afficherListe($request, $actualiteRepository, CategorieActualite::Glitchs, 'app_actualites_glitchs');
+    }
+
     #[Route('/actualites', name: 'app_actualites', methods: ['GET'])]
     public function liste(Request $request, ActualiteRepository $actualiteRepository): Response
     {
         $categorie = CategorieActualite::tryFrom((string) $request->query->get('categorie'));
+
+        return $this->afficherListe($request, $actualiteRepository, $categorie, 'app_actualites');
+    }
+
+    private function afficherListe(Request $request, ActualiteRepository $actualiteRepository, ?CategorieActualite $categorie, string $routeListe): Response
+    {
         $recherche = trim((string) $request->query->get('recherche', ''));
 
         return $this->render('actualite/index.html.twig', [
@@ -32,6 +44,7 @@ final class ActualiteController extends AbstractController
             'categorieSelectionnee' => $categorie,
             'categories' => CategorieActualite::cases(),
             'recherche' => $recherche,
+            'routeListe' => $routeListe,
         ]);
     }
 

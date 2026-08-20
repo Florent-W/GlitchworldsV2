@@ -13,16 +13,24 @@ final class ActualiteImageUploader
     ) {
     }
 
-    public function enregistrer(UploadedFile $image, int $actualiteId): string
+    public function enregistrer(UploadedFile $image, int $actualiteId, string $type): string
     {
-        $nomDossier = (string) $actualiteId;
-        $dossierActualite = $this->dossierCible.DIRECTORY_SEPARATOR.$nomDossier;
+        if (!in_array($type, ['miniature', 'banniere'], true)) {
+            throw new \InvalidArgumentException('Type d’image d’actualité invalide.');
+        }
+
+        $dossierActualite = $this->dossierCible.DIRECTORY_SEPARATOR.$actualiteId;
         if (!is_dir($dossierActualite) && !mkdir($dossierActualite, 0775, true) && !is_dir($dossierActualite)) {
             throw new \RuntimeException('Impossible de créer le dossier des images d’actualités.');
         }
 
-        $extension = $image->guessExtension() ?: 'bin';
-        $nom = 'miniature.'.$extension;
+        $extension = $image->guessExtension() ?: 'jpg';
+        $nom = $type.'.'.$extension;
+        foreach (glob($dossierActualite.'/'.$type.'.*') ?: [] as $ancien) {
+            if (is_file($ancien)) {
+                unlink($ancien);
+            }
+        }
         $image->move($dossierActualite, $nom);
 
         return $nom;

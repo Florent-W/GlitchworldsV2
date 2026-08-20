@@ -67,6 +67,30 @@ final class JeuPropositionType extends AbstractType
                 'expanded' => true,
                 'constraints' => [new Assert\Count(min: 1, minMessage: 'Choisis au moins une langue.')],
             ])
+            ->add('miniatureFichier', FileType::class, [
+                'mapped' => false,
+                'required' => false,
+                'label' => 'Miniature',
+                'help' => 'Utilisée dans les listes et comme jaquette sur la fiche. JPG, PNG, WebP ou GIF, 8 Mo maximum.',
+                'attr' => ['accept' => 'image/jpeg,image/png,image/webp,image/gif'],
+                'constraints' => [new Assert\Image(
+                    maxSize: '8M',
+                    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+                    mimeTypesMessage: 'Choisis une image JPG, PNG, WebP ou GIF.',
+                )],
+            ])
+            ->add('banniereFichier', FileType::class, [
+                'mapped' => false,
+                'required' => false,
+                'label' => 'Bannière',
+                'help' => 'Affichée en haut de la fiche du jeu. JPG, PNG, WebP ou GIF, 8 Mo maximum.',
+                'attr' => ['accept' => 'image/jpeg,image/png,image/webp,image/gif'],
+                'constraints' => [new Assert\Image(
+                    maxSize: '8M',
+                    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+                    mimeTypesMessage: 'Choisis une image JPG, PNG, WebP ou GIF.',
+                )],
+            ])
             ->add('imagesGalerie', FileType::class, [
                 'mapped' => false,
                 'multiple' => true,

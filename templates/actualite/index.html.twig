@@ -1,19 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Actualités - GlitchWorlds{% endblock %}
+{% set titre_page = categorieSelectionnee ? categorieSelectionnee.label : 'Actualités' %}
+{% set route_liste = routeListe|default('app_actualites') %}
+
+{% block title %}{{ titre_page }} - GlitchWorlds{% endblock %}
 {% block meta_description %}Retrouve les actualités, mods, glitchs et tutoriels sélectionnés par GlitchWorlds.{% endblock %}
 
 {% block body %}
 <section class="gw-panel p-4 p-lg-5">
     <div class="d-flex align-items-center gap-3 mb-4">
-        <i class="bi bi-newspaper text-primary fs-1" aria-hidden="true"></i>
-        <div><h1 class="h2 mb-1">Actualités</h1><p class="text-secondary mb-0">{{ total }} publication{{ total > 1 ? 's' : '' }} disponible{{ total > 1 ? 's' : '' }}.</p></div>
+        <i class="bi bi-{{ categorieSelectionnee and categorieSelectionnee.value == 'glitchs' ? 'lightning-charge-fill' : 'newspaper' }} text-primary fs-1" aria-hidden="true"></i>
+        <div class="flex-grow-1"><h1 class="h2 mb-1">{{ titre_page }}</h1><p class="text-secondary mb-0">{{ total }} publication{{ total > 1 ? 's' : '' }} disponible{{ total > 1 ? 's' : '' }}.</p></div>
+        {% if app.user %}<a class="btn btn-primary align-self-start" href="{{ path('app_actualite_proposer') }}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Proposer une actualité</a>{% endif %}
     </div>
 
-    <form class="input-group mb-4 position-relative" action="{{ path('app_actualites') }}" method="get" role="search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion', {type: 'actualite'}) }}" data-recherche-autocomplete-target="formulaire">
+    <form class="input-group mb-4 position-relative" action="{{ path(route_liste) }}" method="get" role="search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion', {type: 'actualite'}) }}" data-recherche-autocomplete-target="formulaire">
         <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
         <input class="form-control" type="search" name="recherche" value="{{ recherche }}" placeholder="Rechercher une actualité..." aria-label="Rechercher une actualité" autocomplete="off" aria-autocomplete="list" aria-controls="actualites-recherche-resultats" aria-expanded="false" data-recherche-autocomplete-target="champ" data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#rechercher">
-        {% if categorieSelectionnee %}<input type="hidden" name="categorie" value="{{ categorieSelectionnee.value }}">{% endif %}
+        {% if route_liste == 'app_actualites' and categorieSelectionnee %}<input type="hidden" name="categorie" value="{{ categorieSelectionnee.value }}">{% endif %}
         <button class="btn btn-primary" type="submit">Rechercher</button>
         <div id="actualites-recherche-resultats" class="gw-autocomplete d-none" role="listbox" data-recherche-autocomplete-target="resultats"></div>
     </form>
@@ -21,14 +25,16 @@
     <nav class="d-flex flex-wrap gap-2 mb-4" aria-label="Catégories d’actualités">
         <a class="btn {{ categorieSelectionnee is null ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ path('app_actualites', { recherche: recherche ?: null }) }}">Toutes</a>
         {% for categorie in categories %}
-            <a class="btn {{ categorieSelectionnee == categorie ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ path('app_actualites', { categorie: categorie.value, recherche: recherche ?: null }) }}">{{ categorie.label }}</a>
+            {% set route_categorie = categorie.value == 'glitchs' ? 'app_actualites_glitchs' : 'app_actualites' %}
+            {% set params_categorie = categorie.value == 'glitchs' ? { recherche: recherche ?: null } : { categorie: categorie.value, recherche: recherche ?: null } %}
+            <a class="btn {{ categorieSelectionnee == categorie ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ path(route_categorie, params_categorie) }}">{{ categorie.label }}</a>
         {% endfor %}
     </nav>
 
     {% if actualites is empty %}
         <div class="alert alert-info mb-0">Aucune actualité dans cette catégorie.</div>
     {% else %}
-        <div class="gw-disposition gw-disposition--grille" data-controller="disposition">
+        <div class="gw-disposition gw-disposition--grille" data-controller="disposition" data-disposition-mode="grille">
             <div class="d-flex justify-content-end mb-3">
                 {% include '_disposition_boutons.html.twig' with { label: 'Disposition des actualités' } only %}
             </div>
@@ -56,7 +62,7 @@
         {% if pages > 1 %}
             <nav class="mt-4" aria-label="Pagination des actualités"><ul class="pagination justify-content-center mb-0">
                 {% for numero in 1..pages %}
-                    <li class="page-item {{ numero == page ? 'active' : '' }}"><a class="page-link" href="{{ path('app_actualites', { page: numero, categorie: categorieSelectionnee ? categorieSelectionnee.value : null, recherche: recherche ?: null }) }}">{{ numero }}</a></li>
+                    <li class="page-item {{ numero == page ? 'active' : '' }}"><a class="page-link" href="{{ path(route_liste, { page: numero, categorie: route_liste == 'app_actualites' and categorieSelectionnee ? categorieSelectionnee.value : null, recherche: recherche ?: null }) }}">{{ numero }}</a></li>
                 {% endfor %}
             </ul></nav>
         {% endif %}

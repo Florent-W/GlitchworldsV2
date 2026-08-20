@@ -2,12 +2,13 @@ import { Controller } from '@hotwired/stimulus';
 
 const CLE = 'glitchworlds-disposition';
 const CLE_LEGACY = 'glitchworlds-disposition-accueil';
+const MODES = ['grille', 'double', 'liste'];
 
 /**
- * Bascule grille / liste pour les catalogues (accueil, jeux, actualités).
+ * Bascule grille (3 colonnes), 2 par colonne (cartes compactes) ou liste.
  */
 export default class extends Controller {
-    static targets = ['boutonGrille', 'boutonListe'];
+    static targets = ['boutonGrille', 'boutonDouble', 'boutonListe'];
 
     connect() {
         this.appliquer(this.lire(), false);
@@ -17,6 +18,10 @@ export default class extends Controller {
         this.appliquer('grille', true);
     }
 
+    choisirDouble() {
+        this.appliquer('double', true);
+    }
+
     choisirListe() {
         this.appliquer('liste', true);
     }
@@ -24,27 +29,44 @@ export default class extends Controller {
     lire() {
         const valeur = localStorage.getItem(CLE) ?? localStorage.getItem(CLE_LEGACY);
 
-        return valeur === 'liste' ? 'liste' : 'grille';
+        if (valeur === 'liste') {
+            return 'liste';
+        }
+
+        if (valeur === 'double' || valeur === '2') {
+            return 'double';
+        }
+
+        return 'grille';
     }
 
     appliquer(mode, persister) {
-        const liste = mode === 'liste';
+        const modeEffectif = MODES.includes(mode) ? mode : 'grille';
 
-        this.element.classList.toggle('gw-disposition--liste', liste);
-        this.element.classList.toggle('gw-disposition--grille', !liste);
+        this.element.dataset.dispositionMode = modeEffectif;
+        this.element.classList.remove('gw-disposition--grille', 'gw-disposition--double', 'gw-disposition--liste');
+        this.element.classList.add(`gw-disposition--${modeEffectif}`);
 
         if (this.hasBoutonGrilleTarget) {
-            this.boutonGrilleTarget.classList.toggle('active', !liste);
-            this.boutonGrilleTarget.setAttribute('aria-pressed', !liste ? 'true' : 'false');
+            const actif = modeEffectif === 'grille';
+            this.boutonGrilleTarget.classList.toggle('active', actif);
+            this.boutonGrilleTarget.setAttribute('aria-pressed', actif ? 'true' : 'false');
+        }
+
+        if (this.hasBoutonDoubleTarget) {
+            const actif = modeEffectif === 'double';
+            this.boutonDoubleTarget.classList.toggle('active', actif);
+            this.boutonDoubleTarget.setAttribute('aria-pressed', actif ? 'true' : 'false');
         }
 
         if (this.hasBoutonListeTarget) {
-            this.boutonListeTarget.classList.toggle('active', liste);
-            this.boutonListeTarget.setAttribute('aria-pressed', liste ? 'true' : 'false');
+            const actif = modeEffectif === 'liste';
+            this.boutonListeTarget.classList.toggle('active', actif);
+            this.boutonListeTarget.setAttribute('aria-pressed', actif ? 'true' : 'false');
         }
 
         if (persister) {
-            localStorage.setItem(CLE, mode);
+            localStorage.setItem(CLE, modeEffectif);
         }
     }
 }

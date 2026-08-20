@@ -1,5 +1,25 @@
+{# Éditeur BBCode réutilisable.
+   Variables :
+   - champ : FormView du textarea contenu
+   - templates (optionnel) : 'jeu' ou 'actualite' pour afficher les modèles legacy #}
+{% set modeles = templates is defined ? (templates == 'jeu'
+    ? [{ id: 'presentation_pokemon', label: 'Présentation Pokémon', title: 'Présentation jeu Pokémon' }]
+    : (templates == 'actualite'
+        ? [{ id: 'glitch', label: 'Glitch', title: 'Glitch' }]
+        : [])) : [] %}
 <div class="mb-3" data-controller="bbcode" data-bbcode-apercu-url-value="{{ path('app_bbcode_apercu') }}" data-bbcode-jeton-value="{{ csrf_token('apercu-bbcode') }}">
     {{ form_label(champ) }}
+    {% if modeles is not empty %}
+        <div class="mb-2" data-bbcode-target="groupeTemplates">
+            <span class="form-label d-block mb-1">Template</span>
+            <div class="d-flex flex-wrap gap-2">
+                {% for modele in modeles %}
+                    <button class="btn btn-outline-secondary btn-sm" type="button" title="{{ modele.title }}" data-action="bbcode#appliquerTemplate" data-bbcode-id-param="{{ modele.id }}">{{ modele.label }}</button>
+                {% endfor %}
+            </div>
+            <div class="form-text">Remplit le contenu uniquement si le champ est vide.</div>
+        </div>
+    {% endif %}
     <div class="btn-toolbar gap-2 my-2 gw-bbcode-toolbar" role="toolbar" aria-label="Mise en forme BBCode">
         <div class="btn-group btn-group-sm" role="group" aria-label="Style du texte">
             <button class="btn btn-outline-secondary fw-bold" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[b]" data-bbcode-fermante-param="[/b]" title="Gras">B</button>

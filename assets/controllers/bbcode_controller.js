@@ -1,12 +1,14 @@
 import { Controller } from '@hotwired/stimulus';
+import { MODELES_BBCODE } from '../bbcode_templates.js';
 
 export default class extends Controller {
-    static targets = ['contenu', 'apercu', 'rendu', 'boutonApercu'];
+    static targets = ['contenu', 'apercu', 'rendu', 'boutonApercu', 'groupeTemplates'];
     static values = { apercuUrl: String, jeton: String };
 
     connect() {
         this.apercuActif = false;
         this.delaiApercu = null;
+        this.actualiserVisibiliteTemplates();
     }
 
     disconnect() {
@@ -24,9 +26,37 @@ export default class extends Controller {
     }
 
     planifierApercu() {
+        this.actualiserVisibiliteTemplates();
         if (!this.apercuActif) return;
         window.clearTimeout(this.delaiApercu);
         this.delaiApercu = window.setTimeout(() => this.actualiserApercu(), 350);
+    }
+
+    appliquerTemplate(event) {
+        if (this.contenuTarget.value.trim() !== '') {
+            return;
+        }
+
+        const modele = MODELES_BBCODE[event.params.id];
+        if (!modele) {
+            return;
+        }
+
+        this.contenuTarget.value = modele.contenu;
+        this.contenuTarget.focus();
+        this.contenuTarget.dispatchEvent(new Event('input', { bubbles: true }));
+        this.actualiserVisibiliteTemplates();
+        if (this.apercuActif) {
+            this.actualiserApercu();
+        }
+    }
+
+    actualiserVisibiliteTemplates() {
+        if (!this.hasGroupeTemplatesTarget) {
+            return;
+        }
+
+        this.groupeTemplatesTarget.classList.toggle('d-none', this.contenuTarget.value.trim() !== '');
     }
 
     async actualiserApercu() {

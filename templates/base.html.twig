@@ -104,6 +104,7 @@
         {% set nav_items = [
             { label: 'Accueil',    icon: 'house-door-fill', route: 'app_home' },
             { label: 'Jeux',       icon: 'controller',      route: 'app_jeux' },
+            { label: 'Glitchs',    icon: 'lightning-charge-fill', route: 'app_actualites_glitchs' },
             { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' }
         ] %}
         {% if app.user %}
@@ -199,13 +200,24 @@
             </header>
 
             <div class="gw-layout">
-                <nav class="gw-rail" aria-label="Navigation principale">
-                    <ul class="gw-rail__list">
+                <nav class="gw-rail" aria-label="Navigation principale" data-controller="rail">
+                    <div class="gw-rail__viewport">
+                        <button type="button"
+                                class="gw-rail__suite gw-rail__suite--haut"
+                                data-rail-target="haut"
+                                data-action="rail#monter"
+                                hidden
+                                aria-label="Revenir au début du menu"
+                                title="Remonter">
+                            <i class="bi bi-chevron-up" aria-hidden="true"></i>
+                        </button>
+                        <ul class="gw-rail__list" id="gw-rail-list" data-rail-target="liste" data-action="scroll->rail#actualiser">
                         {% for item in nav_items %}
                             {% set is_active = item.route is not null and item.route == current_route %}
                             <li>
                                 <a class="gw-rail__item{{ is_active ? ' is-active' : '' }}{{ item.logout|default(false) ? ' gw-rail__item--logout' : '' }}"
                                    href="{{ item.route ? path(item.route) : '#' }}"
+                                   title="{{ item.label }}"
                                    {{ is_active ? 'aria-current="page"' : '' }}
                                    {{ item.logout|default(false) ? 'data-turbo="false"' : '' }}>
                                     <i class="bi bi-{{ item.icon }}" aria-hidden="true"></i>
@@ -222,7 +234,17 @@
                                 </a>
                             </li>
                         {% endfor %}
-                    </ul>
+                        </ul>
+                        <button type="button"
+                                class="gw-rail__suite gw-rail__suite--bas"
+                                data-rail-target="bas"
+                                data-action="rail#descendre"
+                                hidden
+                                aria-label="Afficher la suite du menu"
+                                title="Suite">
+                            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </nav>
 
                 <main class="gw-main">

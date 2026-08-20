@@ -6,6 +6,7 @@ use App\Entity\Utilisateur;
 use App\Form\InscriptionType;
 use App\Form\CompteType;
 use App\Form\MotDePasseType;
+use App\Repository\ActualiteRepository;
 use App\Repository\JeuRepository;
 use App\Service\ImageProfilUploader;
 use Doctrine\ORM\EntityManagerInterface;
@@ -67,7 +68,7 @@ final class SecuriteController extends AbstractController
     }
 
     #[Route('/mon-compte', name: 'app_compte')]
-    public function compte(JeuRepository $jeuRepository): Response
+    public function compte(JeuRepository $jeuRepository, ActualiteRepository $actualiteRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -78,6 +79,7 @@ final class SecuriteController extends AbstractController
 
         return $this->render('securite/compte.html.twig', [
             'propositions' => $jeuRepository->trouverPropositions($utilisateur),
+            'propositionsActualites' => $actualiteRepository->trouverPropositions($utilisateur),
         ]);
     }
 

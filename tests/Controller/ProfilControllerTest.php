@@ -137,4 +137,34 @@ final class ProfilControllerTest extends WebTestCase
         $entityManager->remove($auteur);
         $entityManager->flush();
     }
+
+    public function testUnMembrePeutModifierSaBiographieDansAPropos(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $membre = (new Utilisateur())->setPseudo('BioProfil'.$suffixe)->setEmail('bio-'.$suffixe.'@test.local');
+        $entityManager->persist($membre);
+        $entityManager->flush();
+        $membreId = $membre->getId();
+
+        $client->loginUser($membre);
+        $crawler = $client->request('GET', '/membre/'.$membreId.'?section=apropos');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('form[action="/membre/'.$membreId.'/biographie"] textarea[name="biographie_profil[biographie]"]');
+
+        $client->submit($crawler->selectButton('Enregistrer')->form([
+            'biographie_profil[biographie]' => 'Ma nouvelle présentation publique.',
+        ]));
+        self::assertResponseRedirects('/membre/'.$membreId.'?section=apropos');
+
+        $entityManager->clear();
+        self::assertSame('Ma nouvelle présentation publique.', $entityManager->find(Utilisateur::class, $membreId)?->getBiographie());
+
+        $client->followRedirect();
+        self::assertSelectorTextContains('textarea[name="biographie_profil[biographie]"]', 'Ma nouvelle présentation publique.');
+
+        $entityManager->remove($entityManager->find(Utilisateur::class, $membreId));
+        $entityManager->flush();
+    }
 }

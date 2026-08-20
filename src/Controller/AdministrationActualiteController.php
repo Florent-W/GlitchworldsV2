@@ -10,6 +10,7 @@ use App\Repository\ActualiteRepository;
 use App\Service\ActualiteImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -35,7 +36,6 @@ final class AdministrationActualiteController extends AbstractController
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
-            $image = $formulaire->get('image')->getData();
             $actualite->setSlug($this->creerSlugUnique($actualite->getTitre(), $slugger, $actualiteRepository));
             $auteur = $this->getUser();
             if ($auteur instanceof Utilisateur) {
@@ -43,10 +43,7 @@ final class AdministrationActualiteController extends AbstractController
             }
             $entityManager->persist($actualite);
             $entityManager->flush();
-            if ($image instanceof UploadedFile) {
-                $actualite->setMiniature($imageUploader->enregistrer($image, (int) $actualite->getId()));
-                $entityManager->flush();
-            }
+            $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
             $this->addFlash('success', 'L’actualité a été créée.');
 
             return $this->redirectToRoute('app_administration_actualites_liste');
@@ -63,10 +60,7 @@ final class AdministrationActualiteController extends AbstractController
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
-            $image = $formulaire->get('image')->getData();
-            if ($image instanceof UploadedFile) {
-                $actualite->setMiniature($imageUploader->enregistrer($image, (int) $actualite->getId()));
-            }
+            $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
             if ($ancienStatut !== StatutActualite::Publiee && $actualite->getStatut() === StatutActualite::Publiee) {
                 $actualite->setPublieeLe(new \DateTimeImmutable());
             }
@@ -104,5 +98,30 @@ final class AdministrationActualiteController extends AbstractController
         }
 
         return $slug;
+    }
+
+    private function enregistrerHabillages(
+        Actualite $actualite,
+        FormInterface $formulaire,
+        ActualiteImageUploader $imageUploader,
+        EntityManagerInterface $entityManager,
+    ): void {
+        if (null === $actualite->getId()) {
+            return;
+        }
+
+        $banniere = $formulaire->get('banniereFichier')->getData();
+        if ($banniere instanceof UploadedFile) {
+            $actualite->setBanniere($imageUploader->enregistrer($banniere, (int) $actualite->getId(), 'banniere'));
+        }
+
+        $miniature = $formulaire->get('miniatureFichier')->getData();
+        if ($miniature instanceof UploadedFile) {
+            $actualite->setMiniature($imageUploader->enregistrer($miniature, (int) $actualite->getId(), 'miniature'));
+        }
+
+        if ($banniere instanceof UploadedFile || $miniature instanceof UploadedFile) {
+            $entityManager->flush();
+        }
     }
 }

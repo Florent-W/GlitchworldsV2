@@ -75,7 +75,14 @@
             <section class="gw-panel p-4">
                 {% if section == 'apropos' %}
                     <h2 class="h5">À propos de {{ membre.pseudo }}</h2>
-                    <p class="text-secondary">{{ membre.biographie ?: 'Ce membre n’a pas encore rédigé sa présentation.' }}</p>
+                    {% if app.user == membre and formulaireBiographie %}
+                        {{ form_start(formulaireBiographie, { action: path('app_profil_biographie', {id: membre.id}) }) }}
+                            {{ form_row(formulaireBiographie.biographie) }}
+                            <div class="d-flex justify-content-end">{{ form_widget(formulaireBiographie.enregistrer) }}</div>
+                        {{ form_end(formulaireBiographie) }}
+                    {% else %}
+                        <p class="text-secondary">{{ membre.biographie ?: 'Ce membre n’a pas encore rédigé sa présentation.' }}</p>
+                    {% endif %}
                     <div class="d-flex flex-wrap gap-4">
                         {% if membre.localisation %}<span><i class="bi bi-geo-alt-fill text-primary me-2"></i>{{ membre.localisation }}</span>{% endif %}
                         {% if membre.dateNaissance %}<span><i class="bi bi-cake2-fill text-primary me-2"></i>Né(e) le {{ membre.dateNaissance|format_date('long', locale='fr') }}</span>{% endif %}

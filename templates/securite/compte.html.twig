@@ -59,18 +59,37 @@
     {% endif %}
 
     <div class="d-flex justify-content-between align-items-center gap-3 mt-4 mb-3">
-        <h2 class="h5 mb-0">Mes propositions</h2>
+        <h2 class="h5 mb-0">Mes propositions de jeux</h2>
         <a class="btn btn-sm btn-primary" href="{{ path('app_jeu_proposer') }}">Proposer un jeu</a>
     </div>
     {% if propositions is empty %}
-        <p class="text-secondary mb-0">Tu n’as envoyé aucune proposition.</p>
+        <p class="text-secondary mb-0">Tu n’as envoyé aucune proposition de jeu.</p>
     {% else %}
-        <div class="list-group">
+        <div class="list-group mb-4">
             {% for jeu in propositions %}
                 <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div><strong>{{ jeu.nom }}</strong><span class="badge text-bg-secondary ms-2">{{ jeu.statut.label }}</span></div>
                     {% if is_granted('PROPOSITION_JEU_MODIFIER', jeu) %}
                         <a class="btn btn-sm btn-outline-primary" href="{{ path('app_jeu_proposition_modifier', { id: jeu.id }) }}">Modifier la proposition</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+        <h2 class="h5 mb-0">Mes propositions d’actualités</h2>
+        <a class="btn btn-sm btn-primary" href="{{ path('app_actualite_proposer') }}">Proposer une actualité</a>
+    </div>
+    {% if propositionsActualites is empty %}
+        <p class="text-secondary mb-0">Tu n’as envoyé aucune actualité.</p>
+    {% else %}
+        <div class="list-group">
+            {% for actualite in propositionsActualites %}
+                <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div><strong>{{ actualite.titre }}</strong><span class="badge text-bg-secondary ms-2">{{ actualite.statut.label }}</span></div>
+                    {% if is_granted('PROPOSITION_ACTUALITE_MODIFIER', actualite) %}
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_proposition_modifier', { id: actualite.id }) }}">Modifier la proposition</a>
                     {% endif %}
                 </div>
             {% endfor %}

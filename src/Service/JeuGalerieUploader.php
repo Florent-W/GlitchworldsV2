@@ -28,6 +28,29 @@ final readonly class JeuGalerieUploader
         return $nom;
     }
 
+    public function enregistrerHabillage(UploadedFile $image, int $jeuId, string $type): string
+    {
+        if (!in_array($type, ['miniature', 'banniere'], true)) {
+            throw new \InvalidArgumentException('Type d’habillage de jeu invalide.');
+        }
+
+        $dossier = $this->dossier($jeuId);
+        if (!is_dir($dossier) && !mkdir($dossier, 0775, true) && !is_dir($dossier)) {
+            throw new \RuntimeException('Impossible de créer le dossier du jeu.');
+        }
+
+        $extension = $image->guessExtension() ?: 'jpg';
+        $nom = $type.'.'.$extension;
+        foreach (glob($dossier.'/'.$type.'.*') ?: [] as $ancien) {
+            if (is_file($ancien)) {
+                unlink($ancien);
+            }
+        }
+        $image->move($dossier, $nom);
+
+        return $nom;
+    }
+
     public function supprimer(string $nom, int $jeuId): void
     {
         if (!preg_match('/^galerie-[a-z0-9-]+\.(?:jpe?g|png|webp|gif)$/i', $nom)) {

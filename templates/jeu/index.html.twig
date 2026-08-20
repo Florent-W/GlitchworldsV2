@@ -87,7 +87,7 @@
                         <a class="btn btn-outline-primary" href="{{ path('app_jeux') }}">Effacer les filtres</a>
                     </div>
                 {% else %}
-                    <div class="gw-disposition gw-disposition--grille" data-controller="disposition">
+                    <div class="gw-disposition gw-disposition--grille" data-controller="disposition" data-disposition-mode="grille">
                         <div class="d-flex justify-content-end mb-3">
                             {% include '_disposition_boutons.html.twig' with { label: 'Disposition des jeux' } only %}
                         </div>
