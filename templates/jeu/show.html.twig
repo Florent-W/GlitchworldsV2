@@ -174,6 +174,7 @@
                     <div class="border-top pt-3 mb-3">
                         {{ form_start(formulaireNote) }}
                             {{ form_row(formulaireNote.note) }}
+                            {{ form_row(formulaireNote.contenu) }}
                             {{ form_widget(formulaireNote.enregistrer) }}
                         {{ form_end(formulaireNote) }}
                     </div>
@@ -213,6 +214,26 @@
                     <div class="gw-quick-info__item">
                         <i class="bi bi-tag-fill" aria-hidden="true"></i>
                         <div><span>Catégorie</span><strong>{{ jeu.categorie.nom }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.jeuxAssocies is not empty %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-link-45deg" aria-hidden="true"></i>
+                        <div>
+                            <span>Jeu{{ jeu.jeuxAssocies|length > 1 ? 'x' : '' }} associé{{ jeu.jeuxAssocies|length > 1 ? 's' : '' }}</span>
+                            <strong>{% for jeuAssocie in jeu.jeuxAssocies %}<a href="{{ path('app_jeu_show', {slug: jeuAssocie.slug, id: jeuAssocie.id}) }}">{{ jeuAssocie.nom }}</a>{{ not loop.last ? ', ' }}{% endfor %}</strong>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.modsAssocies is not empty %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-puzzle-fill" aria-hidden="true"></i>
+                        <div>
+                            <span>Mods disponibles</span>
+                            <strong>{% for mod in jeu.modsAssocies %}<a href="{{ path('app_jeu_show', {slug: mod.slug, id: mod.id}) }}">{{ mod.nom }}</a>{{ not loop.last ? ', ' }}{% endfor %}</strong>
+                        </div>
                     </div>
                 {% endif %}
 
@@ -313,6 +334,61 @@
         son_survol: 'survol-jeu'
     } only %}
 
+    <section id="avis-joueurs" class="gw-panel p-4 mt-4" aria-labelledby="avis-joueurs-title">
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i>
+                <h2 id="avis-joueurs-title" class="h4 mb-0">Avis des joueurs</h2>
+            </div>
+            <span class="gw-result-count d-inline-flex align-items-center gap-2">
+                {% if resumeAvis.moyenne is not null %}
+                    <span><i class="bi bi-star-fill text-warning me-1" aria-hidden="true"></i>{{ resumeAvis.moyenne }}/5</span>
+                    <span aria-hidden="true">·</span>
+                {% endif %}
+                <span>{{ avisPublies|length }} avis</span>
+            </span>
+        </div>
+
+        {% if avisPublies is not empty %}
+            <div class="vstack gap-3">
+                {% for avis in avisPublies %}
+                    <article class="gw-review">
+                        <div class="gw-review__avatar">{% if avis.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: avis.auteur.id}) }}" aria-label="Voir le profil de {{ avis.auteur.pseudo }}">{% if avis.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ avis.auteur.id ~ '/' ~ avis.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ avis.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}</div>
+                        <div class="min-w-0">
+                        <header class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <strong>{% if avis.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: avis.auteur.id}) }}">{{ avis.auteur.pseudo }}</a>{% else %}Ancien membre{% endif %}</strong>
+                            <span class="gw-review__rating" aria-label="Note : {{ avis.note|number_format(0) }} sur 5">
+                                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                                {{ avis.note|number_format(0) }}/5
+                            </span>
+                            <time class="small text-secondary ms-sm-auto" datetime="{{ avis.dateAvis|date('c') }}">
+                                {{ avis.dateAvis|format_datetime('medium', 'short', locale='fr') }}
+                            </time>
+                            {% if is_granted('ROLE_MODERATEUR') %}
+                                <a class="btn btn-sm btn-outline-primary" href="{{ path('app_moderation_avis_modifier', { id: avis.id, retour: 'fiche' }) }}" aria-label="Modifier cet avis">
+                                    <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                                    <span class="d-none d-sm-inline ms-1">Modifier</span>
+                                </a>
+                                <form method="post" action="{{ path('app_moderation_avis_supprimer', { id: avis.id }) }}" onsubmit="return confirm('Supprimer cette note et cet avis ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('supprimer-avis-' ~ avis.id) }}">
+                                    <input type="hidden" name="_retour" value="fiche">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer cet avis">
+                                        <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                                        <span class="d-none d-sm-inline ms-1">Supprimer</span>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </header>
+                        <div class="gw-review__content">{{ avis.contenu|nl2br }}</div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-secondary mb-0">Aucun avis écrit pour le moment. Sois le premier à partager le tien.</p>
+        {% endif %}
+    </section>
+
     <section id="commentaires" class="gw-panel p-4 mt-4" aria-labelledby="commentaires-title">
             <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
                 <div class="d-flex align-items-center gap-2">
@@ -326,12 +402,12 @@
             <div class="vstack gap-3 mb-4">
                 {% for commentaire in commentaires %}
                     <article id="commentaire-{{ commentaire.id }}" class="gw-comment">
-                        <div class="gw-comment__avatar" aria-hidden="true">
-                            {{ commentaire.auteur ? commentaire.auteur.pseudo|first|upper : '?' }}
+                        <div class="gw-comment__avatar">
+                            {% if commentaire.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: commentaire.auteur.id}) }}" aria-label="Voir le profil de {{ commentaire.auteur.pseudo }}">{% if commentaire.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ commentaire.auteur.id ~ '/' ~ commentaire.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ commentaire.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}
                         </div>
                         <div>
                             <header class="d-flex flex-wrap align-items-baseline gap-2 mb-1">
-                                <strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Membre supprimé' }}</strong>
+                                <strong>{% if commentaire.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: commentaire.auteur.id}) }}">{{ commentaire.auteur.pseudo }}</a>{% else %}Membre supprimé{% endif %}</strong>
                                 <time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">
                                     {{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}
                                 </time>
@@ -364,10 +440,10 @@
                                 <div class="gw-comment-replies vstack gap-2">
                                     {% for reponse in commentaire.reponses %}
                                         <article class="gw-comment gw-comment--reply">
-                                            <div class="gw-comment__avatar" aria-hidden="true">{{ reponse.auteur ? reponse.auteur.pseudo|first|upper : '?' }}</div>
+                                            <div class="gw-comment__avatar">{% if reponse.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}" aria-label="Voir le profil de {{ reponse.auteur.pseudo }}">{% if reponse.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ reponse.auteur.id ~ '/' ~ reponse.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ reponse.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}</div>
                                             <div class="flex-grow-1">
                                                 <header class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                                    <strong>{{ reponse.auteur ? reponse.auteur.pseudo : 'Membre supprimé' }}</strong>
+                                                    <strong>{% if reponse.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}">{{ reponse.auteur.pseudo }}</a>{% else %}Membre supprimé{% endif %}</strong>
                                                     <span class="badge rounded-pill text-bg-light">Réponse</span>
                                                     <time class="small text-secondary" datetime="{{ reponse.dateCommentaire|date('c') }}">{{ reponse.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time>
                                                     {% if app.user %}

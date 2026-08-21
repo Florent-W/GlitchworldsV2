@@ -40,7 +40,8 @@ final class ProgressionUtilisateur
     {
         return $this->crediter($utilisateur, $categorie, 'legacy:'.$cle, $libelle, $experience, $points, null);
     }
-    public function debiterBoutique(Utilisateur $utilisateur, int $articleId, string $nom, int $points): void { if ($utilisateur->getPoints() < $points) { throw new \DomainException('Tu n’as pas assez de points pour cet achat.'); } $this->appliquer($utilisateur, 'boutique', $utilisateur->getId().':achat:'.$articleId, 'Achat : '.$nom, 0, -$points); }
+    public function debiterBoutique(Utilisateur $utilisateur, int $articleId, string $nom, int $points, int $numeroAchat = 1): void { if ($utilisateur->getPoints() < $points) { throw new \DomainException('Tu n’as pas assez de points pour cet achat.'); } $suffixe = $numeroAchat > 1 ? ':'.$numeroAchat : ''; $this->appliquer($utilisateur, 'boutique', $utilisateur->getId().':achat:'.$articleId.$suffixe, 'Achat : '.$nom.($numeroAchat > 1 ? ' (emplacement '.$numeroAchat.')' : ''), 0, -$points); }
+    public function achatBoutiqueDejaDebite(Utilisateur $utilisateur, int $articleId, int $numeroAchat = 1): bool { $suffixe = $numeroAchat > 1 ? ':'.$numeroAchat : ''; return $this->mouvements->existe($utilisateur, $utilisateur->getId().':achat:'.$articleId.$suffixe); }
 
     private function crediter(Utilisateur $utilisateur, string $categorie, string $cle, string $libelle, int $experience, int $points, ?int $plafondJournalier = null): bool
     {

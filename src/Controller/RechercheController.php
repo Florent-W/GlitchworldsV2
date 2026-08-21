@@ -67,7 +67,10 @@ final class RechercheController extends AbstractController
             'notesJeux' => $avisRepository->trouverResumesPour($paginationJeux['jeux']),
             'totalActualites' => $totalActualites, 'totalMembres' => $totalMembres,
             'categorieActualite' => $categorieActualite,
-            'categoriesActualite' => CategorieActualite::cases(),
+            'categoriesActualite' => array_values(array_filter(
+                CategorieActualite::cases(),
+                static fn (CategorieActualite $categorie): bool => $categorie !== CategorieActualite::Mods,
+            )),
             'categories' => $categorieRepository->trouverToutes(), 'plateformes' => $plateformeRepository->trouverToutes(), 'genres' => $genreRepository->trouverTous(), 'langues' => $langueRepository->trouverToutes(),
             'annees' => $jeuRepository->listerAnneesSortie(), 'tris' => TriJeu::cases(),
             'totalResultats' => $paginationJeux['total'] + $totalActualites + $totalMembres,

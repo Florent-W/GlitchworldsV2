@@ -57,6 +57,32 @@ class CommentaireJeuRepository extends ServiceEntityRepository
         return $this->count(['jeu' => $jeu]);
     }
 
+    /**
+     * @param list<Jeu> $jeux
+     * @return array<int, int>
+     */
+    public function compterParJeux(array $jeux): array
+    {
+        if ([] === $jeux) {
+            return [];
+        }
+
+        $lignes = $this->createQueryBuilder('commentaire')
+            ->select('IDENTITY(commentaire.jeu) AS jeuId, COUNT(commentaire.id) AS total')
+            ->andWhere('commentaire.jeu IN (:jeux)')
+            ->setParameter('jeux', $jeux)
+            ->groupBy('commentaire.jeu')
+            ->getQuery()
+            ->getArrayResult();
+
+        $compteurs = [];
+        foreach ($lignes as $ligne) {
+            $compteurs[(int) $ligne['jeuId']] = (int) $ligne['total'];
+        }
+
+        return $compteurs;
+    }
+
     /** @return list<CommentaireJeu> */
     public function trouverDerniersPublics(int $limite = 8): array
     {

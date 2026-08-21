@@ -61,6 +61,32 @@ final class CommentaireActualiteRepository extends ServiceEntityRepository
             ->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * @param list<Actualite> $actualites
+     * @return array<int, int>
+     */
+    public function compterParActualites(array $actualites): array
+    {
+        if ([] === $actualites) {
+            return [];
+        }
+
+        $lignes = $this->createQueryBuilder('commentaire')
+            ->select('IDENTITY(commentaire.actualite) AS actualiteId, COUNT(commentaire.id) AS total')
+            ->andWhere('commentaire.actualite IN (:actualites)')
+            ->setParameter('actualites', $actualites)
+            ->groupBy('commentaire.actualite')
+            ->getQuery()
+            ->getArrayResult();
+
+        $compteurs = [];
+        foreach ($lignes as $ligne) {
+            $compteurs[(int) $ligne['actualiteId']] = (int) $ligne['total'];
+        }
+
+        return $compteurs;
+    }
+
     /** @return list<CommentaireActualite> */
     public function trouverPourModeration(int $limite = 50): array
     {

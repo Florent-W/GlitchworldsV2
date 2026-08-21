@@ -33,4 +33,5 @@ return [
     'bootstrap-icons/font/bootstrap-icons.min.css' => ['version' => '1.13.1', 'type' => 'css'],
     'fullpage.js' => ['version' => '4.0.41'],
     'fullpage.js/dist/fullpage.min.css' => ['version' => '4.0.41', 'type' => 'css'],
+    'sortablejs' => ['version' => '1.15.7'],
 ];

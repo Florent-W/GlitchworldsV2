@@ -17,6 +17,7 @@ class AchatBoutique
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?ArticleBoutique $article = null;
     #[ORM\Column] private int $prixPaye = 0;
+    #[ORM\Column(options: ['default' => 1])] private int $quantite = 1;
     #[ORM\Column] private \DateTimeImmutable $acheteLe;
 
     public function __construct() { $this->acheteLe = new \DateTimeImmutable(); }
@@ -27,5 +28,8 @@ class AchatBoutique
     public function setArticle(ArticleBoutique $article): static { $this->article = $article; return $this; }
     public function getPrixPaye(): int { return $this->prixPaye; }
     public function setPrixPaye(int $prix): static { $this->prixPaye = $prix; return $this; }
+    public function getQuantite(): int { return $this->quantite; }
+    public function setQuantite(int $quantite): static { $this->quantite = max(1, $quantite); return $this; }
+    public function ajouterUnite(): static { ++$this->quantite; return $this; }
     public function getAcheteLe(): \DateTimeImmutable { return $this->acheteLe; }
 }

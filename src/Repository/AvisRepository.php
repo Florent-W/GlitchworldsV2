@@ -72,4 +72,18 @@ class AvisRepository extends ServiceEntityRepository
             'total' => $resultat['total'],
         ];
     }
+
+    /** @return list<Avis> */
+    public function trouverAvisPourJeu(Jeu $jeu): array
+    {
+        return $this->createQueryBuilder('avis')
+            ->leftJoin('avis.auteur', 'auteur')
+            ->addSelect('auteur')
+            ->andWhere('avis.jeu = :jeu')
+            ->andWhere("TRIM(avis.contenu) <> ''")
+            ->setParameter('jeu', $jeu)
+            ->orderBy('avis.dateAvis', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

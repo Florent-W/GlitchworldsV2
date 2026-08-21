@@ -37,12 +37,19 @@ final class ActualiteController extends AbstractController
 
     private function afficherListe(Request $request, ActualiteRepository $actualiteRepository, ?CategorieActualite $categorie, string $routeListe): Response
     {
+        if ($categorie === CategorieActualite::Mods) {
+            return $this->redirectToRoute('app_jeux', ['categorie' => 'mods'], Response::HTTP_MOVED_PERMANENTLY);
+        }
+
         $recherche = trim((string) $request->query->get('recherche', ''));
 
         return $this->render('actualite/index.html.twig', [
             ...$actualiteRepository->trouverPubliees($request->query->getInt('page', 1), 12, $categorie, $recherche),
             'categorieSelectionnee' => $categorie,
-            'categories' => CategorieActualite::cases(),
+            'categories' => array_values(array_filter(
+                CategorieActualite::cases(),
+                static fn (CategorieActualite $categorie): bool => $categorie !== CategorieActualite::Mods,
+            )),
             'recherche' => $recherche,
             'routeListe' => $routeListe,
         ]);
@@ -53,6 +60,15 @@ final class ActualiteController extends AbstractController
     {
         if ($actualite->getStatut() !== StatutActualite::Publiee) {
             throw $this->createNotFoundException('Cette actualité n’existe pas.');
+        }
+
+        if ($actualite->getCategorie() === CategorieActualite::Mods && $actualite->getFicheJeu() !== null) {
+            $jeu = $actualite->getFicheJeu();
+
+            return $this->redirectToRoute('app_jeu_show', [
+                'slug' => $jeu->getSlug(),
+                'id' => $jeu->getId(),
+            ], Response::HTTP_MOVED_PERMANENTLY);
         }
 
         if ($actualite->getSlug() !== $slug) {

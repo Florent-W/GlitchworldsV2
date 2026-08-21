@@ -125,7 +125,7 @@
             ]) %}
         {% endif %}
         {% set nav_items = nav_items|merge([
-            { label: 'Boutique',   icon: 'bag-fill',        route: 'app_boutique', couleur: 'orange' }
+            { label: 'Récompenses', icon: 'gift-fill',       route: 'app_boutique', couleur: 'orange' }
         ]) %}
         {% if is_granted('ROLE_MODERATEUR') %}
             {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_accueil', couleur: 'gris' }]) %}

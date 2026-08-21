@@ -26,6 +26,7 @@ final class ActualiteRepository extends ServiceEntityRepository
         $requete = $this->createQueryBuilder('actualite')
             ->leftJoin('actualite.auteur', 'auteur')->addSelect('auteur')
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('actualite.categorie != :categorieMods')->setParameter('categorieMods', CategorieActualite::Mods)
             ->orderBy('actualite.publieeLe', 'DESC');
 
         if ($categorie !== null) {
@@ -51,6 +52,7 @@ final class ActualiteRepository extends ServiceEntityRepository
             ->innerJoin('actualite.jeux', 'jeu')
             ->andWhere('jeu = :jeu')->setParameter('jeu', $jeu)
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('actualite.categorie != :categorieMods')->setParameter('categorieMods', CategorieActualite::Mods)
             ->addOrderBy('actualite.miseEnAvant', 'DESC')
             ->addOrderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
             ->getQuery()->getResult();
@@ -62,6 +64,7 @@ final class ActualiteRepository extends ServiceEntityRepository
         $requete = $this->createQueryBuilder('actualite')
             ->leftJoin('actualite.auteur', 'auteur')->addSelect('auteur')
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('actualite.categorie != :categorieMods')->setParameter('categorieMods', CategorieActualite::Mods)
             ->orderBy('actualite.publieeLe', 'DESC');
 
         if ($categorie !== null) {
@@ -76,6 +79,7 @@ final class ActualiteRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('actualite')
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('actualite.categorie != :categorieMods')->setParameter('categorieMods', CategorieActualite::Mods)
             ->andWhere('actualite.miseEnAvant = true')
             ->orderBy('actualite.publieeLe', 'DESC')->setMaxResults($limite)
             ->getQuery()->getResult();
@@ -87,6 +91,7 @@ final class ActualiteRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('actualite')
             ->select('partial actualite.{id, slug, publieeLe}')
             ->andWhere('actualite.statut = :statut')->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('actualite.categorie != :categorieMods')->setParameter('categorieMods', CategorieActualite::Mods)
             ->orderBy('actualite.publieeLe', 'DESC')
             ->getQuery()->getResult();
     }
@@ -113,7 +118,9 @@ final class ActualiteRepository extends ServiceEntityRepository
     {
         $requete = $this->createQueryBuilder('actualite')
             ->andWhere('actualite.statut = :statut')
-            ->setParameter('statut', StatutActualite::Publiee);
+            ->setParameter('statut', StatutActualite::Publiee)
+            ->andWhere('actualite.categorie != :categorieMods')
+            ->setParameter('categorieMods', CategorieActualite::Mods);
 
         if ('' !== trim($recherche)) {
             $requete
@@ -134,8 +141,10 @@ final class ActualiteRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('actualite')
             ->andWhere('actualite.statut = :statut')
+            ->andWhere('actualite.categorie != :categorieMods')
             ->andWhere('actualite.id < :id')
             ->setParameter('statut', StatutActualite::Publiee)
+            ->setParameter('categorieMods', CategorieActualite::Mods)
             ->setParameter('id', $actualite->getId())
             ->orderBy('actualite.id', 'DESC')
             ->setMaxResults(1)
@@ -148,8 +157,10 @@ final class ActualiteRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('actualite')
             ->andWhere('actualite.statut = :statut')
+            ->andWhere('actualite.categorie != :categorieMods')
             ->andWhere('actualite.id > :id')
             ->setParameter('statut', StatutActualite::Publiee)
+            ->setParameter('categorieMods', CategorieActualite::Mods)
             ->setParameter('id', $actualite->getId())
             ->orderBy('actualite.id', 'ASC')
             ->setMaxResults(1)

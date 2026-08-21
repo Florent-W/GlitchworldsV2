@@ -20,5 +20,11 @@
         {% if afficher_auteur and jeu.developpeur %}
             <p class="small text-secondary mb-0 mt-1"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ jeu.developpeur }}</p>
         {% endif %}
+        {% if nombreCommentaires is defined %}
+            <div class="gw-home-card-meta mt-2">
+                <time datetime="{{ jeu.creeLe|date('c') }}"><i class="bi bi-calendar3" aria-hidden="true"></i>{{ jeu.creeLe|date('d/m/Y') }}</time>
+                <span><i class="bi bi-chat-fill" aria-hidden="true"></i>{{ nombreCommentaires }}</span>
+            </div>
+        {% endif %}
     </div>
 </article>

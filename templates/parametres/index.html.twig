@@ -23,6 +23,7 @@
                 <a class="gw-settings__nav-link" href="#profil"><i class="bi bi-person-fill"></i> Profil</a>
                 <a class="gw-settings__nav-link" href="#securite"><i class="bi bi-shield-lock-fill"></i> Compte et sécurité</a>
                 <a class="gw-settings__nav-link" href="#accessibilite"><i class="bi bi-universal-access"></i> Accessibilité</a>
+                <a class="gw-settings__nav-link" href="#confidentialite"><i class="bi bi-shield-check"></i> Confidentialité</a>
             </nav>
         </div>
 
@@ -171,8 +172,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="mt-5 border-top pt-4">
+                <div id="confidentialite" class="mt-5 border-top pt-4 scroll-mt">
                     <h3 class="h5 mb-3">Confidentialité et compte</h3>
+                    <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-3 rounded border p-3 mb-4 text-decoration-none" href="{{ path('app_confidentialite') }}">
+                        <span class="d-flex align-items-center gap-3">
+                            <span class="gw-settings__icon"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i></span>
+                            <span><strong class="d-block">Politique de confidentialité</strong><small class="text-secondary">Données personnelles, cookies, publicité AdSense et exercice de tes droits.</small></span>
+                        </span>
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </a>
                     <div class="form-check form-switch d-flex align-items-start gap-3 ps-0 mb-4">
                         <div class="flex-grow-1"><label class="form-check-label fw-semibold" for="profil-prive">Profil privé</label><small class="d-block text-secondary">Cache ton profil aux visiteurs non connectés.</small></div>
                         <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="profil-prive" data-preferences-target="profilPrive" data-action="preferences#changerProfilPrive">

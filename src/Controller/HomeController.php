@@ -30,13 +30,17 @@ final class HomeController extends AbstractController
     {
         $nouveautes = $jeuRepository->trouverNouveautes();
         $populaires = $jeuRepository->trouverPopulaires();
+        $dernieresActualites = $actualiteRepository->trouverDernieres();
+        $derniersGlitchs = $actualiteRepository->trouverDernieres(4, CategorieActualite::Glitchs);
 
         return $this->render('home/index.html.twig', [
             'nouveautes' => $nouveautes,
             'populaires' => $populaires,
             'notesJeux' => $avisRepository->trouverResumesPour([...$populaires, ...$nouveautes]),
-            'dernieresActualites' => $actualiteRepository->trouverDernieres(),
-            'derniersGlitchs' => $actualiteRepository->trouverDernieres(4, CategorieActualite::Glitchs),
+            'commentairesJeux' => $commentaireJeuRepository->compterParJeux([...$populaires, ...$nouveautes]),
+            'dernieresActualites' => $dernieresActualites,
+            'derniersGlitchs' => $derniersGlitchs,
+            'commentairesActualites' => $commentaireActualiteRepository->compterParActualites([...$dernieresActualites, ...$derniersGlitchs]),
             'actualitesMisesEnAvant' => $actualiteRepository->trouverMisesEnAvant(),
             'activiteRecente' => $this->construireActiviteRecente(
                 $commentaireJeuRepository->trouverDerniersPublics(6),

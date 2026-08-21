@@ -4,12 +4,15 @@ namespace App\Controller;
 
 use App\Entity\Jeu;
 use App\Entity\Actualite;
+use App\Entity\Avis;
 use App\Enum\StatutJeu;
 use App\Enum\StatutActualite;
 use App\Repository\CommentaireActualiteRepository;
 use App\Repository\CommentaireJeuRepository;
 use App\Repository\JeuRepository;
 use App\Repository\ActualiteRepository;
+use App\Repository\AvisRepository;
+use App\Form\NoteJeuType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,12 +39,100 @@ final class ModerationController extends AbstractController
 
     #[Route('/commentaires', name: 'commentaires', methods: ['GET'])]
     public function commentaires(
+        Request $request,
         CommentaireJeuRepository $commentaireJeuRepository,
         CommentaireActualiteRepository $commentaireActualiteRepository,
+        AvisRepository $avisRepository,
     ): Response {
+        $ongletActif = $request->query->getString('onglet', 'jeux');
+        if (!in_array($ongletActif, ['jeux', 'actualites', 'avis'], true)) {
+            $ongletActif = 'jeux';
+        }
+
         return $this->render('moderation/commentaires.html.twig', [
             'commentairesJeux' => $commentaireJeuRepository->trouverPourModeration(),
             'commentairesActualites' => $commentaireActualiteRepository->trouverPourModeration(),
+            'avisJeux' => $avisRepository->findBy([], ['dateAvis' => 'DESC']),
+            'ongletActif' => $ongletActif,
+        ]);
+    }
+
+    #[Route('/avis/{id}/supprimer', name: 'avis_supprimer', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function supprimerAvis(
+        Avis $avis,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        JournalModeration $journal,
+    ): Response {
+        if (!$this->isCsrfTokenValid('supprimer-avis-'.$avis->getId(), $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $jeu = $avis->getJeu();
+        $moderateur = $this->getUser();
+        $journal->ajouter(
+            $moderateur instanceof Utilisateur ? $moderateur : null,
+            'suppression',
+            'avis_jeu',
+            $avis->getId(),
+            'Suppression de l’avis #'.$avis->getId().' sur '.$avis->getJeu()?->getNom(),
+        );
+        $entityManager->remove($avis);
+        $entityManager->flush();
+        $this->addFlash('success', 'L’avis a été supprimé.');
+
+        if ($request->request->getString('_retour') === 'fiche' && $jeu !== null) {
+            return $this->redirect($this->generateUrl('app_jeu_show', [
+                'slug' => $jeu->getSlug(),
+                'id' => $jeu->getId(),
+            ]).'#avis-joueurs');
+        }
+
+        return $this->redirectToRoute('app_moderation_commentaires', ['onglet' => 'avis']);
+    }
+
+    #[Route('/avis/{id}/modifier', name: 'avis_modifier', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function modifierAvis(
+        Avis $avis,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        JournalModeration $journal,
+    ): Response {
+        $retour = $request->query->getString('retour') === 'fiche' ? 'fiche' : 'moderation';
+        $formulaire = $this->createForm(NoteJeuType::class, [
+            'note' => $avis->getNote(),
+            'contenu' => $avis->getContenu(),
+        ]);
+        $formulaire->handleRequest($request);
+
+        if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $avis->setNote((float) $formulaire->get('note')->getData());
+            $avis->setContenu((string) $formulaire->get('contenu')->getData());
+            $moderateur = $this->getUser();
+            $journal->ajouter(
+                $moderateur instanceof Utilisateur ? $moderateur : null,
+                'modification',
+                'avis_jeu',
+                $avis->getId(),
+                'Modification de l’avis #'.$avis->getId().' sur '.$avis->getJeu()?->getNom(),
+            );
+            $entityManager->flush();
+            $this->addFlash('success', 'L’avis a été modifié.');
+
+            if ($retour === 'fiche' && $avis->getJeu() !== null) {
+                return $this->redirect($this->generateUrl('app_jeu_show', [
+                    'slug' => $avis->getJeu()->getSlug(),
+                    'id' => $avis->getJeu()->getId(),
+                ]).'#avis-joueurs');
+            }
+
+            return $this->redirectToRoute('app_moderation_commentaires', ['onglet' => 'avis']);
+        }
+
+        return $this->render('moderation/modifier_avis.html.twig', [
+            'avis' => $avis,
+            'formulaire' => $formulaire,
+            'retour' => $retour,
         ]);
     }
 

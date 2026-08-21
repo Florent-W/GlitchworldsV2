@@ -114,6 +114,23 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?ArticleBoutique $titreEquipe = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ArticleBoutique $effetProfilEquipe = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ArticleBoutique $cadreAvatarEquipe = null;
+
+    #[ORM\ManyToOne(targetEntity: Jeu::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Jeu $ficheMiseEnAvant = null;
+
+    /** @var Collection<int, Jeu> */
+    #[ORM\ManyToMany(targetEntity: Jeu::class)]
+    #[ORM\JoinTable(name: 'utilisateur_fiche_vitrine')]
+    private Collection $fichesMisesEnAvant;
+
     /** @var Collection<int, Jeu> */
     #[ORM\ManyToMany(targetEntity: Jeu::class, inversedBy: 'ajouteAuxFavorisPar')]
     #[ORM\JoinTable(name: 'utilisateur_jeu_favori')]
@@ -133,6 +150,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->jeuxFavoris = new ArrayCollection();
+        $this->fichesMisesEnAvant = new ArrayCollection();
         $this->abonnements = new ArrayCollection();
         $this->abonnes = new ArrayCollection();
         $this->inscritLe = new \DateTimeImmutable();
@@ -331,6 +349,17 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function isEnLigne(): bool { return $this->derniereActivite !== null && $this->derniereActivite > new \DateTimeImmutable('-5 minutes'); }
     public function getTitreEquipe(): ?ArticleBoutique { return $this->titreEquipe; }
     public function setTitreEquipe(?ArticleBoutique $article): static { $this->titreEquipe = $article; return $this; }
+    public function getEffetProfilEquipe(): ?ArticleBoutique { return $this->effetProfilEquipe; }
+    public function setEffetProfilEquipe(?ArticleBoutique $article): static { $this->effetProfilEquipe = $article; return $this; }
+    public function getCadreAvatarEquipe(): ?ArticleBoutique { return $this->cadreAvatarEquipe; }
+    public function setCadreAvatarEquipe(?ArticleBoutique $article): static { $this->cadreAvatarEquipe = $article; return $this; }
+    public function getFicheMiseEnAvant(): ?Jeu { return $this->ficheMiseEnAvant; }
+    public function setFicheMiseEnAvant(?Jeu $jeu): static { $this->ficheMiseEnAvant = $jeu; return $this; }
+    /** @return Collection<int, Jeu> */
+    public function getFichesMisesEnAvant(): Collection { return $this->fichesMisesEnAvant; }
+    public function ajouterFicheMiseEnAvant(Jeu $jeu): static { if (!$this->fichesMisesEnAvant->contains($jeu)) { $this->fichesMisesEnAvant->add($jeu); } return $this; }
+    public function retirerFicheMiseEnAvant(Jeu $jeu): static { $this->fichesMisesEnAvant->removeElement($jeu); return $this; }
+    public function viderFichesMisesEnAvant(): static { $this->fichesMisesEnAvant->clear(); return $this; }
 
     public function getNiveau(): int
     {

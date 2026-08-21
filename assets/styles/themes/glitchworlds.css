@@ -17,4 +17,51 @@
     --gw-muted: #64748b;
 }
 
-/* Mode sombre : :root[data-theme="glitchworlds"][data-bs-theme="dark"] */
+/* Palette sombre propre au thème Glitchworlds. */
+:root[data-theme="glitchworlds"][data-bs-theme="dark"] {
+    color-scheme: dark;
+    --gw-primary: #6eafff;
+    --gw-primary-rgb: 110, 175, 255;
+    --gw-primary-dark: #9bc7ff;
+    --gw-secondary: #b49aff;
+    --gw-secondary-rgb: 180, 154, 255;
+    --gw-background: #07101f;
+    --gw-background-accent: #101d35;
+    --gw-surface: rgba(15, 27, 48, .92);
+    --gw-surface-solid: #111d31;
+    --gw-text: #edf4ff;
+    --gw-muted: #aebdd2;
+    --gw-border: rgba(157, 188, 232, .28);
+    --gw-shadow: 0 12px 34px rgba(0, 0, 0, .46);
+    --gw-shadow-soft: 0 4px 18px rgba(0, 0, 0, .34);
+    --gw-glow: 0 0 0 3px rgba(var(--gw-primary-rgb), .25);
+    --bs-body-color: var(--gw-text);
+    --bs-body-bg: var(--gw-background);
+    --bs-secondary-color: var(--gw-muted);
+    --bs-tertiary-bg: #17243a;
+    --bs-border-color: var(--gw-border);
+}
+
+:root[data-theme="glitchworlds"][data-bs-theme="dark"] body {
+    background-image:
+        radial-gradient(circle at top left, rgba(var(--gw-primary-rgb), .18), transparent 42%),
+        radial-gradient(circle at top right, rgba(var(--gw-secondary-rgb), .13), transparent 38%),
+        linear-gradient(180deg, var(--gw-background) 0%, var(--gw-background-accent) 100%);
+}
+
+:root[data-theme="glitchworlds"][data-bs-theme="dark"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .table, .accordion-item) {
+    color: var(--gw-text);
+    background-color: var(--gw-surface-solid);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="glitchworlds"][data-bs-theme="dark"] :is(.form-control, .form-select, .input-group-text) {
+    color: var(--gw-text);
+    background-color: #0b1729;
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="glitchworlds"][data-bs-theme="dark"] :is(.form-control, .form-select)::placeholder {
+    color: var(--gw-muted);
+    opacity: .9;
+}

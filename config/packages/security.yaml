@@ -56,7 +56,8 @@ security:
         - { path: ^/communaute/publication, roles: ROLE_USER }
         - { path: ^/messages, roles: ROLE_USER }
         - { path: ^/signaler, roles: ROLE_USER }
-        - { path: ^/boutique/\d+/(acheter|equiper), roles: ROLE_USER }
+        - { path: ^/boutique/\d+/(acheter|equiper|desequiper), roles: ROLE_USER }
+        - { path: ^/boutique/vitrine/selectionner, roles: ROLE_USER }
 
 when@test:
     security:

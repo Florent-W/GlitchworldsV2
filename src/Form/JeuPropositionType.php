@@ -17,6 +17,7 @@ use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\ORM\EntityRepository;
 
 final class JeuPropositionType extends AbstractType
 {
@@ -26,8 +27,9 @@ final class JeuPropositionType extends AbstractType
             ->add('nom', null, ['label' => 'Titre du jeu'])
             ->add('description', TextareaType::class, [
                 'label' => 'Description courte',
+                'required' => false,
                 'attr' => ['maxlength' => 160, 'rows' => 3],
-                'help' => '160 caractères maximum.',
+                'help' => 'Facultative, 160 caractères maximum.',
             ])
             ->add('contenu', TextareaType::class, [
                 'label' => 'Présentation complète',
@@ -44,6 +46,26 @@ final class JeuPropositionType extends AbstractType
                 'class' => CategorieJeu::class,
                 'choice_label' => 'nom',
                 'placeholder' => 'Choisir une catégorie',
+            ])
+            ->add('jeuxAssocies', EntityType::class, [
+                'class' => Jeu::class,
+                'choice_label' => 'nom',
+                'multiple' => true,
+                'required' => false,
+                'label' => 'Jeux associés',
+                'help' => 'Pour un mod, sélectionne le ou les jeux nécessaires ou concernés.',
+                'query_builder' => static function (EntityRepository $repository) use ($options) {
+                    $requete = $repository->createQueryBuilder('jeu')
+                        ->andWhere('jeu.statut = :statut')
+                        ->setParameter('statut', \App\Enum\StatutJeu::Approuve)
+                        ->orderBy('jeu.nom', 'ASC');
+                    $jeuCourant = $options['data'] ?? null;
+                    if ($jeuCourant instanceof Jeu && $jeuCourant->getId() !== null) {
+                        $requete->andWhere('jeu.id != :jeuCourant')->setParameter('jeuCourant', $jeuCourant->getId());
+                    }
+
+                    return $requete;
+                },
             ])
             ->add('genres', EntityType::class, [
                 'class' => Genre::class,

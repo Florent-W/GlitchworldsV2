@@ -28,7 +28,6 @@ class Jeu
     private ?string $slug = null;
 
     #[ORM\Column(length: 160)]
-    #[Assert\NotBlank(normalizer: 'trim')]
     #[Assert\Length(max: 160, normalizer: 'trim')]
     private string $description = '';
 
@@ -81,6 +80,19 @@ class Jeu
     #[ORM\ManyToMany(targetEntity: Actualite::class, mappedBy: 'jeux')]
     private Collection $actualites;
 
+    /** @var Collection<int, self> */
+    #[ORM\ManyToMany(targetEntity: self::class, inversedBy: 'modsAssocies')]
+    #[ORM\JoinTable(name: 'mod_jeu')]
+    #[ORM\JoinColumn(name: 'mod_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'jeu_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\OrderBy(['nom' => 'ASC'])]
+    private Collection $jeuxAssocies;
+
+    /** @var Collection<int, self> */
+    #[ORM\ManyToMany(targetEntity: self::class, mappedBy: 'jeuxAssocies')]
+    #[ORM\OrderBy(['nom' => 'ASC'])]
+    private Collection $modsAssocies;
+
     #[ORM\Column(enumType: StatutJeu::class)]
     private StatutJeu $statut = StatutJeu::Brouillon;
 
@@ -111,6 +123,8 @@ class Jeu
         $this->langues = new ArrayCollection();
         $this->ajouteAuxFavorisPar = new ArrayCollection();
         $this->actualites = new ArrayCollection();
+        $this->jeuxAssocies = new ArrayCollection();
+        $this->modsAssocies = new ArrayCollection();
         $this->creeLe = new \DateTimeImmutable();
         $this->modifieLe = new \DateTimeImmutable();
     }
@@ -131,6 +145,13 @@ class Jeu
     {
         return $this->actualites;
     }
+
+    /** @return Collection<int, self> */
+    public function getJeuxAssocies(): Collection { return $this->jeuxAssocies; }
+    public function addJeuxAssocy(self $jeu): static { if ($jeu !== $this && !$this->jeuxAssocies->contains($jeu)) { $this->jeuxAssocies->add($jeu); } return $this; }
+    public function removeJeuxAssocy(self $jeu): static { $this->jeuxAssocies->removeElement($jeu); return $this; }
+    /** @return Collection<int, self> */
+    public function getModsAssocies(): Collection { return $this->modsAssocies; }
 
     public function setId(int $id): static
     {

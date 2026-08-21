@@ -58,6 +58,10 @@ class Actualite
     #[ORM\JoinTable(name: 'actualite_jeu')]
     private Collection $jeux;
 
+    #[ORM\ManyToOne(targetEntity: Jeu::class)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?Jeu $ficheJeu = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $publieeLe;
 
@@ -107,6 +111,8 @@ class Actualite
     public function getJeux(): Collection { return $this->jeux; }
     public function ajouterJeu(Jeu $jeu): static { if (!$this->jeux->contains($jeu)) { $this->jeux->add($jeu); } return $this; }
     public function retirerJeu(Jeu $jeu): static { $this->jeux->removeElement($jeu); return $this; }
+    public function getFicheJeu(): ?Jeu { return $this->ficheJeu; }
+    public function setFicheJeu(?Jeu $ficheJeu): static { $this->ficheJeu = $ficheJeu; return $this; }
     public function getPublieeLe(): \DateTimeImmutable { return $this->publieeLe; }
     public function setPublieeLe(\DateTimeImmutable $publieeLe): static { $this->publieeLe = $publieeLe; return $this; }
     public function isMiseEnAvant(): bool { return $this->miseEnAvant; }

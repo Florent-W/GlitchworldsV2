@@ -139,6 +139,7 @@ final class JeuController extends AbstractController
             : null;
         $formulaireNote = $this->createForm(NoteJeuType::class, [
             'note' => $avisUtilisateur?->getNote(),
+            'contenu' => $avisUtilisateur?->getContenu(),
         ], [
             'action' => $this->generateUrl('app_jeu_noter', ['id' => $jeu->getId()]),
         ]);
@@ -153,6 +154,7 @@ final class JeuController extends AbstractController
             'jeuPrecedent' => $jeuRepository->trouverPrecedent($jeu),
             'jeuSuivant' => $jeuRepository->trouverSuivant($jeu),
             'resumeAvis' => $avisRepository->trouverResume($jeu),
+            'avisPublies' => $avisRepository->trouverAvisPourJeu($jeu),
             'commentaires' => $commentaireJeuRepository->trouverRecents($jeu),
             'totalCommentaires' => $commentaireJeuRepository->compterPourJeu($jeu),
             'formulaireCommentaire' => $formulaireCommentaire,

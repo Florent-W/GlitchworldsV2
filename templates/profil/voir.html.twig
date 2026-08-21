@@ -4,7 +4,7 @@
 {% block meta_description %}Découvre le profil, les jeux favoris et les publications de {{ membre.pseudo }} sur GlitchWorlds.{% endblock %}
 
 {% block body %}
-<div class="gw-profile">
+<div class="gw-profile{% if membre.effetProfilEquipe %} gw-profile--{{ membre.effetProfilEquipe.slug }}{% endif %}{% if membre.cadreAvatarEquipe %} gw-profile--{{ membre.cadreAvatarEquipe.slug }}{% endif %}">
     <header class="gw-profile__hero gw-panel overflow-hidden">
         {% if app.user == membre %}
             <div class="gw-profile__banner gw-profile__banner--editable" data-controller="avatar-profil"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}>
@@ -62,6 +62,8 @@
                     {% if 'ROLE_ADMIN' in membre.roles %}<span class="badge text-bg-primary">Administrateur</span>{% elseif 'ROLE_MODERATEUR' in membre.roles %}<span class="badge text-bg-info">Modérateur</span>{% endif %}
                     <span class="badge rounded-pill text-bg-primary"><i class="bi bi-stars me-1"></i>Niveau {{ membre.niveau }}</span>
                     {% if membre.titreEquipe %}<span class="badge rounded-pill text-bg-{{ membre.titreEquipe.couleur }}-subtle text-{{ membre.titreEquipe.couleur }}-emphasis"><i class="bi bi-{{ membre.titreEquipe.icone }} me-1"></i>{{ membre.titreEquipe.nom }}</span>{% endif %}
+                    {% if membre.effetProfilEquipe %}<span class="badge rounded-pill text-bg-{{ membre.effetProfilEquipe.couleur }}-subtle text-{{ membre.effetProfilEquipe.couleur }}-emphasis"><i class="bi bi-{{ membre.effetProfilEquipe.icone }} me-1"></i>Effet : {{ membre.effetProfilEquipe.nom }}</span>{% endif %}
+                    {% if membre.cadreAvatarEquipe %}<span class="badge rounded-pill text-bg-{{ membre.cadreAvatarEquipe.couleur }}-subtle text-{{ membre.cadreAvatarEquipe.couleur }}-emphasis"><i class="bi bi-{{ membre.cadreAvatarEquipe.icone }} me-1"></i>{{ membre.cadreAvatarEquipe.nom }}</span>{% endif %}
                 </div>
                 <p class="text-secondary mb-1"><i class="bi bi-calendar3 me-1"></i>Membre depuis {{ membre.inscritLe|format_datetime('none', 'none', 'MMMM y', locale='fr') }}</p>
                 {% if membre.biographie %}<p class="mb-0 gw-profile__bio">{{ membre.biographie|nl2br }}</p>{% endif %}
@@ -87,6 +89,18 @@
             </div>
         </div>
     </header>
+
+    {% set fichesVitrine = membre.fichesMisesEnAvant is not empty ? membre.fichesMisesEnAvant : (membre.ficheMiseEnAvant ? [membre.ficheMiseEnAvant] : []) %}
+    {% for ficheVitrine in fichesVitrine %}
+        <section class="gw-profile-showcase mt-4" aria-labelledby="fiche-vitrine-title-{{ ficheVitrine.id }}">
+            <div class="gw-profile-showcase__label"><i class="bi bi-stars" aria-hidden="true"></i> Vitrine de créateur</div>
+            <a class="gw-profile-showcase__card" href="{{ path('app_jeu_show', {slug: ficheVitrine.slug, id: ficheVitrine.id}) }}">
+                {% if ficheVitrine.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ ficheVitrine.id ~ '/' ~ ficheVitrine.miniature) }}" alt="" loading="lazy">{% else %}<span class="gw-profile-showcase__fallback"><i class="bi bi-controller"></i></span>{% endif %}
+                <span><small>Fiche mise en avant</small><strong id="fiche-vitrine-title-{{ ficheVitrine.id }}">{{ ficheVitrine.nom }}</strong><em>{{ ficheVitrine.description ?: 'Découvrir cette création' }}</em></span>
+                <i class="bi bi-arrow-right-circle-fill" aria-hidden="true"></i>
+            </a>
+        </section>
+    {% endfor %}
 
     <div class="row g-4 mt-1">
         <div class="col-lg-8">

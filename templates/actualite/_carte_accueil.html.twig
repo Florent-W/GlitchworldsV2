@@ -19,5 +19,9 @@
     </a>
     <div class="p-3">
         <h3 class="h6 mb-0"><a class="stretched-link text-decoration-none text-body" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}">{{ actualite.titre }}</a></h3>
+        <div class="gw-home-card-meta mt-2">
+            <time datetime="{{ actualite.publieeLe|date('c') }}"><i class="bi bi-calendar3" aria-hidden="true"></i>{{ actualite.publieeLe|date('d/m/Y') }}</time>
+            <span><i class="bi bi-chat-fill" aria-hidden="true"></i>{{ nombreCommentaires|default(0) }}</span>
+        </div>
     </div>
 </article>

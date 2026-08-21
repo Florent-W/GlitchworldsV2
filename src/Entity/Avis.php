@@ -25,6 +25,7 @@ class Avis
     private ?Utilisateur $auteur = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\Length(max: 1500)]
     private string $contenu = '';
 
     #[ORM\Column]
@@ -75,7 +76,7 @@ class Avis
 
     public function setContenu(string $contenu): static
     {
-        $this->contenu = $contenu;
+        $this->contenu = trim($contenu);
 
         return $this;
     }
