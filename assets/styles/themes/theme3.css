@@ -1,0 +1,17 @@
+/* Personnalisation du thème 3. */
+:root[data-theme-style="theme3"] {
+    --gw-primary: #0084c7;
+    --gw-primary-rgb: 0, 132, 199;
+    --gw-primary-dark: #006aa3;
+    --gw-secondary: #ff7a94;
+    --gw-secondary-rgb: 255, 122, 148;
+    --gw-background: #e8ecf0;
+    --gw-background-accent: #dce3ea;
+    --gw-surface: rgba(250, 250, 250, .96);
+    --gw-surface-solid: #f7f7f7;
+    --gw-text: #202426;
+    --gw-muted: #626b70;
+    --gw-border: #9aa5ad;
+    --gw-radius-md: .65rem;
+    --gw-radius-lg: .8rem;
+}

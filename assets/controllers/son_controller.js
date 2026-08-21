@@ -145,6 +145,9 @@ export default class extends Controller {
     }
 
     natureCarte(element) {
+        if (element.dataset.carteType === 'actualite') {
+            return 'article';
+        }
         if (element.matches('.gw-game-card, .gw-similar-card')) {
             return 'jeu';
         }

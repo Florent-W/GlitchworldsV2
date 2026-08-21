@@ -1,0 +1,20 @@
+/*
+ * Personnalisation du thème Glitchworlds.
+ * Les composants communs restent définis dans ../app.css.
+ */
+:root[data-theme="glitchworlds"] {
+    --gw-theme-stylesheet: "glitchworlds";
+    --gw-primary: #2f7df6;
+    --gw-primary-rgb: 47, 125, 246;
+    --gw-primary-dark: #1f63cf;
+    --gw-secondary: #8b5cf6;
+    --gw-secondary-rgb: 139, 92, 246;
+    --gw-background: #eef5ff;
+    --gw-background-accent: #dbe9ff;
+    --gw-surface: rgba(255, 255, 255, .82);
+    --gw-surface-solid: #fff;
+    --gw-text: #0f172a;
+    --gw-muted: #64748b;
+}
+
+/* Mode sombre : :root[data-theme="glitchworlds"][data-bs-theme="dark"] */

@@ -1,0 +1,27 @@
+/* Personnalisation du thème 1. */
+:root[data-theme-style="theme1"] {
+    --gw-primary: #159fe8;
+    --gw-primary-rgb: 21, 159, 232;
+    --gw-primary-dark: #0f7dc0;
+    --gw-secondary: #74d7f4;
+    --gw-secondary-rgb: 116, 215, 244;
+    --gw-background: #eef7fc;
+    --gw-background-accent: #dcecf7;
+    --gw-surface: rgba(255, 255, 255, .92);
+    --gw-surface-solid: #fff;
+    --gw-text: #263746;
+    --gw-muted: #6d7d8d;
+    --gw-border: #cad9e4;
+    --gw-radius-md: 1.25rem;
+    --gw-radius-lg: 1.5rem;
+    --gw-shadow: 0 .75rem 2rem rgba(70, 120, 155, .16);
+    --gw-shadow-soft: 0 .45rem 1.25rem rgba(70, 120, 155, .13);
+}
+
+:root[data-theme-style="theme1"][data-bs-theme="dark"] {
+    --gw-text: #edf8fd;
+    --gw-muted: #b9cdd7;
+    --gw-border: #456473;
+    --gw-surface: rgba(25, 48, 61, .92);
+    --gw-surface-solid: #203744;
+}

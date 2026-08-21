@@ -1,0 +1,17 @@
+/* Personnalisation du thème 5. */
+:root[data-theme-style="theme5"] {
+    --gw-primary: #00a2e8;
+    --gw-primary-rgb: 0, 162, 232;
+    --gw-primary-dark: #0079ad;
+    --gw-secondary: #f5c400;
+    --gw-secondary-rgb: 245, 196, 0;
+    --gw-background: #e6f4fc;
+    --gw-background-accent: #d0ebfa;
+    --gw-surface: rgba(255, 255, 255, .97);
+    --gw-surface-solid: #fff;
+    --gw-text: #142838;
+    --gw-muted: #5d7280;
+    --gw-border: #9fc8dc;
+    --gw-radius-md: .9rem;
+    --gw-radius-lg: 1rem;
+}

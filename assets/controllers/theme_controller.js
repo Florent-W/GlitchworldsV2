@@ -1,14 +1,14 @@
 import { Controller } from '@hotwired/stimulus';
 
 const ALIAS_PALETTES = {
-    ds: 'wii',
     gamecube: 'wii',
     dreamcast: 'ps3',
     wave: 'ps3',
     neon: 'ps3',
 };
-const PALETTES = ['glitchworlds', 'wii', 'ps3', 'legacy'];
+const PALETTES = ['glitchworlds', 'wii', 'ps3', 'legacy', 'ds', 'dsi', '3ds'];
 const MODES = ['system', 'light', 'dark'];
+const THEME_STYLES = { glitchworlds: 'glitchworlds', legacy: 'legacy', wii: 'theme1', ps3: 'theme2', ds: 'theme3', dsi: 'theme4', '3ds': 'theme5' };
 
 /**
  * Le thème a deux axes indépendants : une palette (ambiance) et un mode clair/sombre.
@@ -74,6 +74,7 @@ export default class extends Controller {
         window.addEventListener('glitchworlds:preferences-save-failed', this.onPreferencesSaveFailed);
         window.addEventListener('glitchworlds:preferences-save-success', this.onPreferencesSaveSuccess);
 
+        this.positionnerNavigation(this.root.dataset.theme);
         this.actualiser();
     }
 
@@ -142,10 +143,12 @@ export default class extends Controller {
         const sombre = modeResolu === 'dark';
 
         this.root.dataset.theme = palette;
+        this.root.dataset.themeStyle = THEME_STYLES[palette] ?? 'glitchworlds';
         this.root.dataset.gwTheme = palette;
         this.root.dataset.gwMode = mode;
         this.root.dataset.themeResolved = modeResolu;
         this.root.dataset.bsTheme = modeResolu;
+        this.positionnerNavigation(palette);
 
         if (this.hasIconeTarget) {
             this.element.setAttribute('aria-pressed', String(sombre));
@@ -176,6 +179,25 @@ export default class extends Controller {
                 rollback,
             },
         }));
+    }
+
+    positionnerNavigation(palette) {
+        const navigation = document.querySelector('.gw-rail');
+        const entete = document.querySelector('.gw-topbar');
+        const disposition = document.querySelector('.gw-layout');
+        const recherche = entete?.querySelector('.gw-search');
+
+        if (!navigation || !entete || !disposition) {
+            return;
+        }
+
+        if (palette === 'legacy') {
+            if (navigation.parentElement !== entete) {
+                entete.insertBefore(navigation, recherche || entete.lastElementChild);
+            }
+        } else if (navigation.parentElement !== disposition) {
+            disposition.prepend(navigation);
+        }
     }
 
     envoyerAuServeur(theme) {
@@ -268,7 +290,7 @@ export default class extends Controller {
                 palette = 'glitchworlds';
             } else if (palette === 'ps3') {
                 mode = 'dark';
-            } else if (palette === 'wii' || palette === 'legacy') {
+            } else if (palette === 'wii' || palette === 'legacy' || palette === 'ds' || palette === 'dsi' || palette === '3ds') {
                 mode = 'light';
             } else {
                 mode = 'system';
@@ -292,10 +314,13 @@ export default class extends Controller {
     libelle(theme) {
         const { palette, mode } = this.normaliser(theme);
         const palettes = {
-            glitchworlds: 'Classique',
-            wii: 'Wii',
-            ps3: 'PS3',
+            glitchworlds: 'Glitchworlds',
+            wii: 'Thème 1',
+            ps3: 'Thème 2',
             legacy: 'GlitchWorlds Legacy',
+            ds: 'Thème 3',
+            dsi: 'Thème 4',
+            '3ds': 'Thème 5',
         };
         const modes = {
             system: 'système',

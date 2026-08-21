@@ -1,0 +1,18 @@
+/* Personnalisation du thème Glitchworlds Legacy. */
+:root[data-theme="legacy"] {
+    --gw-theme-stylesheet: "legacy";
+    --gw-primary: #0f59e9;
+    --gw-primary-rgb: 15, 89, 233;
+    --gw-primary-dark: #0a3fa9;
+    --gw-secondary: #1dd2b1;
+    --gw-secondary-rgb: 29, 210, 177;
+    --gw-background: #e7ebf2;
+    --gw-background-accent: #b7c3da;
+    --gw-surface: rgba(255, 255, 255, .9);
+    --gw-surface-solid: #fff;
+    --gw-text: #212529;
+    --gw-muted: #6c757d;
+    --gw-border: rgba(0, 0, 0, .42);
+}
+
+/* Mode sombre : :root[data-theme="legacy"][data-bs-theme="dark"] */

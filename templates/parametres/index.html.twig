@@ -59,10 +59,13 @@
                 </div>
                 <div class="row g-3">
                     {% set palettes = [
-                        {value: 'glitchworlds', icon: 'stars', titre: 'Classique', badge: 'GW', texte: 'Palette standard GlitchWorlds.'},
+                        {value: 'glitchworlds', icon: 'stars', titre: 'Glitchworlds', badge: 'GW', texte: 'Palette standard Glitchworlds.'},
                         {value: 'legacy', icon: 'clock-history', titre: 'GlitchWorlds Legacy', badge: 'GW', texte: 'L’ancien site revisité : barre sombre, bleu intense et touches turquoise.'},
-                        {value: 'wii', icon: 'controller', titre: 'Wii', badge: 'WII', texte: 'Blanc et bleu ciel, avec une profondeur douce.'},
-                        {value: 'ps3', icon: 'gamepad', titre: 'PS3', badge: 'PS3', texte: 'Cinématique, halos bleus et navigation fluide.'},
+                        {value: 'wii', icon: 'controller', titre: 'Thème 1', badge: '01', texte: 'Blanc et bleu ciel, avec une profondeur douce.'},
+                        {value: 'ps3', icon: 'gamepad', titre: 'Thème 2', badge: '02', texte: 'Cinématique, halos bleus et navigation fluide.'},
+                        {value: 'ds', icon: 'window-split', titre: 'Thème 3', badge: '03', texte: 'Double écran, gris mat et bleu.'},
+                        {value: 'dsi', icon: 'grid-3x3-gap-fill', titre: 'Thème 4', badge: '04', texte: 'Menu système blanc, bulles d’icônes et dégradés bleus.'},
+                        {value: '3ds', icon: 'badge-3d-fill', titre: 'Thème 5', badge: '05', texte: 'Menu en grille et profondeur des icônes.'},
                     ] %}
                     {% for theme in palettes %}
                         <div class="col-sm-6 col-xl-4">

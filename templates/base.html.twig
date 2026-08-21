@@ -2,7 +2,8 @@
 {% set default_theme = app.user ? app.user.getTheme() : 'glitchworlds:system' %}
 {% set default_palette = app.user ? app.user.getPalette() : 'glitchworlds' %}
 {% set default_mode = app.user ? app.user.getMode() : 'system' %}
-<html lang="fr" data-theme="{{ default_palette }}" data-theme-resolved="{{ default_mode }}" data-gw-theme="{{ default_palette }}" data-gw-mode="{{ default_mode }}" data-default-theme="{{ default_theme }}" data-user-authenticated="{{ app.user ? '1' : '0' }}" data-gw-base-path="{{ app.request.basePath }}">
+{% set theme_styles = {glitchworlds: 'glitchworlds', legacy: 'legacy', wii: 'theme1', ps3: 'theme2', ds: 'theme3', dsi: 'theme4', '3ds': 'theme5'} %}
+<html lang="fr" data-theme="{{ default_palette }}" data-theme-style="{{ theme_styles[default_palette]|default('glitchworlds') }}" data-theme-resolved="{{ default_mode }}" data-gw-theme="{{ default_palette }}" data-gw-mode="{{ default_mode }}" data-default-theme="{{ default_theme }}" data-user-authenticated="{{ app.user ? '1' : '0' }}" data-gw-base-path="{{ app.request.basePath }}">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,13 +26,13 @@
                     // Le thème mémorisé combine deux axes indépendants : « palette:mode ».
                     // Les anciennes valeurs mono-axe sont rattrapées ici, comme côté PHP.
                     const aliases = {
-                        ds: 'wii',
                         gamecube: 'wii',
                         dreamcast: 'ps3',
                         neon: 'ps3',
                         wave: 'ps3'
                     };
-                    const palettes = ['glitchworlds', 'wii', 'ps3', 'legacy'];
+                    const palettes = ['glitchworlds', 'wii', 'ps3', 'legacy', 'ds', 'dsi', '3ds'];
+                    const themeStyles = {glitchworlds: 'glitchworlds', legacy: 'legacy', wii: 'theme1', ps3: 'theme2', ds: 'theme3', dsi: 'theme4', '3ds': 'theme5'};
                     const modes = ['system', 'light', 'dark'];
                     const split = function (value) {
                         const parts = String(value || '').split(':');
@@ -44,7 +45,7 @@
                                 palette = 'glitchworlds';
                             } else if (palette === 'ps3') {
                                 mode = 'dark';
-                            } else if (palette === 'wii' || palette === 'legacy') {
+                            } else if (palette === 'wii' || palette === 'legacy' || palette === 'ds' || palette === 'dsi' || palette === '3ds') {
                                 mode = 'light';
                             } else {
                                 mode = 'system';
@@ -71,6 +72,7 @@
                     }
 
                     root.setAttribute('data-theme', chosen.palette);
+                    root.setAttribute('data-theme-style', themeStyles[chosen.palette] || 'glitchworlds');
                     root.setAttribute('data-gw-theme', chosen.palette);
                     root.setAttribute('data-gw-mode', chosen.mode);
                     root.setAttribute('data-theme-resolved', resolvedMode);
@@ -80,6 +82,7 @@
                     root.setAttribute('data-gw-retour-haut', localStorage.getItem('glitchworlds-retour-haut') === '0' ? '0' : '1');
                 } catch (error) {
                     document.documentElement.setAttribute('data-theme', 'glitchworlds');
+                    document.documentElement.setAttribute('data-theme-style', 'glitchworlds');
                     document.documentElement.setAttribute('data-theme-resolved', 'light');
                     document.documentElement.setAttribute('data-gw-theme', 'glitchworlds');
                     document.documentElement.setAttribute('data-gw-mode', 'system');
@@ -102,38 +105,38 @@
         {# Les entrées protégées par ROLE_USER restent masquées aux visiteurs :
            sinon le clic mémorise la page refusée et la connexion y renvoie. #}
         {% set nav_items = [
-            { label: 'Accueil',    icon: 'house-door-fill', route: 'app_home' },
-            { label: 'Jeux',       icon: 'controller',      route: 'app_jeux' },
-            { label: 'Glitchs',    icon: 'lightning-charge-fill', route: 'app_actualites_glitchs' },
-            { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites' }
+            { label: 'Accueil',    icon: 'house-door-fill', route: 'app_home', couleur: 'bleu' },
+            { label: 'Jeux',       icon: 'controller',      route: 'app_jeux', couleur: 'orange' },
+            { label: 'Glitchs',    icon: 'lightning-charge-fill', route: 'app_actualites_glitchs', couleur: 'jaune' },
+            { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites', couleur: 'gris' }
         ] %}
         {% if app.user %}
-            {% set nav_items = nav_items|merge([{ label: 'Mes jeux', icon: 'collection-play-fill', route: 'app_mes_jeux' }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Mes jeux', icon: 'collection-play-fill', route: 'app_mes_jeux', couleur: 'vert' }]) %}
         {% endif %}
         {% set nav_items = nav_items|merge([
-            { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute' },
-            { label: 'Classement', icon: 'trophy-fill',     route: 'app_classement' }
+            { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute', couleur: 'bleu' },
+            { label: 'Classement', icon: 'trophy-fill',     route: 'app_classement', couleur: 'jaune' }
         ]) %}
         {% if app.user %}
             {% set nav_items = nav_items|merge([
-                { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages' },
-                { label: 'Notifications', icon: 'bell-fill', route: 'app_notifications' },
-                { label: 'Paramètres', icon: 'gear-fill',       route: 'app_parametres' }
+                { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages', couleur: 'vert' },
+                { label: 'Notifications', icon: 'bell-fill', route: 'app_notifications', couleur: 'orange' },
+                { label: 'Paramètres', icon: 'gear-fill',       route: 'app_parametres', couleur: 'gris' }
             ]) %}
         {% endif %}
         {% set nav_items = nav_items|merge([
-            { label: 'Boutique',   icon: 'bag-fill',        route: 'app_boutique' }
+            { label: 'Boutique',   icon: 'bag-fill',        route: 'app_boutique', couleur: 'orange' }
         ]) %}
         {% if is_granted('ROLE_MODERATEUR') %}
-            {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_accueil' }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_accueil', couleur: 'gris' }]) %}
         {% endif %}
         {% if is_granted('ROLE_ADMIN') %}
-            {% set nav_items = nav_items|merge([{ label: 'Administration', icon: 'speedometer2', route: 'app_administration_tableau_de_bord' }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Administration', icon: 'speedometer2', route: 'app_administration_tableau_de_bord', couleur: 'gris' }]) %}
         {% endif %}
         {% if app.user %}
-            {% set nav_items = nav_items|merge([{ label: 'Déconnexion', icon: 'box-arrow-right', route: 'app_deconnexion', logout: true }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Déconnexion', icon: 'box-arrow-right', route: 'app_deconnexion', couleur: 'orange', logout: true }]) %}
         {% else %}
-            {% set nav_items = nav_items|merge([{ label: 'Connexion', icon: 'box-arrow-in-right', route: 'app_connexion' }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Connexion', icon: 'box-arrow-in-right', route: 'app_connexion', couleur: 'bleu' }]) %}
         {% endif %}
 
         <div class="gw-app">
@@ -202,6 +205,12 @@
             <div class="gw-layout">
                 <nav class="gw-rail" aria-label="Navigation principale" data-controller="rail">
                     <div class="gw-rail__viewport">
+                        <div class="gw-dsi-selection" aria-live="polite">
+                            <span data-rail-target="selection">
+                                {% set active_item = nav_items|filter(item => item.route is not null and item.route == current_route)|first %}
+                                {{ active_item.label|default('Menu DSi') }}
+                            </span>
+                        </div>
                         <button type="button"
                                 class="gw-rail__suite gw-rail__suite--haut"
                                 data-rail-target="haut"
@@ -215,7 +224,7 @@
                         {% for item in nav_items %}
                             {% set is_active = item.route is not null and item.route == current_route %}
                             <li>
-                                <a class="gw-rail__item{{ is_active ? ' is-active' : '' }}{{ item.logout|default(false) ? ' gw-rail__item--logout' : '' }}"
+                                <a class="gw-rail__item gw-rail__item--{{ item.couleur|default('bleu') }} gw-rail__item--route-{{ item.route|default('aucune')|replace({'_': '-'}) }}{{ is_active ? ' is-active' : '' }}{{ item.logout|default(false) ? ' gw-rail__item--logout' : '' }}"
                                    href="{{ item.route ? path(item.route) : '#' }}"
                                    title="{{ item.label }}"
                                    {{ is_active ? 'aria-current="page"' : '' }}
@@ -247,7 +256,7 @@
                     </div>
                 </nav>
 
-                <main class="gw-main">
+                <main class="gw-main{{ current_route == 'app_home' ? ' gw-main--home' : ' gw-main--interne' }}">
                     {% for type, messages in app.flashes %}
                         {% for message in messages %}
                             <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
@@ -263,9 +272,13 @@
             <footer class="gw-bottombar">
                 <div class="gw-bottombar__side">
                     {% block bottombar_video_controls %}{% endblock %}
-                    <a class="gw-console-btn" href="#" aria-label="Passer en mode console">
+                    <a class="gw-console-btn gw-console-btn--default" href="#" aria-label="Passer en mode console">
                         <i class="bi bi-controller" aria-hidden="true"></i>
                         <span>Mode</span>
+                    </a>
+                    <a class="gw-console-btn gw-console-btn--wii" href="{{ path('app_parametres') }}" aria-label="Ouvrir les paramètres">
+                        <i class="bi bi-gear-fill" aria-hidden="true"></i>
+                        <span>Paramètres</span>
                     </a>
                     <div class="gw-storage">
                         <i class="bi bi-sd-card" aria-hidden="true"></i>

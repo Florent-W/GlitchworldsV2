@@ -12,7 +12,7 @@
         {% include 'jeu/_note_badge.html.twig' with { note: note } only %}
     </a>
     <div class="p-3">
-        <h3 class="h6 mb-1"><a class="text-decoration-none text-body" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3>
+        <h3 class="h6 mb-1"><a class="stretched-link text-decoration-none text-body" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3>
         <div class="d-flex flex-wrap align-items-center gap-2">
             {% if jeu.categorie %}<span class="gw-tag">{{ jeu.categorie.nom }}</span>{% endif %}
             {% if jeu.dateSortie %}<span class="small text-secondary"><i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ jeu.dateSortie|date('Y') }}</span>{% endif %}

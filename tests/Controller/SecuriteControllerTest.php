@@ -109,10 +109,13 @@ final class SecuriteControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Paramètres');
-        // Les deux axes sont proposés séparément : 3 niveaux de luminosité, 4 ambiances.
+        // Les deux axes sont proposés séparément : 3 niveaux de luminosité, 7 ambiances.
         self::assertSelectorCount(3, '[data-theme-target="modeOption"]');
-        self::assertSelectorCount(4, '[data-theme-target="paletteOption"]');
+        self::assertSelectorCount(7, '[data-theme-target="paletteOption"]');
         self::assertSelectorTextContains('[data-theme-value="wii"] strong', 'Wii');
+        self::assertSelectorTextContains('[data-theme-value="ds"] strong', 'Nintendo DS');
+        self::assertSelectorTextContains('[data-theme-value="dsi"] strong', 'Nintendo DSi');
+        self::assertSelectorTextContains('[data-theme-value="3ds"] strong', 'Nintendo 3DS');
         self::assertSelectorTextContains('[data-theme-value="ps3"] strong', 'PS3');
         self::assertSelectorExists('[data-action="theme#appliquerSelection"]');
         self::assertSelectorExists('[data-action="theme#annulerApercu"]');

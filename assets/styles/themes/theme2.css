@@ -1,0 +1,19 @@
+/* Personnalisation du thème 2. */
+:root[data-theme-style="theme2"] {
+    --gw-primary: #48b8ff;
+    --gw-primary-rgb: 72, 184, 255;
+    --gw-primary-dark: #1f8bd9;
+    --gw-secondary: #8b6cff;
+    --gw-secondary-rgb: 139, 108, 255;
+    --gw-background: #06111f;
+    --gw-background-accent: #0b1a30;
+    --gw-surface: rgba(10, 25, 44, .82);
+    --gw-surface-solid: rgba(20, 39, 65, .9);
+    --gw-text: #f2f8ff;
+    --gw-muted: #a9bdd1;
+    --gw-border: rgba(145, 205, 255, .22);
+    --gw-radius-md: .9rem;
+    --gw-radius-lg: 1.1rem;
+    --gw-shadow: 0 1rem 3rem rgba(0, 0, 0, .42);
+    --gw-shadow-soft: 0 .5rem 1.5rem rgba(4, 10, 20, .45);
+}

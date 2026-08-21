@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /** Ambiances visuelles disponibles, indépendantes du mode clair/sombre. */
-    public const PALETTES = ['glitchworlds', 'wii', 'ps3', 'legacy'];
+    public const PALETTES = ['glitchworlds', 'wii', 'ps3', 'legacy', 'ds', 'dsi', '3ds'];
 
     /** Mode d'affichage : « system » suit le réglage de l'appareil. */
     public const MODES = ['system', 'light', 'dark'];
@@ -265,7 +265,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         [$palette, $mode] = array_pad(explode(':', $valeur, 2), 2, null);
         $palette = match ($palette) {
-            'ds', 'gamecube' => 'wii',
+            'gamecube' => 'wii',
             'dreamcast', 'wave', 'neon' => 'ps3',
             default => $palette,
         };
@@ -274,7 +274,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
             $mode = match ($palette) {
                 'light', 'dark', 'system' => $palette,
                 'ps3' => 'dark',
-                'wii', 'legacy' => 'light',
+                'wii', 'legacy', 'ds', 'dsi', '3ds' => 'light',
                 default => 'system',
             };
             if (in_array($palette, self::MODES, true)) {

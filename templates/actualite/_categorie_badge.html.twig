@@ -1,0 +1,14 @@
+{# Badge catégorie (coin de tuile). Variable : actualite (Actualite) #}
+{% set cat = actualite.categorie.value %}
+<span class="gw-categorie-badge gw-categorie-badge--{{ cat }}" aria-label="Catégorie {{ actualite.categorie.label }}">
+    {% if cat == 'glitchs' %}
+        <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>
+    {% elseif cat == 'mods' %}
+        <i class="bi bi-puzzle-fill" aria-hidden="true"></i>
+    {% elseif cat == 'tutoriels' %}
+        <i class="bi bi-book-fill" aria-hidden="true"></i>
+    {% else %}
+        <i class="bi bi-newspaper" aria-hidden="true"></i>
+    {% endif %}
+    <span class="gw-categorie-badge__label">{{ actualite.categorie.label }}</span>
+</span>
