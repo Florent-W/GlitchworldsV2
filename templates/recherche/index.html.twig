@@ -7,8 +7,8 @@
     <h1 class="h2"><i class="bi bi-search text-primary me-2"></i>Recherche</h1>
     <p class="text-secondary">{{ recherche ? totalResultats ~ ' résultat' ~ (totalResultats > 1 ? 's') ~ ' pour « ' ~ recherche ~ ' »' : 'Trouve un jeu, une actualité ou un membre.' }}</p>
 
-    <form class="row g-3 mb-4" action="{{ path('app_recherche') }}" method="get">
-        <div class="col-12"><div class="input-group input-group-lg"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" type="search" name="recherche" value="{{ recherche }}" placeholder="Que recherches-tu ?" aria-label="Recherche" required><button class="btn btn-primary">Rechercher</button></div></div>
+    <form class="row g-3 mb-4 gw-search-form" action="{{ path('app_recherche') }}" method="get">
+        <div class="col-12 gw-search-form__query"><div class="input-group input-group-lg"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" type="search" name="recherche" value="{{ recherche }}" placeholder="Que recherches-tu ?" aria-label="Recherche" required><button class="btn btn-primary">Rechercher</button></div></div>
         <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-type">Type</label><select class="form-select" id="filtre-type" name="type"><option value="">Tout</option><option value="jeu" {{ type == 'jeu' ? 'selected' }}>Jeux</option><option value="actualite" {{ type == 'actualite' ? 'selected' }}>Actualités</option><option value="membre" {{ type == 'membre' ? 'selected' }}>Membres</option></select></div>
         <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-categorie-actualite">Catégorie d’actualité</label><select class="form-select" id="filtre-categorie-actualite" name="categorie_actualite"><option value="">Toutes</option>{% for item in categoriesActualite %}<option value="{{ item.value }}" {{ categorieActualite == item ? 'selected' }}>{{ item.label }}</option>{% endfor %}</select></div>
         <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-categorie">Catégorie de jeu</label><select class="form-select" id="filtre-categorie" name="categorie"><option value="">Toutes</option>{% for item in categories %}<option value="{{ item.slug }}" {{ categorie == item.slug ? 'selected' }}>{{ item.nom }}</option>{% endfor %}</select></div>
@@ -18,7 +18,7 @@
         <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-annee">Année</label><select class="form-select" id="filtre-annee" name="annee"><option value="">Toutes</option>{% for item in annees %}<option value="{{ item }}" {{ annee == item ? 'selected' }}>{{ item }}</option>{% endfor %}</select></div>
         <div class="col-sm-6 col-xl"><label class="form-label" for="filtre-tri">Tri des jeux</label><select class="form-select" id="filtre-tri" name="tri">{% for item in tris %}<option value="{{ item.value }}" {{ tri == item ? 'selected' }}>{{ item.label }}</option>{% endfor %}</select></div>
         {% if app.user %}<div class="col-sm-6 col-xl d-flex align-items-end"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" value="1" id="filtre-mes-favoris" name="mes_favoris" {{ mesFavoris ? 'checked' }}><label class="form-check-label" for="filtre-mes-favoris">Mes favoris</label></div></div>{% endif %}
-        <div class="col-sm-6 col-xl-auto d-flex align-items-end"><a class="btn btn-outline-secondary" href="{{ path('app_recherche', {recherche: recherche ?: null}) }}"><i class="bi bi-arrow-counterclockwise me-1"></i>Effacer</a></div>
+        <div class="col-sm-6 col-xl-auto d-flex align-items-end gw-search-form__reset"><a class="btn btn-outline-secondary" href="{{ path('app_recherche', {recherche: recherche ?: null}) }}"><i class="bi bi-arrow-counterclockwise me-1"></i>Effacer</a></div>
     </form>
 
     {% if recherche and type in ['', 'jeu'] %}

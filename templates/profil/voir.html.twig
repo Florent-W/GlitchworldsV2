@@ -6,7 +6,31 @@
 {% block body %}
 <div class="gw-profile">
     <header class="gw-profile__hero gw-panel overflow-hidden">
-        <div class="gw-profile__banner"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}></div>
+        {% if app.user == membre %}
+            <div class="gw-profile__banner gw-profile__banner--editable" data-controller="avatar-profil"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}>
+                <form method="post" action="{{ path('app_compte_banniere') }}" enctype="multipart/form-data" data-avatar-profil-target="form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('banniere-profil') }}">
+                    <input type="file" name="banniere" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-avatar-profil-target="input" data-action="change->avatar-profil#envoyer">
+                    <button type="button" class="gw-profile__banner-btn" data-action="avatar-profil#ouvrir" aria-label="Changer la bannière du profil" title="Changer la bannière">
+                        <span class="gw-profile__banner-overlay" aria-hidden="true"><i class="bi bi-image-fill"></i><span>Modifier la bannière</span></span>
+                    </button>
+                </form>
+            </div>
+        {% else %}
+        {% if app.user == membre %}
+            <div class="gw-profile__banner gw-profile__banner--editable" data-controller="avatar-profil"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}>
+                <form method="post" action="{{ path('app_compte_banniere') }}" enctype="multipart/form-data" data-avatar-profil-target="form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('banniere-profil') }}">
+                    <input type="file" name="banniere" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-avatar-profil-target="input" data-action="change->avatar-profil#envoyer">
+                    <button type="button" class="gw-profile__banner-btn" data-action="avatar-profil#ouvrir" aria-label="Changer la bannière du profil" title="Changer la bannière">
+                        <span class="gw-profile__banner-overlay" aria-hidden="true"><i class="bi bi-image-fill"></i><span>Modifier la bannière</span></span>
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="gw-profile__banner"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}></div>
+        {% endif %}
+        {% endif %}
         <div class="gw-profile__identity px-3 px-lg-4 pb-4">
             {% if app.user == membre %}
                 <div class="gw-profile__avatar gw-profile__avatar--editable" data-controller="avatar-profil">

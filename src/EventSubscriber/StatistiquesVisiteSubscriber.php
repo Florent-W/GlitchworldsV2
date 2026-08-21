@@ -25,6 +25,8 @@ final class StatistiquesVisiteSubscriber implements EventSubscriberInterface
         $type = 'page'; $id = null;
         if (($jeu = $requete->attributes->get('jeu')) instanceof Jeu) { $type = 'jeu'; $id = $jeu->getId(); }
         elseif (($actualite = $requete->attributes->get('actualite')) instanceof Actualite) { $type = 'actualite'; $id = $actualite->getId(); }
+        elseif ($route === 'app_jeu_show' && $requete->attributes->getInt('id') > 0) { $type = 'jeu'; $id = $requete->attributes->getInt('id'); }
+        elseif ($route === 'app_actualite_voir' && $requete->attributes->getInt('id') > 0) { $type = 'actualite'; $id = $requete->attributes->getInt('id'); }
         $empreinte = ($requete->getClientIp() ?? '').'|'.$requete->headers->get('User-Agent', '');
         $utilisateur = $this->security->getUser();
         try {

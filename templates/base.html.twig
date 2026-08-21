@@ -189,7 +189,7 @@
                             <div id="gw-notif-panel" class="gw-notif-panel" role="region" aria-label="Dernières notifications" data-notifications-target="panneau" hidden></div>
                         </div>
                     {% endif %}
-                    <button type="button" class="gw-icon-btn" aria-label="Activer ou couper les sons d'interface" title="Sons d'interface" aria-pressed="true" data-controller="son" data-action="click->son#basculer" data-son-base-url="{{ app.request.basePath }}/sons/">
+                    <button type="button" class="gw-icon-btn gw-icon-btn--sound" aria-label="Activer ou couper les sons d'interface" title="Sons d'interface" aria-pressed="true" data-controller="son" data-action="click->son#basculer" data-son-base-url="{{ app.request.basePath }}/sons/">
                         <i class="bi bi-volume-up-fill" aria-hidden="true" data-son-target="icone"></i>
                     </button>
                     <button type="button" class="gw-icon-btn" aria-label="Activer le thème sombre" title="Activer le thème sombre" aria-pressed="false" data-controller="theme" data-action="click->theme#basculer"{% if app.user %} data-theme-sync-url="{{ path('app_parametres_preferences') }}"{% endif %}>
@@ -202,12 +202,23 @@
                 </div>
             </header>
 
+            {% set active_item = nav_items|filter(item => item.route is not null and item.route == current_route)|first %}
             <div class="gw-layout">
                 <nav class="gw-rail" aria-label="Navigation principale" data-controller="rail">
+                    <button type="button"
+                            class="gw-rail__toggle"
+                            aria-label="Ouvrir le menu principal"
+                            aria-controls="gw-rail-list"
+                            aria-expanded="false"
+                            title="Menu principal"
+                            data-rail-target="toggle"
+                            data-action="rail#basculer">
+                        <i class="bi bi-list" aria-hidden="true"></i>
+                        <span class="visually-hidden">Menu principal</span>
+                    </button>
                     <div class="gw-rail__viewport">
                         <div class="gw-dsi-selection" aria-live="polite">
                             <span data-rail-target="selection">
-                                {% set active_item = nav_items|filter(item => item.route is not null and item.route == current_route)|first %}
                                 {{ active_item.label|default('Menu DSi') }}
                             </span>
                         </div>
@@ -272,21 +283,14 @@
             <footer class="gw-bottombar">
                 <div class="gw-bottombar__side">
                     {% block bottombar_video_controls %}{% endblock %}
-                    <a class="gw-console-btn gw-console-btn--default" href="#" aria-label="Passer en mode console">
-                        <i class="bi bi-controller" aria-hidden="true"></i>
-                        <span>Mode</span>
+                    <a class="gw-console-btn gw-console-btn--default" href="{{ path('app_parametres') }}" aria-label="Ouvrir les paramètres">
+                        <i class="bi bi-gear-fill" aria-hidden="true"></i>
+                        <span>Paramètres</span>
                     </a>
                     <a class="gw-console-btn gw-console-btn--wii" href="{{ path('app_parametres') }}" aria-label="Ouvrir les paramètres">
                         <i class="bi bi-gear-fill" aria-hidden="true"></i>
                         <span>Paramètres</span>
                     </a>
-                    <div class="gw-storage">
-                        <i class="bi bi-sd-card" aria-hidden="true"></i>
-                        <span>
-                            <strong>Stockage libre</strong>
-                            12,4 Go
-                        </span>
-                    </div>
                 </div>
 
                 <div class="gw-clock" data-controller="horloge">

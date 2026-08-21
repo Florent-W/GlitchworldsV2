@@ -4,12 +4,15 @@ import { Controller } from '@hotwired/stimulus';
  * Flèches superposées en haut et en bas de la zone visible du rail.
  */
 export default class extends Controller {
-    static targets = ['liste', 'haut', 'bas', 'selection'];
+    static targets = ['liste', 'haut', 'bas', 'selection', 'toggle'];
 
     connect() {
         this.surScroll = () => this.actualiser();
         this.surResize = () => this.actualiser();
         this.surSelection = (event) => this.afficherSelection(event);
+        this.surClavier = (event) => {
+            if (event.key === 'Escape') this.replier();
+        };
 
         if (this.hasListeTarget) {
             this.listeTarget.addEventListener('scroll', this.surScroll, { passive: true });
@@ -18,6 +21,7 @@ export default class extends Controller {
         }
 
         window.addEventListener('resize', this.surResize, { passive: true });
+        this.element.addEventListener('keydown', this.surClavier);
 
         this.observateur = typeof ResizeObserver !== 'undefined'
             ? new ResizeObserver(() => this.actualiser())
@@ -38,7 +42,25 @@ export default class extends Controller {
         }
 
         window.removeEventListener('resize', this.surResize);
+        this.element.removeEventListener('keydown', this.surClavier);
         this.observateur?.disconnect();
+    }
+
+    basculer() {
+        const ouvert = this.element.classList.toggle('is-open');
+        if (this.hasToggleTarget) {
+            this.toggleTarget.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+            this.toggleTarget.setAttribute('aria-label', ouvert ? 'Fermer le menu principal' : 'Ouvrir le menu principal');
+        }
+        if (ouvert) requestAnimationFrame(() => this.actualiser());
+    }
+
+    replier() {
+        this.element.classList.remove('is-open');
+        if (this.hasToggleTarget) {
+            this.toggleTarget.setAttribute('aria-expanded', 'false');
+            this.toggleTarget.setAttribute('aria-label', 'Ouvrir le menu principal');
+        }
     }
 
     monter() {
@@ -93,6 +115,10 @@ export default class extends Controller {
     actualiser() {
         if (!this.hasListeTarget) {
             return;
+        }
+
+        if (window.matchMedia('(min-width: 992px)').matches && this.element.classList.contains('is-open')) {
+            this.replier();
         }
 
         const horizontal = this.estHorizontal();

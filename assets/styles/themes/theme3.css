@@ -15,3 +15,23 @@
     --gw-radius-md: .65rem;
     --gw-radius-lg: .8rem;
 }
+
+:root[data-theme-style="theme3"][data-bs-theme="light"] .gw-autocomplete {
+    color: #202426;
+    border-color: #9aa5ad;
+    background: #fff;
+}
+
+:root[data-theme-style="theme3"][data-bs-theme="light"] .gw-autocomplete__item,
+:root[data-theme-style="theme3"][data-bs-theme="light"] .gw-autocomplete__item :is(strong, span) {
+    color: #202426;
+}
+
+:root[data-theme-style="theme3"][data-bs-theme="light"] :is(.gw-autocomplete__item small, .gw-autocomplete__header, .gw-autocomplete__empty) {
+    color: #59646b;
+}
+
+:root[data-theme-style="theme3"][data-bs-theme="light"] .gw-autocomplete__item:is(:hover, .is-active) {
+    color: #111;
+    background: #e5f3fa;
+}

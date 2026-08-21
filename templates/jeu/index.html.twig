@@ -57,7 +57,7 @@
 
     <form method="get" action="{{ path('app_jeux') }}" role="search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion', {type: 'jeu'}) }}" data-recherche-autocomplete-target="formulaire">
         <div class="row g-4 align-items-start">
-            <div class="col-xl-9">
+            <div class="col-xl-9 gw-games-search__content">
                 <div class="gw-search-box mb-4">
                     <label class="visually-hidden" for="jeux-recherche">Rechercher un jeu</label>
                     <i class="bi bi-search" aria-hidden="true"></i>
@@ -145,27 +145,30 @@
 
                     {% if pages > 1 %}
                         <nav class="mt-4" aria-label="Pagination des jeux">
-                            <ul class="pagination justify-content-center mb-0">
+                            <ul class="pagination gw-pagination justify-content-center mb-0">
                                 <li class="page-item{{ page <= 1 ? ' disabled' : '' }}">
-                                    <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: page - 1 })) }}" {% if page <= 1 %}tabindex="-1" aria-disabled="true"{% endif %}>Précédent</a>
+                                    <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: page - 1 })) }}" aria-label="Page précédente" {% if page <= 1 %}tabindex="-1" aria-disabled="true"{% endif %}><i class="bi bi-chevron-left" aria-hidden="true"></i><span class="gw-pagination__label">Précédent</span></a>
                                 </li>
                                 {% for p in 1..pages %}
-                                    <li class="page-item{{ p == page ? ' active' : '' }}">
+                                    <li class="page-item gw-pagination__page{{ p < page - 1 or p > page + 1 ? ' gw-pagination__page--mobile-hidden' : '' }}{{ p == page ? ' active' : '' }}">
                                         <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: p })) }}" {% if p == page %}aria-current="page"{% endif %}>{{ p }}</a>
                                     </li>
                                 {% endfor %}
+                                <li class="page-item disabled gw-pagination__mobile-status" aria-current="page">
+                                    <span class="page-link">{{ page }} / {{ pages }}</span>
+                                </li>
                                 <li class="page-item{{ page >= pages ? ' disabled' : '' }}">
-                                    <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: page + 1 })) }}" {% if page >= pages %}tabindex="-1" aria-disabled="true"{% endif %}>Suivant</a>
+                                    <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: page + 1 })) }}" aria-label="Page suivante" {% if page >= pages %}tabindex="-1" aria-disabled="true"{% endif %}><span class="gw-pagination__label">Suivant</span><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
                                 </li>
                             </ul>
                         </nav>
-                        <p class="text-center text-secondary small mt-2 mb-0">Page {{ page }} / {{ pages }}</p>
+                        <p class="gw-pagination__desktop-status text-center text-secondary small mt-2 mb-0">Page {{ page }} / {{ pages }}</p>
                     {% endif %}
                     </div>
                 {% endif %}
             </div>
 
-            <aside class="col-xl-3">
+            <aside class="col-xl-3 gw-games-search__filters">
             <div class="gw-filter-panel" aria-labelledby="filtres-title">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 id="filtres-title" class="h5 mb-0">Filtres avancés</h2>

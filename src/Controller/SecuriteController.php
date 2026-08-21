@@ -152,6 +152,44 @@ final class SecuriteController extends AbstractController
         return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
     }
 
+    #[Route('/mon-compte/banniere', name: 'app_compte_banniere', methods: ['POST'])]
+    public function modifierBanniere(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ImageProfilUploader $uploader,
+        ValidatorInterface $validator,
+    ): Response {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+        if (!$this->isCsrfTokenValid('banniere-profil', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $fichier = $request->files->get('banniere');
+        if (!$fichier instanceof UploadedFile) {
+            $this->addFlash('danger', 'Aucune image sélectionnée.');
+
+            return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
+        }
+
+        $violations = $validator->validate($fichier, [
+            new File(maxSize: '8M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp']),
+        ]);
+        if (\count($violations) > 0) {
+            $this->addFlash('danger', (string) $violations->get(0)->getMessage());
+
+            return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
+        }
+
+        $utilisateur->setBanniere($uploader->enregistrer($fichier, $utilisateur, 'banniere'));
+        $entityManager->flush();
+        $this->addFlash('success', 'Ta bannière de profil a été mise à jour.');
+
+        return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
+    }
+
     #[Route('/mon-compte/mot-de-passe', name: 'app_compte_mot_de_passe')]
     public function modifierMotDePasse(
         Request $request,
