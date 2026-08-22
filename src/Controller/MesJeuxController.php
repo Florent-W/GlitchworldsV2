@@ -36,7 +36,7 @@ final class MesJeuxController extends AbstractController
                 static fn ($jeu) => $jeu !== null,
             ))),
             'listes' => $listes->trouverPour($utilisateur),
-            'succes' => $succes->findAll(),
+            'succes' => $succes->trouverTousParDifficulte(),
             'succesAcquis' => $acquis,
             'codesAcquis' => array_map(static fn ($d) => $d->getSucces()?->getCode(), $acquis),
             'statuts' => StatutBibliotheque::cases(),
@@ -59,7 +59,20 @@ final class MesJeuxController extends AbstractController
     public function retirer(JeuBibliotheque $entree, Request $request, EntityManagerInterface $em): Response { $this->verifierProprietaire($entree->getUtilisateur()); $this->csrf('retirer-bibliotheque-'.$entree->getId(), $request); $em->remove($entree); $em->flush(); return $this->redirectToRoute('app_mes_jeux'); }
 
     #[Route('/listes', name: 'app_liste_jeux_creer', methods: ['POST'])]
-    public function creerListe(Request $request, EntityManagerInterface $em): Response { $this->csrf('creer-liste', $request); $nom = trim($request->request->getString('nom')); if ($nom !== '' && mb_strlen($nom) <= 80) { $em->persist((new ListeJeux())->setUtilisateur($this->membre())->setNom($nom)->setDescription($request->request->getString('description') ?: null)); $em->flush(); $this->addFlash('success', 'Liste créée.'); } return $this->redirectToRoute('app_mes_jeux', ['_fragment' => 'listes']); }
+    public function creerListe(Request $request, EntityManagerInterface $em, GestionSucces $succes): Response
+    {
+        $this->csrf('creer-liste', $request);
+        $utilisateur = $this->membre();
+        $nom = trim($request->request->getString('nom'));
+        if ($nom !== '' && mb_strlen($nom) <= 80) {
+            $em->persist((new ListeJeux())->setUtilisateur($utilisateur)->setNom($nom)->setDescription($request->request->getString('description') ?: null));
+            $em->flush();
+            $this->verifierEtAnnoncerSucces($utilisateur, $succes);
+            $this->addFlash('success', 'Liste créée.');
+        }
+
+        return $this->redirectToRoute('app_mes_jeux', ['_fragment' => 'listes']);
+    }
 
     #[Route('/listes/{id}/jeu/{jeuId}', name: 'app_liste_jeux_basculer', requirements: ['id' => '\d+', 'jeuId' => '\d+'], methods: ['POST'])]
     public function basculerListe(ListeJeux $liste, int $jeuId, Request $request, EntityManagerInterface $em): Response { $this->verifierProprietaire($liste->getUtilisateur()); $this->csrf('liste-'.$liste->getId().'-jeu-'.$jeuId, $request); $jeu = $em->find(Jeu::class, $jeuId); if (!$jeu) { throw $this->createNotFoundException(); } $liste->contient($jeu) ? $liste->retirerJeu($jeu) : $liste->ajouterJeu($jeu); $em->flush(); return $this->redirectToRoute('app_mes_jeux', ['_fragment' => 'listes']); }

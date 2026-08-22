@@ -2,10 +2,13 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\Avis;
+use App\Entity\Jeu;
 use App\Entity\Publication;
 use App\Entity\Utilisateur;
 use App\Entity\ReponsePublication;
 use App\Entity\VotePublication;
+use App\Enum\StatutJeu;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -19,6 +22,53 @@ final class CommunauteControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Communauté');
         self::assertSelectorExists('a[href="/communaute"][aria-current="page"]');
+    }
+
+    public function testLOngletAbonnementsNeMontreQueLesMembresSuivis(): void
+    {
+        $client = self::createClient();
+        $client->disableReboot();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+
+        $lecteur = (new Utilisateur())->setPseudo('Lecteur'.$suffixe)->setEmail('lecteur-'.$suffixe.'@glitchworlds.local');
+        $suivi = (new Utilisateur())->setPseudo('Suivi'.$suffixe)->setEmail('suivi-'.$suffixe.'@glitchworlds.local');
+        $inconnu = (new Utilisateur())->setPseudo('Inconnu'.$suffixe)->setEmail('inconnu-'.$suffixe.'@glitchworlds.local');
+        $lecteur->suivre($suivi);
+        $publicationSuivie = (new Publication())->setAuteur($suivi)->setContenu('Publication suivie '.$suffixe);
+        $publicationIgnoree = (new Publication())->setAuteur($inconnu)->setContenu('Publication ignorée '.$suffixe);
+        $jeu = (new Jeu())
+            ->setNom('Jeu noté '.$suffixe)
+            ->setSlug('jeu-note-fil-'.$suffixe)
+            ->setDescription('Jeu utilisé pour vérifier les notes dans le fil.')
+            ->setStatut(StatutJeu::Approuve);
+        $note = (new Avis())->setAuteur($suivi)->setJeu($jeu)->setNote(4);
+        foreach ([$lecteur, $suivi, $inconnu, $publicationSuivie, $publicationIgnoree, $jeu, $note] as $entite) {
+            $entityManager->persist($entite);
+        }
+        $entityManager->flush();
+
+        $client->loginUser($lecteur);
+        $client->request('GET', '/communaute?section=abonnements');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Publication suivie '.$suffixe);
+        self::assertSelectorTextNotContains('body', 'Publication ignorée '.$suffixe);
+        self::assertSelectorTextContains('body', 'Jeu noté '.$suffixe);
+        self::assertSelectorExists('.gw-community__stars[aria-label="4 sur 5"]');
+
+        $entityManager->remove($note);
+        $entityManager->remove($jeu);
+        foreach ([$publicationSuivie, $publicationIgnoree] as $publication) {
+            $entityManager->remove($publication);
+        }
+        $entityManager->flush();
+        $lecteur->nePlusSuivre($suivi);
+        $entityManager->flush();
+        foreach ([$lecteur, $suivi, $inconnu] as $membre) {
+            $entityManager->remove($membre);
+        }
+        $entityManager->flush();
     }
 
     public function testUnMembrePeutPublierDansLeFil(): void

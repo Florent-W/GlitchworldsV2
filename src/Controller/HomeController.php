@@ -28,10 +28,10 @@ final class HomeController extends AbstractController
         AvisRepository $avisRepository,
     ): Response
     {
-        $nouveautes = $jeuRepository->trouverNouveautes();
-        $populaires = $jeuRepository->trouverPopulaires();
-        $dernieresActualites = $actualiteRepository->trouverDernieres();
-        $derniersGlitchs = $actualiteRepository->trouverDernieres(4, CategorieActualite::Glitchs);
+        $nouveautes = $jeuRepository->trouverNouveautes(9);
+        $populaires = $jeuRepository->trouverPopulaires(9);
+        $dernieresActualites = $actualiteRepository->trouverDernieres(9);
+        $derniersGlitchs = $actualiteRepository->trouverDernieres(9, CategorieActualite::Glitchs);
 
         return $this->render('home/index.html.twig', [
             'nouveautes' => $nouveautes,

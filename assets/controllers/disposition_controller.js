@@ -2,13 +2,13 @@ import { Controller } from '@hotwired/stimulus';
 
 const CLE = 'glitchworlds-disposition';
 const CLE_LEGACY = 'glitchworlds-disposition-accueil';
-const MODES = ['grille', 'double', 'liste'];
+const MODES = ['grille', 'double', 'liste', 'carrousel'];
 
 /**
- * Bascule grille (3 colonnes), 2 par colonne (cartes compactes) ou liste.
+ * Bascule grille (4 colonnes), 2 par colonne (cartes compactes) ou liste.
  */
 export default class extends Controller {
-    static targets = ['boutonGrille', 'boutonDouble', 'boutonListe'];
+    static targets = ['boutonGrille', 'boutonDouble', 'boutonListe', 'boutonCarrousel'];
 
     connect() {
         this.appliquer(this.lire(), false);
@@ -26,6 +26,10 @@ export default class extends Controller {
         this.appliquer('liste', true);
     }
 
+    choisirCarrousel() {
+        this.appliquer('carrousel', true);
+    }
+
     lire() {
         const valeur = localStorage.getItem(CLE) ?? localStorage.getItem(CLE_LEGACY);
 
@@ -37,14 +41,22 @@ export default class extends Controller {
             return 'double';
         }
 
+        if (valeur === 'carrousel') {
+            return 'carrousel';
+        }
+
         return 'grille';
     }
 
     appliquer(mode, persister) {
-        const modeEffectif = MODES.includes(mode) ? mode : 'grille';
+        // La préférence est partagée par toutes les pages, mais le carrousel n'est
+        // proposé que sur l'accueil : ailleurs, on retombe sur la grille plutôt que
+        // de laisser les quatre boutons sans état actif.
+        const disponible = MODES.includes(mode) && (mode !== 'carrousel' || this.hasBoutonCarrouselTarget);
+        const modeEffectif = disponible ? mode : 'grille';
 
         this.element.dataset.dispositionMode = modeEffectif;
-        this.element.classList.remove('gw-disposition--grille', 'gw-disposition--double', 'gw-disposition--liste');
+        this.element.classList.remove('gw-disposition--grille', 'gw-disposition--double', 'gw-disposition--liste', 'gw-disposition--carrousel');
         this.element.classList.add(`gw-disposition--${modeEffectif}`);
 
         if (this.hasBoutonGrilleTarget) {
@@ -63,6 +75,12 @@ export default class extends Controller {
             const actif = modeEffectif === 'liste';
             this.boutonListeTarget.classList.toggle('active', actif);
             this.boutonListeTarget.setAttribute('aria-pressed', actif ? 'true' : 'false');
+        }
+
+        if (this.hasBoutonCarrouselTarget) {
+            const actif = modeEffectif === 'carrousel';
+            this.boutonCarrouselTarget.classList.toggle('active', actif);
+            this.boutonCarrouselTarget.setAttribute('aria-pressed', actif ? 'true' : 'false');
         }
 
         if (persister) {

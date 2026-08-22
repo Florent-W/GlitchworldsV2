@@ -7,6 +7,8 @@ use App\Entity\Genre;
 use App\Entity\Jeu;
 use App\Entity\Langue;
 use App\Entity\Plateforme;
+use App\Repository\CategorieJeuRepository;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -17,7 +19,6 @@ use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\ORM\EntityRepository;
 
 final class JeuPropositionType extends AbstractType
 {
@@ -46,6 +47,7 @@ final class JeuPropositionType extends AbstractType
                 'class' => CategorieJeu::class,
                 'choice_label' => 'nom',
                 'placeholder' => 'Choisir une catégorie',
+                'query_builder' => static fn (CategorieJeuRepository $repository) => $repository->creerRequeteOrdonnee(),
             ])
             ->add('jeuxAssocies', EntityType::class, [
                 'class' => Jeu::class,

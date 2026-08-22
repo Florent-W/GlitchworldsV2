@@ -16,6 +16,7 @@ const FICHIERS = {
     ok: 'confirm',
     retour: 'back',
     notification: 'notification',
+    succes: 'achievement',
     erreur: 'error',
     activer: 'sound-on',
 };
@@ -23,6 +24,19 @@ const FICHIERS = {
 const VOLUMES = {
     'survol-jeu': 0.35,
     'survol-article': 0.32,
+    succes: 0.75,
+};
+
+/**
+ * Sons composés de plusieurs notes : la synthèse enchaîne un petit arpège au
+ * lieu du bip unique, pour marquer un évènement fort comme un succès.
+ */
+const SEQUENCES = {
+    succes: [
+        { frequence: 587.33, duree: 0.14, typeOscillo: 'triangle', gain: 0.042, delai: 0 },
+        { frequence: 880, duree: 0.14, typeOscillo: 'triangle', gain: 0.046, delai: 0.11 },
+        { frequence: 1174.66, duree: 0.5, typeOscillo: 'triangle', gain: 0.05, delai: 0.22, glissade: 60 },
+    ],
 };
 
 /**
@@ -174,7 +188,11 @@ export default class extends Controller {
             return;
         }
 
-        this.jouerProfil(this.profil(type)).catch(() => {
+        const lecture = SEQUENCES[type] !== undefined
+            ? this.jouerSequence(SEQUENCES[type])
+            : this.jouerProfil(this.profil(type));
+
+        lecture.catch(() => {
             // Autoplay / contexte bloqué : silencieux, pas d'erreur visible.
         });
     }
@@ -216,13 +234,29 @@ export default class extends Controller {
         return source;
     }
 
-    async jouerProfil({ frequence, duree, typeOscillo, gain, glissade = 0 }) {
+    async jouerProfil(profil) {
         const contexte = await this.obtenirContexte();
         if (!contexte) {
             return;
         }
 
-        const maintenant = contexte.currentTime;
+        this.programmerNote(contexte, contexte.currentTime, profil);
+    }
+
+    /** @param {Array<object>} notes Profils enrichis d'un décalage `delai` en secondes. */
+    async jouerSequence(notes) {
+        const contexte = await this.obtenirContexte();
+        if (!contexte) {
+            return;
+        }
+
+        const depart = contexte.currentTime;
+        for (const note of notes) {
+            this.programmerNote(contexte, depart + (note.delai ?? 0), note);
+        }
+    }
+
+    programmerNote(contexte, maintenant, { frequence, duree, typeOscillo, gain, glissade = 0 }) {
         const oscillateur = contexte.createOscillator();
         const enveloppe = contexte.createGain();
 

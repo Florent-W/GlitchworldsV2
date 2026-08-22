@@ -12,6 +12,7 @@ use App\Repository\AchatBoutiqueRepository;
 use App\Repository\ArticleBoutiqueRepository;
 use App\Repository\JeuRepository;
 use App\Service\Boutique;
+use App\Service\GestionSucces;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +21,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class BoutiqueController extends AbstractController
 {
+    use AnnonceSuccesTrait;
+
     #[Route('/boutique', name: 'app_boutique', methods: ['GET'])]
     public function index(ArticleBoutiqueRepository $articles, AchatBoutiqueRepository $achats, JeuRepository $jeux): Response
     {
@@ -31,12 +34,16 @@ final class BoutiqueController extends AbstractController
     }
 
     #[Route('/boutique/{id}/acheter', name: 'app_boutique_acheter', methods: ['POST'])]
-    public function acheter(ArticleBoutique $article, Request $request, Boutique $boutique): Response
+    public function acheter(ArticleBoutique $article, Request $request, Boutique $boutique, GestionSucces $gestionSucces): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) { throw $this->createAccessDeniedException(); }
         if (!$this->isCsrfTokenValid('acheter-article-'.$article->getId(), $request->request->getString('_token'))) { throw $this->createAccessDeniedException(); }
-        try { $boutique->acheter($utilisateur, $article); $this->addFlash('success', 'Récompense débloquée : '.$article->getNom().' rejoint ta collection.'); }
+        try {
+            $boutique->acheter($utilisateur, $article);
+            $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
+            $this->addFlash('success', 'Récompense débloquée : '.$article->getNom().' rejoint ta collection.');
+        }
         catch (\DomainException $exception) { $this->addFlash('danger', $exception->getMessage()); }
         return $this->redirectToRoute('app_boutique');
     }

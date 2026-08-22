@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Paramètres - GlitchWorlds{% endblock %}
+{% block title %}Paramètres - Glitchworlds{% endblock %}
 {% block robots_meta %}noindex,nofollow{% endblock %}
 
 {% block body %}
@@ -9,7 +9,7 @@
         <div>
             <span class="gw-eyebrow"><i class="bi bi-gear-fill" aria-hidden="true"></i> Mon espace</span>
             <h1 class="display-6 fw-bold mb-1">Paramètres</h1>
-            <p class="text-secondary mb-0">Personnalise GlitchWorlds et gère ton compte.</p>
+            <p class="text-secondary mb-0">Personnalise Glitchworlds et gère ton compte.</p>
         </div>
         <a class="btn btn-outline-primary" href="{{ path('app_profil', {id: utilisateur.id}) }}">
             <i class="bi bi-person-fill me-2" aria-hidden="true"></i>Voir mon profil
@@ -61,7 +61,7 @@
                 <div class="row g-3">
                     {% set palettes = [
                         {value: 'glitchworlds', icon: 'stars', titre: 'Glitchworlds', badge: 'GW', texte: 'Palette standard Glitchworlds.'},
-                        {value: 'legacy', icon: 'clock-history', titre: 'GlitchWorlds Legacy', badge: 'GW', texte: 'L’ancien site revisité : barre sombre, bleu intense et touches turquoise.'},
+                        {value: 'legacy', icon: 'clock-history', titre: 'Glitchworlds Legacy', badge: 'GW', texte: 'L’ancien site revisité : barre sombre, bleu intense et touches turquoise.'},
                         {value: 'wii', icon: 'controller', titre: 'Thème 1', badge: '01', texte: 'Blanc et bleu ciel, avec une profondeur douce.'},
                         {value: 'ps3', icon: 'gamepad', titre: 'Thème 2', badge: '02', texte: 'Cinématique, halos bleus et navigation fluide.'},
                         {value: 'ds', icon: 'window-split', titre: 'Thème 3', badge: '03', texte: 'Double écran, gris mat et bleu.'},

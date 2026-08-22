@@ -26,7 +26,7 @@ final readonly class NotificationPropositionModeration
             $this->notifications->ajouter(
                 $createur,
                 'Jeu approuvé',
-                sprintf('Ta proposition « %s » est maintenant visible sur GlitchWorlds.', $jeu->getNom()),
+                sprintf('Ta proposition « %s » est maintenant visible sur Glitchworlds.', $jeu->getNom()),
                 'controller',
                 $this->urlGenerator->generate('app_jeu_show', [
                     'slug' => $jeu->getSlug(),
@@ -57,7 +57,7 @@ final readonly class NotificationPropositionModeration
             $this->notifications->ajouter(
                 $auteur,
                 'Actualité publiée',
-                sprintf('Ton actualité « %s » a été publiée sur GlitchWorlds.', $actualite->getTitre()),
+                sprintf('Ton actualité « %s » a été publiée sur Glitchworlds.', $actualite->getTitre()),
                 'newspaper',
                 $this->urlGenerator->generate('app_actualite_voir', [
                     'slug' => $actualite->getSlug(),

@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
+    {%- if recherche is not empty -%}{{ recherche ~ ' - ' }}{%- endif -%}
     {%- if categorie is not empty -%}
         {%- for item in categories -%}
             {%- if item.slug == categorie -%}{{ item.nom ~ ' - ' }}{%- endif -%}
@@ -16,10 +17,10 @@
             {%- if item.slug == genre -%}{{ item.nom ~ ' - ' }}{%- endif -%}
         {%- endfor -%}
     {%- endif -%}
-    Jeux - GlitchWorlds
-{% endblock %}
+    Jeux{% if page > 1 %} (page {{ page }}){% endif %} - Glitchworlds
+{%- endblock %}
 
-{% block meta_description %}Découvre les fangames, rom hacks et jeux référencés par la communauté GlitchWorlds.{% endblock %}
+{% block meta_description %}Découvre les fangames, rom hacks et jeux référencés par la communauté Glitchworlds.{% endblock %}
 
 {% block canonical %}{{ url('app_jeux', page > 1 ? { page: page } : {}) }}{% endblock %}
 
@@ -91,7 +92,7 @@
                         <div class="d-flex justify-content-end mb-3">
                             {% include '_disposition_boutons.html.twig' with { label: 'Disposition des jeux' } only %}
                         </div>
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-xxl-3 g-3 gw-collection gw-collection--jeux">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 row-cols-xxl-4 g-3 gw-collection gw-collection--jeux">
                         {% for jeu in jeux %}
                             <div class="col">
                             <article class="gw-game-card h-100">

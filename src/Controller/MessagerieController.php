@@ -12,6 +12,7 @@ use App\Repository\MessageRepository;
 use App\Repository\UtilisateurRepository;
 use App\Service\PieceJointeMessageUploader;
 use App\Service\CentreNotifications;
+use App\Service\GestionSucces;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +25,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class MessagerieController extends AbstractController
 {
+    use AnnonceSuccesTrait;
+
     #[Route('', name: 'app_messages', methods: ['GET'])]
     public function index(Request $request, ConversationRepository $repository, MessageRepository $messageRepository): Response
     {
@@ -39,7 +42,7 @@ final class MessagerieController extends AbstractController
     }
 
     #[Route('/nouveau', name: 'app_messages_nouveau')]
-    public function nouveau(Request $request, ConversationRepository $repository, UtilisateurRepository $utilisateurRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader, CentreNotifications $notifications): Response
+    public function nouveau(Request $request, ConversationRepository $repository, UtilisateurRepository $utilisateurRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader, CentreNotifications $notifications, GestionSucces $gestionSucces): Response
     {
         $donnees = [];
         $destinataireId = $request->query->getInt('destinataire');
@@ -64,6 +67,7 @@ final class MessagerieController extends AbstractController
                 $entityManager->persist($message);
                 $notifications->ajouter($destinataire, 'Nouveau message', $utilisateur->getPseudo().' t’a envoyé un message.', 'envelope-fill', '/messages/'.$conversation->getId());
                 $entityManager->flush();
+                $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
 
                 return $this->redirectToRoute('app_messages_voir', ['id' => $conversation->getId()]);
             }
@@ -73,7 +77,7 @@ final class MessagerieController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_messages_voir')]
-    public function voir(Conversation $conversation, Request $request, ConversationRepository $repository, MessageRepository $messageRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader, CentreNotifications $notifications): Response
+    public function voir(Conversation $conversation, Request $request, ConversationRepository $repository, MessageRepository $messageRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader, CentreNotifications $notifications, GestionSucces $gestionSucces): Response
     {
         $utilisateur = $this->utilisateur();
         if (!$conversation->contient($utilisateur)) {
@@ -91,6 +95,7 @@ final class MessagerieController extends AbstractController
             $entityManager->persist($message);
             if ($destinataire = $conversation->autreMembre($utilisateur)) { $notifications->ajouter($destinataire, 'Nouveau message', $utilisateur->getPseudo().' t’a envoyé un message.', 'envelope-fill', '/messages/'.$conversation->getId()); }
             $entityManager->flush();
+            $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
 
             return $this->redirectToRoute('app_messages_voir', ['id' => $conversation->getId()]);
         }

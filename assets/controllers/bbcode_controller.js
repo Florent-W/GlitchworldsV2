@@ -1,14 +1,17 @@
 import { Controller } from '@hotwired/stimulus';
 import { Tooltip } from 'bootstrap';
+import { Picker } from 'emoji-picker-element';
+import traductionEmojiFr from 'emoji-picker-element/i18n/fr';
 import { MODELES_BBCODE } from '../bbcode_templates.js';
 
 export default class extends Controller {
-    static targets = ['contenu', 'apercu', 'rendu', 'boutonApercu', 'groupeTemplates'];
+    static targets = ['contenu', 'apercu', 'rendu', 'boutonApercu', 'groupeTemplates', 'menuEmoji'];
     static values = { apercuUrl: String, jeton: String };
 
     connect() {
         this.apercuActif = false;
         this.delaiApercu = null;
+        this.fermerEmojisAuClic = this.fermerEmojisAuClic.bind(this);
         this.tooltips = [];
         this.element.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((element) => {
             this.tooltips.push(new Tooltip(element));
@@ -18,6 +21,8 @@ export default class extends Controller {
 
     disconnect() {
         window.clearTimeout(this.delaiApercu);
+        document.removeEventListener('click', this.fermerEmojisAuClic);
+        this.observateurTheme?.disconnect();
         this.tooltips.forEach((tooltip) => tooltip.dispose());
         this.tooltips = [];
     }
@@ -139,6 +144,59 @@ export default class extends Controller {
     icone(event) {
         if (event.currentTarget.value) this.remplacerSelection(`[icone=${event.currentTarget.value}][/icone]`);
         event.currentTarget.value = '';
+    }
+
+    initialiserEmojis() {
+        if (!this.hasMenuEmojiTarget || this.selecteurEmoji) return;
+
+        this.selecteurEmoji = new Picker({
+            dataSource: 'https://cdn.jsdelivr.net/npm/emoji-picker-element-data@^1/fr/emojibase/data.json',
+            i18n: traductionEmojiFr,
+            locale: 'fr',
+        });
+        this.selecteurEmoji.addEventListener('emoji-click', (event) => {
+            this.remplacerSelection(event.detail.unicode);
+            this.fermerEmojis();
+        });
+        this.menuEmojiTarget.append(this.selecteurEmoji);
+        this.actualiserThemeEmoji();
+
+        this.observateurTheme = new MutationObserver(() => this.actualiserThemeEmoji());
+        this.observateurTheme.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-bs-theme'],
+        });
+    }
+
+    basculerEmojis(event) {
+        event.stopPropagation();
+        const doitOuvrir = this.menuEmojiTarget.hidden;
+        if (!doitOuvrir) {
+            this.fermerEmojis();
+            return;
+        }
+
+        this.initialiserEmojis();
+        document.addEventListener('click', this.fermerEmojisAuClic);
+        this.menuEmojiTarget.hidden = false;
+        event.currentTarget.setAttribute('aria-expanded', 'true');
+        window.requestAnimationFrame(() => this.selecteurEmoji.shadowRoot?.querySelector('input')?.focus());
+    }
+
+    fermerEmojisAuClic(event) {
+        if (!this.menuEmojiTarget.contains(event.target)) this.fermerEmojis();
+    }
+
+    fermerEmojis() {
+        if (!this.hasMenuEmojiTarget) return;
+        this.menuEmojiTarget.hidden = true;
+        document.removeEventListener('click', this.fermerEmojisAuClic);
+        this.element.querySelector('[data-action~="bbcode#basculerEmojis"]')?.setAttribute('aria-expanded', 'false');
+    }
+
+    actualiserThemeEmoji() {
+        this.selecteurEmoji?.classList.toggle('dark', document.documentElement.dataset.bsTheme === 'dark');
+        this.selecteurEmoji?.classList.toggle('light', document.documentElement.dataset.bsTheme !== 'dark');
     }
 
     insererAutourSelection(ouvrante, fermante) {

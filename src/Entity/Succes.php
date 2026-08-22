@@ -24,7 +24,61 @@ class Succes
     public function setDescription(string $description): static { $this->description = $description; return $this; }
     public function getIcone(): string { return $this->icone; }
     public function setIcone(string $icone): static { $this->icone = $icone; return $this; }
-    public function getCouleur(): string { return $this->couleur; }
+
+    /** Palier visuel, le même que les récompenses : plus les points sont élevés, plus c’est rare. */
+    public function getPalier(): string
+    {
+        return match (true) {
+            $this->points < 50 => 'commun',
+            $this->points < 100 => 'rare',
+            $this->points < 200 => 'epique',
+            $this->points < 300 => 'mythique',
+            default => 'legendaire',
+        };
+    }
+
+    public function getPalierLabel(): string
+    {
+        return match ($this->getPalier()) {
+            'commun' => 'Commun',
+            'rare' => 'Rare',
+            'epique' => 'Épique',
+            'mythique' => 'Mythique',
+            default => 'Légendaire',
+        };
+    }
+
+    /** Famille d’actions, pour regrouper les succès comme les récompenses. */
+    public function getCategorie(): string
+    {
+        return match ($this->code) {
+            'premier_jeu', 'collectionneur_5', 'collectionneur_20', 'collectionneur_50',
+            'premier_favori', 'fan_10', 'fan_25',
+            'premiere_liste', 'curateur_5' => 'collection',
+            'premiere_note', 'critique_5', 'critique_15',
+            'premier_commentaire', 'bavard_25', 'bavard_50',
+            'premiere_publication', 'voix_de_la_communaute', 'chroniqueur_25',
+            'premier_suivi', 'social_10',
+            'premier_message' => 'communaute',
+            'createur_approuve', 'createur_5', 'premiere_actualite' => 'creation',
+            'portrait', 'presentation', 'premiere_banniere' => 'profil',
+            'niveau_5', 'niveau_10', 'niveau_20', 'niveau_50' => 'progression',
+            'premier_achat' => 'boutique',
+            default => 'collection',
+        };
+    }
+
+    public function getCouleur(): string
+    {
+        return match ($this->getPalier()) {
+            'commun' => 'info',
+            'rare' => 'success',
+            'epique' => 'warning',
+            'mythique' => 'secondary',
+            default => 'danger',
+        };
+    }
+
     public function setCouleur(string $couleur): static { $this->couleur = $couleur; return $this; }
     public function getPoints(): int { return $this->points; }
     public function setPoints(int $points): static { $this->points = $points; return $this; }

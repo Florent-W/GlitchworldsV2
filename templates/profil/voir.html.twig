@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ membre.pseudo }} - Profil GlitchWorlds{% endblock %}
-{% block meta_description %}Découvre le profil, les jeux favoris et les publications de {{ membre.pseudo }} sur GlitchWorlds.{% endblock %}
+{% block title %}Profil de {{ membre.pseudo }} - Glitchworlds{% endblock %}
+{% block meta_description %}Découvre le profil, les jeux favoris et les publications de {{ membre.pseudo }} sur Glitchworlds.{% endblock %}
 
 {% block body %}
 <div class="gw-profile{% if membre.effetProfilEquipe %} gw-profile--{{ membre.effetProfilEquipe.slug }}{% endif %}{% if membre.cadreAvatarEquipe %} gw-profile--{{ membre.cadreAvatarEquipe.slug }}{% endif %}">
@@ -80,8 +80,11 @@
                 {% elseif app.user %}
                     <form method="post" action="{{ path('app_profil_suivre', {id: membre.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('suivre-' ~ membre.id) }}">
-                        <button class="btn {{ app.user.suit(membre) ? 'btn-outline-primary' : 'btn-primary' }}"><i class="bi bi-person-{{ app.user.suit(membre) ? 'dash' : 'plus' }}-fill me-2"></i>{{ app.user.suit(membre) ? 'Ne plus suivre' : 'Suivre' }}</button>
+                        <button class="btn {{ app.user.suit(membre) ? 'btn-outline-primary' : 'btn-primary' }}" title="{{ app.user.suit(membre) ? 'Tu reçois une notification à chaque publication de ce membre.' : 'Reçois une notification à chaque publication de ce membre et retrouve son activité dans ton fil Abonnements.' }}"><i class="bi bi-person-{{ app.user.suit(membre) ? 'dash' : 'plus' }}-fill me-2"></i>{{ app.user.suit(membre) ? 'Ne plus suivre' : 'Suivre' }}</button>
                     </form>
+                    {% if app.user.suit(membre) %}
+                        <a class="btn btn-outline-secondary" href="{{ path('app_communaute', {section: 'abonnements'}) }}"><i class="bi bi-person-check-fill me-2"></i>Mon fil d’abonnements</a>
+                    {% endif %}
                     <a class="btn btn-outline-primary" href="{{ path('app_messages_nouveau', {destinataire: membre.id}) }}"><i class="bi bi-envelope-fill me-2"></i>Message</a>
                 {% else %}
                     <a class="btn btn-primary" href="{{ path('app_connexion') }}">Se connecter pour suivre</a>
@@ -195,28 +198,7 @@
                         <h2 class="h5 mb-0">Succès</h2>
                         <span class="badge text-bg-warning">{{ succesAcquis|length }}/{{ succes|length }}</span>
                     </div>
-                    <div class="row g-3">
-                        {% for item in succes %}
-                            {% set acquis = item.code in codesAcquis %}
-                            <div class="col-md-6">
-                                <article class="border rounded-4 p-3 h-100 {{ not acquis ? 'opacity-50' }}">
-                                    <div class="d-flex gap-3">
-                                        <span class="gw-achievement text-bg-{{ item.couleur }}"><i class="bi bi-{{ acquis ? item.icone : 'lock-fill' }}"></i></span>
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                <h3 class="h6 mb-0">{{ item.nom }}</h3>
-                                                {% if acquis %}<span class="badge text-bg-success">Débloqué</span>{% endif %}
-                                            </div>
-                                            <p class="text-secondary small my-2 mb-0">{{ item.description }}</p>
-                                            <strong class="text-warning small">+{{ item.points }} points</strong>
-                                        </div>
-                                    </div>
-                                </article>
-                            </div>
-                        {% else %}
-                            <p class="text-secondary mb-0">Aucun succès n’est encore défini.</p>
-                        {% endfor %}
-                    </div>
+                    {{ include('_succes_groupes.html.twig', { succes: succes, codesAcquis: codesAcquis, colonnes: 'col-md-6' }) }}
                 {% else %}
                     <h2 class="h5">Jeux favoris</h2>
                     {{ _self.jeux(membre.jeuxFavoris, notesJeux) }}
@@ -239,7 +221,7 @@
                         {% for deblocage in succesAcquis|slice(0, 6) %}
                             {% set item = deblocage.succes %}
                             {% if item %}
-                                <span class="gw-achievement text-bg-{{ item.couleur }}" title="{{ item.nom }} - {{ item.description }}"><i class="bi bi-{{ item.icone }}"></i></span>
+                                <span class="gw-achievement gw-reward-tier--{{ item.palier }}" title="{{ item.nom }} - {{ item.description }}"><i class="bi bi-{{ item.icone }}"></i></span>
                             {% endif %}
                         {% endfor %}
                     </div>

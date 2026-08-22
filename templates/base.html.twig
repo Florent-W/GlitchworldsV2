@@ -7,12 +7,13 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{% block title %}GlitchWorlds{% endblock %}</title>
-        <meta name="description" content="{% block meta_description %}Bienvenue sur GlitchWorlds - fangames, hacks, mods et communauté.{% endblock %}">
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🌐</text></svg>">
+        <title>{% block title %}Glitchworlds{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}Bienvenue sur Glitchworlds - fangames, hacks, mods et communauté.{% endblock %}">
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
         <link rel="canonical" href="{% block canonical %}{{ app.request.schemeAndHttpHost ~ app.request.baseUrl ~ app.request.pathInfo }}{% endblock %}">
         <meta name="robots" content="{% block robots_meta %}index,follow{% endblock %}">
-        <meta property="og:site_name" content="GlitchWorlds">
+        <meta property="og:site_name" content="Glitchworlds">
         <meta property="og:locale" content="fr_FR">
         <meta property="og:type" content="{% block og_type %}website{% endblock %}">
         <meta property="og:title" content="{{ block('title')|striptags|trim }}">
@@ -102,6 +103,9 @@
     <body{% block body_attributes %}{% endblock %}>
         {% block video_background %}{% endblock %}
         {% set current_route = app.request.attributes.get('_route') %}
+        {# Retiré du sac avant la boucle générique : ces flashes portent un
+           tableau et sont rendus par la popup de succès, en bas de page. #}
+        {% set succes_debloques = app.flashes('succes_debloque') %}
         {# Les entrées protégées par ROLE_USER restent masquées aux visiteurs :
            sinon le clic mémorise la page refusée et la connexion y renvoie. #}
         {% set nav_items = [
@@ -308,6 +312,11 @@
                         <span>Messages</span>
                     </a>
                 </div>
+
+                {# Bande de copyright de l'ancien site : seul le thème legacy l'affiche. #}
+                <p class="gw-bottombar__copyright">
+                    &copy; {{ 'now'|date('Y') }} Copyright : <a href="{{ path('app_home') }}">Glitchworlds.com</a>
+                </p>
             </footer>
         </div>
 
@@ -322,5 +331,7 @@
                 data-action="click->retour-haut#remonter">
             <i class="bi bi-arrow-up-short" aria-hidden="true"></i>
         </button>
+
+        {{ include('_succes_deblocage.html.twig') }}
     </body>
 </html>

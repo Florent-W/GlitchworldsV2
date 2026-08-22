@@ -47,6 +47,13 @@
             <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[section]" data-bbcode-fermante-param="[/section]" title="Section" data-bs-toggle="tooltip" data-bs-placement="top"><i class="bi bi-layout-text-window" aria-hidden="true"></i></button>
         </div>
 
+        <div class="gw-bbcode-emoji-wrap">
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="bbcode#basculerEmojis" title="Insérer un emoji" data-bs-toggle="tooltip" data-bs-placement="top" aria-haspopup="dialog" aria-expanded="false">
+                <i class="bi bi-emoji-smile" aria-hidden="true"></i><span class="visually-hidden">Insérer un emoji</span>
+            </button>
+            <div class="gw-bbcode-emoji-menu" data-bbcode-target="menuEmoji" role="dialog" aria-label="Choisir un emoji" hidden></div>
+        </div>
+
         <select class="form-select form-select-sm w-auto" data-action="change->bbcode#choisir" data-bbcode-modele-ouvrant="[titre={valeur}]" data-bbcode-modele-fermant="[/titre]" aria-label="Niveau de titre">
             <option value="">Titre</option>{% for niveau in 1..5 %}<option value="h{{ niveau }}">H{{ niveau }}</option>{% endfor %}
         </select>

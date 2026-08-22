@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modération des commentaires - GlitchWorlds{% endblock %}
+{% block title %}Commentaires - Modération - Glitchworlds{% endblock %}
 {% block robots_meta %}noindex,nofollow{% endblock %}
 
 {% block body %}
@@ -28,7 +28,7 @@
                         <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
                             <div>
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2"><strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Membre supprimé' }}</strong>{% if commentaire.parent %}<span class="badge text-bg-info">Réponse</span>{% endif %}<time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div>
-                                <p class="mb-2">{{ commentaire.contenu|nl2br }}</p>
+                                <div class="gw-comment__content mb-2">{{ commentaire.contenu|bbcode_commentaire }}</div>
                                 <a class="small" href="{{ path('app_jeu_show', { slug: commentaire.jeu.slug, id: commentaire.jeu.id }) }}#commentaire-{{ commentaire.parent ? commentaire.parent.id : commentaire.id }}"><i class="bi bi-controller me-1" aria-hidden="true"></i>{{ commentaire.jeu.nom }}</a>
                             </div>
                             <div class="d-flex align-items-start gap-2">
@@ -48,7 +48,7 @@
                         <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
                             <div>
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2"><strong>{{ commentaire.auteur ? commentaire.auteur.pseudo : 'Membre supprimé' }}</strong>{% if commentaire.parent %}<span class="badge text-bg-info">Réponse</span>{% endif %}<time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div>
-                                <p class="mb-2">{{ commentaire.contenu|nl2br }}</p>
+                                <div class="gw-comment__content mb-2">{{ commentaire.contenu|bbcode_commentaire }}</div>
                                 <a class="small" href="{{ path('app_actualite_voir', { slug: commentaire.actualite.slug, id: commentaire.actualite.id }) }}#commentaire-{{ commentaire.parent ? commentaire.parent.id : commentaire.id }}"><i class="bi bi-newspaper me-1" aria-hidden="true"></i>{{ commentaire.actualite.titre }}</a>
                             </div>
                             <div class="d-flex align-items-start gap-2">

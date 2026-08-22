@@ -26,6 +26,19 @@ export default class extends Controller {
         this.sortable?.destroy();
     }
 
+    basculerMode(event) {
+        const actif = this.element.classList.toggle('gw-home-order--organizing');
+        const bouton = event.currentTarget;
+        const icone = bouton.querySelector('i');
+        const libelle = bouton.querySelector('span');
+
+        bouton.setAttribute('aria-pressed', actif ? 'true' : 'false');
+        bouton.classList.toggle('btn-primary', actif);
+        bouton.classList.toggle('btn-outline-secondary', !actif);
+        if (icone) icone.className = actif ? 'bi bi-check-lg' : 'bi bi-arrows-move';
+        if (libelle) libelle.textContent = actif ? ' Terminer' : ' Réorganiser';
+    }
+
     deplacerAuClavier(event) {
         if (!['ArrowUp', 'ArrowDown'].includes(event.key)) {
             return;

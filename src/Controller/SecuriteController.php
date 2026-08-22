@@ -9,6 +9,7 @@ use App\Form\MotDePasseType;
 use App\Repository\ActualiteRepository;
 use App\Repository\JeuRepository;
 use App\Service\ImageProfilUploader;
+use App\Service\GestionSucces;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,6 +33,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final class SecuriteController extends AbstractController
 {
+    use AnnonceSuccesTrait;
+
     #[Route('/inscription', name: 'app_inscription')]
     public function inscription(Request $request, UserPasswordHasherInterface $hasher, EntityManagerInterface $entityManager): Response
     {
@@ -84,7 +87,7 @@ final class SecuriteController extends AbstractController
     }
 
     #[Route('/mon-compte/modifier', name: 'app_compte_modifier')]
-    public function modifierCompte(Request $request, EntityManagerInterface $entityManager, ImageProfilUploader $uploader): Response
+    public function modifierCompte(Request $request, EntityManagerInterface $entityManager, ImageProfilUploader $uploader, GestionSucces $gestionSucces): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -104,6 +107,7 @@ final class SecuriteController extends AbstractController
                 $utilisateur->setBanniere($uploader->enregistrer($banniere, $utilisateur, 'banniere'));
             }
             $entityManager->flush();
+            $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
             $this->addFlash('success', 'Ton profil a été mis à jour.');
 
             return $this->redirectToRoute('app_compte');
@@ -120,6 +124,7 @@ final class SecuriteController extends AbstractController
         EntityManagerInterface $entityManager,
         ImageProfilUploader $uploader,
         ValidatorInterface $validator,
+        GestionSucces $gestionSucces,
     ): Response {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -147,6 +152,7 @@ final class SecuriteController extends AbstractController
 
         $utilisateur->setAvatar($uploader->enregistrer($fichier, $utilisateur, 'avatar'));
         $entityManager->flush();
+        $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
         $this->addFlash('success', 'Ta photo de profil a été mise à jour.');
 
         return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
@@ -158,6 +164,7 @@ final class SecuriteController extends AbstractController
         EntityManagerInterface $entityManager,
         ImageProfilUploader $uploader,
         ValidatorInterface $validator,
+        GestionSucces $gestionSucces,
     ): Response {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -185,6 +192,7 @@ final class SecuriteController extends AbstractController
 
         $utilisateur->setBanniere($uploader->enregistrer($fichier, $utilisateur, 'banniere'));
         $entityManager->flush();
+        $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
         $this->addFlash('success', 'Ta bannière de profil a été mise à jour.');
 
         return $this->redirectToRoute('app_profil', ['id' => $utilisateur->getId()]);
@@ -242,7 +250,7 @@ final class SecuriteController extends AbstractController
                 $mailer->send((new Email())
                     ->from('noreply@glitchworlds.local')
                     ->to($email)
-                    ->subject('Réinitialisation de ton mot de passe GlitchWorlds')
+                    ->subject('Réinitialisation de ton mot de passe Glitchworlds')
                     ->text("Utilise ce lien dans l’heure qui suit :\n\n".$lien."\n\nSi tu n’es pas à l’origine de cette demande, ignore ce message."));
             }
             $this->addFlash('success', 'Si un compte correspond à cette adresse, un lien vient d’être envoyé.');

@@ -101,8 +101,24 @@ export default class extends Controller {
             : { top: delta, behavior: reduit ? 'auto' : 'smooth' });
     }
 
+    /**
+     * Un `overflow-y: auto` fait passer l'axe horizontal à « auto » lui aussi :
+     * lire la propriété calculée désignait donc le rail vertical comme
+     * horizontal, et ses flèches ne s'affichaient jamais. On se fie à l'axe qui
+     * déborde réellement, la direction du flux ne servant que de repli.
+     */
     estHorizontal() {
-        return getComputedStyle(this.listeTarget).overflowX === 'auto';
+        const liste = this.listeTarget;
+
+        if (liste.scrollWidth - liste.clientWidth > 4) {
+            return true;
+        }
+
+        if (liste.scrollHeight - liste.clientHeight > 4) {
+            return false;
+        }
+
+        return getComputedStyle(liste).flexDirection.startsWith('row');
     }
 
     afficherSelection(event) {

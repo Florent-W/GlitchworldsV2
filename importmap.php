@@ -34,4 +34,6 @@ return [
     'fullpage.js' => ['version' => '4.0.41'],
     'fullpage.js/dist/fullpage.min.css' => ['version' => '4.0.41', 'type' => 'css'],
     'sortablejs' => ['version' => '1.15.7'],
+    'emoji-picker-element' => ['version' => '1.29.1'],
+    'emoji-picker-element/i18n/fr' => ['version' => '1.29.1'],
 ];

@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ actualite.titre }} - GlitchWorlds{% endblock %}
+{% block title %}{{ actualite.titre }} - Glitchworlds{% endblock %}
 {% block meta_description %}{{ actualite.description }}{% endblock %}
 {% block og_type %}article{% endblock %}
 {% block canonical %}{{ url('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}{% endblock %}
-{% block structured_data %}<script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Article', headline: actualite.titre, description: actualite.description, datePublished: actualite.publieeLe|date('c'), author: { '@type': 'Person', name: actualite.auteur ? actualite.auteur.pseudo : 'GlitchWorlds' } }|json_encode|raw }}</script>{% endblock %}
+{% block structured_data %}<script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Article', headline: actualite.titre, description: actualite.description, datePublished: actualite.publieeLe|date('c'), author: { '@type': 'Person', name: actualite.auteur ? actualite.auteur.pseudo : 'Glitchworlds' } }|json_encode|raw }}</script>{% endblock %}
 
 {% block body %}
 <article class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 980px">
@@ -58,7 +58,7 @@
                         {% if is_granted('COMMENTAIRE_ACTUALITE_MODIFIER', commentaire) %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_commentaire_modifier', { id: commentaire.id }) }}" aria-label="Modifier"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>{% endif %}
                         {% if is_granted('COMMENTAIRE_ACTUALITE_SUPPRIMER', commentaire) %}<form method="post" action="{{ path('app_actualite_commentaire_supprimer', { id: commentaire.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-actualite-' ~ commentaire.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer"><i class="bi bi-trash-fill" aria-hidden="true"></i></button></form>{% endif %}{% if app.user and app.user != commentaire.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'commentaire-actualite', id: commentaire.id}) }}" aria-label="Signaler"><i class="bi bi-flag"></i></a>{% endif %}
                     </header>
-                    <div>{{ commentaire.contenu|nl2br }}</div>
+                    <div class="gw-comment__content">{{ commentaire.contenu|bbcode_commentaire }}</div>
 
                     {% if commentaire.reponses is not empty %}
                         <div class="gw-comment-replies vstack gap-2">
@@ -67,7 +67,7 @@
                                     <div class="gw-comment__avatar">{% if reponse.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}" aria-label="Voir le profil de {{ reponse.auteur.pseudo }}">{% if reponse.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ reponse.auteur.id ~ '/' ~ reponse.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ reponse.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}</div>
                                     <div class="flex-grow-1">
                                         <header class="d-flex flex-wrap align-items-center gap-2"><strong>{% if reponse.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}">{{ reponse.auteur.pseudo }}</a>{% else %}Membre supprimé{% endif %}</strong><span class="badge rounded-pill text-bg-light">Réponse</span><time class="small text-secondary" datetime="{{ reponse.dateCommentaire|date('c') }}">{{ reponse.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time>{% if app.user %}<form class="ms-auto" method="post" action="{{ path('app_actualite_commentaire_aimer', { id: reponse.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('aimer-commentaire-actualite-' ~ reponse.id) }}"><button class="btn btn-sm {{ reponse.aimePar.contains(app.user) ? 'btn-primary' : 'btn-outline-primary' }}" type="submit" aria-label="Aimer la réponse"><i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i> {{ reponse.aimePar|length }}</button></form>{% else %}<span class="ms-auto small text-secondary"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> {{ reponse.aimePar|length }}</span>{% endif %}{% if is_granted('COMMENTAIRE_ACTUALITE_MODIFIER', reponse) %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_commentaire_modifier', { id: reponse.id }) }}" aria-label="Modifier la réponse"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>{% endif %}{% if is_granted('COMMENTAIRE_ACTUALITE_SUPPRIMER', reponse) %}<form method="post" action="{{ path('app_actualite_commentaire_supprimer', { id: reponse.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-actualite-' ~ reponse.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer la réponse"><i class="bi bi-trash-fill" aria-hidden="true"></i></button></form>{% endif %}{% if app.user and app.user != reponse.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'commentaire-actualite', id: reponse.id}) }}" aria-label="Signaler la réponse"><i class="bi bi-flag"></i></a>{% endif %}</header>
-                                        <div>{{ reponse.contenu|nl2br }}</div>
+                                        <div class="gw-comment__content">{{ reponse.contenu|bbcode_commentaire }}</div>
                                     </div>
                                 </article>
                             {% endfor %}
@@ -75,7 +75,15 @@
                     {% endif %}
 
                     {% if app.user %}
-                        <details class="gw-reply-form mt-2"><summary class="btn btn-sm btn-link px-0"><i class="bi bi-reply-fill me-1" aria-hidden="true"></i>Répondre</summary><form class="mt-2" method="post" action="{{ path('app_actualite_commentaire_repondre', { id: commentaire.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('repondre-commentaire-actualite-' ~ commentaire.id) }}"><label class="visually-hidden" for="reponse-actualite-{{ commentaire.id }}">Ta réponse</label><textarea id="reponse-actualite-{{ commentaire.id }}" class="form-control" name="contenu" rows="3" minlength="3" maxlength="1000" required placeholder="Écris ta réponse..."></textarea><div class="d-flex justify-content-end mt-2"><button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-send-fill me-1" aria-hidden="true"></i>Publier la réponse</button></div></form></details>
+                        <details class="gw-reply-form mt-2">
+                            <summary class="btn btn-sm btn-link px-0"><i class="bi bi-reply-fill me-1" aria-hidden="true"></i>Répondre</summary>
+                            <form class="mt-2" method="post" action="{{ path('app_actualite_commentaire_repondre', { id: commentaire.id }) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('repondre-commentaire-actualite-' ~ commentaire.id) }}">
+                                <label class="visually-hidden" for="reponse-actualite-{{ commentaire.id }}">Ta réponse</label>
+                                {% include '_editeur_commentaire.html.twig' with { id: 'reponse-actualite-' ~ commentaire.id } only %}
+                                <div class="d-flex justify-content-end mt-2"><button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-send-fill me-1" aria-hidden="true"></i>Publier la réponse</button></div>
+                            </form>
+                        </details>
                     {% else %}
                         <a class="btn btn-sm btn-link px-0 mt-1" href="{{ path('app_connexion') }}"><i class="bi bi-reply-fill me-1" aria-hidden="true"></i>Se connecter pour répondre</a>
                     {% endif %}
@@ -87,7 +95,7 @@
     </div>
     <div class="border-top pt-4">
         {{ form_start(formulaireCommentaire) }}
-            {{ form_row(formulaireCommentaire.contenu) }}
+            {% include '_editeur_commentaire.html.twig' with { champ: formulaireCommentaire.contenu } only %}
             <div class="d-flex justify-content-between align-items-center gap-2">
                 <small class="{{ app.user ? 'gw-text-violet' : 'text-secondary' }}">{% if app.user %}Entre 3 et 1 000 caractères.{% else %}<a href="{{ path('app_connexion') }}">Connecte-toi</a> pour commenter.{% endif %}</small>
                 {{ form_widget(formulaireCommentaire.publier) }}

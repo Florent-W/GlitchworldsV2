@@ -17,6 +17,7 @@ final class BbcodeExtension extends AbstractExtension
     {
         return [
             new TwigFilter('bbcode', $this->bbcodeConverter->toHtml(...), ['is_safe' => ['html']]),
+            new TwigFilter('bbcode_commentaire', $this->bbcodeConverter->toCommentHtml(...), ['is_safe' => ['html']]),
             new TwigFilter('bbcode_texte', $this->bbcodeConverter->toText(...)),
         ];
     }

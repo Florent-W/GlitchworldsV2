@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Avis;
 use App\Entity\Jeu;
+use App\Enum\StatutJeu;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -71,6 +72,19 @@ class AvisRepository extends ServiceEntityRepository
             'moyenne' => $resultat['moyenne'] !== null ? round($resultat['moyenne'], 1) : null,
             'total' => $resultat['total'],
         ];
+    }
+
+    /** @return list<Avis> */
+    public function trouverDernieresNotes(int $limite = 20): array
+    {
+        return $this->createQueryBuilder('avis')
+            ->innerJoin('avis.auteur', 'auteur')->addSelect('auteur')
+            ->innerJoin('avis.jeu', 'jeu')->addSelect('jeu')
+            ->andWhere('jeu.statut = :statut')->setParameter('statut', StatutJeu::Approuve)
+            ->orderBy('avis.dateAvis', 'DESC')
+            ->setMaxResults(max(1, min(50, $limite)))
+            ->getQuery()
+            ->getResult();
     }
 
     /** @return list<Avis> */

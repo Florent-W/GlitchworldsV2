@@ -17,8 +17,8 @@ final class BoutiqueControllerTest extends WebTestCase
         $client = self::createClient();
         $client->request('GET', '/boutique');
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('h1', 'Boutique');
-        self::assertSelectorTextContains('body', 'Étoile GlitchWorlds');
+        self::assertSelectorTextContains('h1', 'Récompenses');
+        self::assertSelectorTextContains('body', 'Étoile Glitchworlds');
     }
 
     public function testUnMembrePeutAcheterEtEquiperUnTitreSansDoubleDebit(): void

@@ -62,7 +62,7 @@ final class AdministrationController extends AbstractController
                 'icone' => 'person-plus-fill',
                 'couleur' => 'success',
                 'auteur' => $utilisateur->getPseudo(),
-                'texte' => 'a rejoint GlitchWorlds',
+                'texte' => 'a rejoint Glitchworlds',
                 'url' => $this->generateUrl('app_profil', ['id' => $utilisateur->getId()]),
             ];
         }

@@ -1,5 +1,5 @@
 /* ===============================================================
-   1. Design tokens GlitchWorlds
+   1. Design tokens Glitchworlds
    Source unique de vérité : couleurs, rayons, ombres, espacements.
    =============================================================== */
 :root {
@@ -452,7 +452,10 @@ body {
     box-shadow: var(--gw-glow);
 }
 
-.gw-autocomplete { position: absolute; z-index: 1; top: calc(100% + .55rem); left: 0; right: 0; overflow: hidden; border: 1px solid var(--gw-border); border-radius: 1rem; background: var(--gw-surface-solid); box-shadow: 0 18px 45px rgba(22, 52, 95, .2); }
+/* La couleur est posée explicitement : héritée, elle prendrait celle de la
+   topbar, blanche sur les thèmes à barre sombre (legacy, DS) donc illisible
+   sur le fond clair du panneau. */
+.gw-autocomplete { position: absolute; z-index: 1; top: calc(100% + .55rem); left: 0; right: 0; overflow: hidden; border: 1px solid var(--gw-border); border-radius: 1rem; color: var(--gw-text); background: var(--gw-surface-solid); box-shadow: 0 18px 45px rgba(22, 52, 95, .2); }
 .gw-autocomplete:not(.d-none) { animation: gw-autocomplete-apparition 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
 
 @keyframes gw-autocomplete-apparition {
@@ -2573,6 +2576,10 @@ body {
     justify-content: flex-end;
 }
 
+.gw-bottombar__copyright {
+    display: none;
+}
+
 .gw-console-btn {
     display: inline-flex;
     flex-direction: column;
@@ -4265,6 +4272,8 @@ a.gw-author-card__name:hover {
 }
 
 .gw-community__post { align-items: flex-start; }
+.gw-community__rating { display: flex; align-items: center; gap: .4rem; }
+.gw-community__stars { display: inline-flex; gap: .1rem; color: #f5b91f; }
 .gw-community__side .list-group-item { background: transparent; }
 .min-w-0 { min-width: 0; }
 .gw-shop__balance { display: flex; align-items: center; gap: .8rem; padding: .8rem 1.1rem; border: 1px solid var(--gw-border); border-radius: 1rem; background: var(--gw-surface-solid); box-shadow: var(--gw-shadow-soft); }
@@ -4688,7 +4697,10 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 .gw-profile__banner-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: .5rem; color: #fff; background: rgba(15, 23, 42, .48); font-weight: 700; opacity: 0; transition: opacity .18s ease; pointer-events: none; }
 .gw-profile__banner-overlay i { font-size: 1.35rem; }
 .gw-profile__banner-btn:hover .gw-profile__banner-overlay, .gw-profile__banner-btn:focus-visible .gw-profile__banner-overlay { opacity: 1; }
-.gw-profile__identity { display: flex; align-items: flex-start; gap: 1.25rem; flex-wrap: wrap; }
+/* L’avatar remonte sur la bannière, qui devient positionnée dès qu’un effet de
+   profil est équipé : sans rang d’empilement propre, elle recouvrait le cadre
+   et le halo de la photo. */
+.gw-profile__identity { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 1.25rem; flex-wrap: wrap; }
 .gw-profile__avatar { width: 132px; height: 132px; margin-top: -58px; flex: 0 0 auto; border: 5px solid rgba(255,255,255,.95); border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: linear-gradient(145deg,#dceeff,#fff); color: var(--gw-blue); font-size: 3rem; font-weight: 800; box-shadow: 0 8px 24px rgba(31,75,130,.2); }
 .gw-profile__avatar img { width: 100%; height: 100%; object-fit: cover; }
 .gw-profile__avatar--editable form { width: 100%; height: 100%; }
@@ -4786,6 +4798,50 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 @media (max-width: 767.98px) { .gw-profile__banner { min-height: 120px; } .gw-profile__banner--editable form, .gw-profile__banner-btn { height: 120px; } .gw-profile__avatar { width: 96px; height: 96px; margin-top: -38px; } .gw-profile__numbers { width: 100%; justify-content: space-around; } }
 
 .gw-bbcode-toolbar { padding: .65rem; border: 1px solid var(--bs-border-color); border-radius: 1rem; background: color-mix(in srgb, var(--gw-surface) 92%, var(--gw-primary) 8%); }
+.gw-bbcode-comment-toolbar {
+    width: fit-content;
+    padding: .3rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .65rem;
+    background: color-mix(in srgb, var(--gw-surface) 95%, var(--gw-primary) 5%);
+}
+.gw-comment-editor textarea { min-height: 6rem; }
+.gw-comment__content .blockquote {
+    margin: .5rem 0;
+    padding: .5rem .75rem;
+    border-left: .2rem solid var(--gw-primary);
+    color: var(--bs-secondary-color);
+    background: color-mix(in srgb, var(--gw-surface) 94%, var(--gw-primary) 6%);
+    font-size: .95em;
+}
+.gw-bbcode-emoji-wrap { position: relative; }
+.gw-bbcode-emoji-menu {
+    position: absolute;
+    z-index: 1080;
+    top: calc(100% + .5rem);
+    right: 0;
+    padding: .35rem;
+    border: 1px solid var(--gw-border);
+    border-radius: .85rem;
+    background: var(--gw-surface-solid);
+    box-shadow: 0 16px 42px rgba(15, 23, 42, .24);
+}
+.gw-bbcode-emoji-menu[hidden] { display: none; }
+.gw-bbcode-emoji-menu emoji-picker {
+    display: block;
+    width: min(352px, calc(100vw - 2rem));
+    height: min(420px, calc(100vh - 4rem));
+    --border-size: 0;
+}
+@media (max-width: 575.98px) {
+    .gw-bbcode-emoji-menu {
+        position: fixed;
+        top: 50%;
+        right: auto;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
 .gw-bbcode-preview { min-height: 8rem; padding: 1.25rem; border: 1px solid var(--bs-border-color); border-radius: 1rem; background: var(--gw-surface); overflow: hidden; }
 .gw-bbcode-preview::after { display: block; clear: both; content: ''; }
 .gw-text-violet { color: var(--gw-secondary) !important; }
@@ -5922,6 +5978,8 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 
 :root[data-theme="legacy"] .gw-logo {
     grid-column: 1;
+    /* Léger retrait à gauche, comme la marque de la navbar d'origine. */
+    margin-left: .5rem;
     margin-right: 1rem;
     padding-block: .3125rem;
     white-space: nowrap;
@@ -6011,23 +6069,72 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 }
 
 :root[data-theme="legacy"] .gw-rail__viewport {
+    position: relative;
     display: block;
     max-height: none;
-    overflow-x: auto;
+    overflow: visible;
 }
 
-:root[data-theme="legacy"] .gw-dsi-selection,
-:root[data-theme="legacy"] .gw-rail__suite {
+:root[data-theme="legacy"] .gw-dsi-selection {
     display: none !important;
 }
 
+/* Le défilement porte sur la liste et non sur le cadre : les flèches peuvent
+   ainsi rester posées sur les bords pendant que les entrées glissent dessous. */
 :root[data-theme="legacy"] .gw-rail__list {
     display: flex;
     flex-direction: row;
     gap: 0;
     max-height: none;
     padding: 0;
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+:root[data-theme="legacy"] .gw-rail__list::-webkit-scrollbar {
+    display: none;
+}
+
+/* Le menu de la barre du haut déborde dès que la fenêtre se resserre : sans
+   repère, rien n'indique qu'il reste des entrées à droite. */
+:root[data-theme="legacy"] .gw-rail__suite {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    bottom: 0;
+    display: grid;
+    width: 2rem;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    cursor: pointer;
+    color: #fff;
+}
+
+:root[data-theme="legacy"] .gw-rail__suite--haut {
+    left: 0;
+    right: auto;
+    background: linear-gradient(to right, #343a40 62%, rgba(52, 58, 64, 0));
+}
+
+:root[data-theme="legacy"] .gw-rail__suite--bas {
+    right: 0;
+    left: auto;
+    background: linear-gradient(to left, #343a40 62%, rgba(52, 58, 64, 0));
+}
+
+/* Les chevrons du rail vertical resservent ici, pivotés d'un quart de tour. */
+:root[data-theme="legacy"] .gw-rail__suite i {
+    transform: rotate(-90deg);
+}
+
+:root[data-theme="legacy"] .gw-rail__suite:hover {
+    color: #adb5bd;
+}
+
+:root[data-theme="legacy"] .gw-rail__suite[hidden] {
+    display: none;
 }
 
 :root[data-theme="legacy"] .gw-rail__list > li {
@@ -6141,7 +6248,10 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 :root[data-theme="legacy"] .gw-main {
     width: min(1200px, calc(100% - 2rem));
     margin-inline: auto;
-    padding-block: 1.5rem 2rem;
+    /* Aucune réserve en haut : la bannière pleine largeur se colle sous la
+       barre de navigation comme sur l'ancien site. Les pages internes gardent
+       leur respiration via la marge de .gw-main--interne. */
+    padding-block: 0 2rem;
 }
 
 :root[data-theme="legacy"] .gw-main--interne {
@@ -6297,12 +6407,10 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
         z-index: auto;
         width: 100%;
         padding: 0;
+        /* Le dernier lien du menu tomberait sinon juste contre le champ de
+           recherche, qui le suit dans la barre. */
+        margin-right: .75rem;
         background: transparent;
-    }
-
-    :root[data-theme="legacy"] .gw-rail__viewport {
-        overflow-x: auto;
-        scrollbar-width: none;
     }
 
     :root[data-theme="legacy"] .gw-rail__item {
@@ -6325,11 +6433,44 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
     border-radius: .2rem;
 }
 
+/* Bas de page de l'ancien site : bandeau bleu nuit surmontant une bande plus
+   sombre pour le copyright. Les deux teintes sont reprises telles quelles. */
 :root[data-theme="legacy"] .gw-bottombar {
+    padding: 1.25rem clamp(.75rem, 2vw, 1.5rem) 0;
     border-radius: 0;
-    color: #6c757d;
-    background: #f8f9fa;
+    color: #ced4da;
+    background: #1c2a48;
     box-shadow: none;
+}
+
+/* L'horloge garde la surface du thème : sans couleur propre elle hériterait
+   du texte clair du bandeau et deviendrait illisible en mode clair. */
+:root[data-theme="legacy"] .gw-clock {
+    color: var(--gw-text);
+}
+
+:root[data-theme="legacy"] .gw-bottombar__copyright {
+    display: block;
+    grid-column: 1 / -1;
+    /* La grille passe en colonne centrée sous 992px : sans étirement, la bande
+       se réduirait à la largeur du texte. */
+    justify-self: stretch;
+    /* La bande file jusqu'aux bords malgré la gouttière du bandeau. */
+    margin: 0 calc(-1 * clamp(.75rem, 2vw, 1.5rem));
+    padding: .75rem 1rem;
+    color: #9aa4b2;
+    background: #16223a;
+    font-size: .9rem;
+    text-align: center;
+}
+
+:root[data-theme="legacy"] .gw-bottombar__copyright a {
+    color: #fff;
+    text-decoration: none;
+}
+
+:root[data-theme="legacy"] .gw-bottombar__copyright a:is(:hover, :focus-visible) {
+    text-decoration: underline;
 }
 
 @media (max-width: 767.98px) {
@@ -6429,12 +6570,6 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
     color: #f1f3f5;
     border-color: #495057;
     background-color: #24292f;
-}
-
-:root[data-theme="legacy"][data-bs-theme="dark"] .gw-bottombar {
-    color: #ced4da;
-    border-top: 1px solid #495057;
-    background: #212529;
 }
 
 :root[data-theme="legacy"][data-bs-theme="dark"] .gw-main--interne {
@@ -7085,6 +7220,238 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
     transform: none;
 }
 
+/* ===============================================================
+   Popup « succès débloqué », façon overlay de console.
+   Entrée, maintien et sortie sont entièrement pilotés en CSS pour
+   rester fonctionnels sans JavaScript ; le contrôleur Stimulus
+   n'ajoute que le son et le nettoyage du DOM.
+   =============================================================== */
+.gw-succes-popup {
+    position: fixed;
+    z-index: 1090;
+    /* Aligné à droite sur la gouttière de .gw-app : la colonne de lecture,
+       à gauche, reste dégagée pendant l'affichage. */
+    right: clamp(.75rem, 2vw, 1.5rem);
+    /* Le décalage est mesuré sous la topbar par le contrôleur Stimulus :
+       sa hauteur change d'un thème à l'autre. La valeur de repli couvre le
+       cas sans JavaScript. */
+    top: var(--gw-succes-decalage, 5.5rem);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .55rem;
+    width: min(28rem, calc(100vw - 1.5rem));
+    pointer-events: none;
+}
+
+.gw-succes-popup__carte {
+    --gw-succes-couleur: #fbbf24;
+    --gw-succes-couleur-rgb: 251, 191, 36;
+    /* Teinte vive illisible sur une surface claire : on l'assombrit pour le
+       texte. Le thème sombre la reprend telle quelle plus bas. */
+    --gw-succes-accent: color-mix(in srgb, var(--gw-succes-couleur) 66%, #0b1220);
+    --gw-succes-reflet: rgba(var(--gw-succes-couleur-rgb), .28);
+    /* Ni halo ni lueur colorée sur surface claire : les deux débordent sur la
+       carte et salissent le blanc. Ils ne sont rallumés qu'en thème sombre. */
+    --gw-succes-halo: transparent;
+    --gw-succes-lueur-icone: 0 .3rem .7rem rgba(15, 23, 42, .16);
+    --gw-succes-rang: 0;
+    /* Les cartes s'enchaînent au lieu de se superposer. */
+    --gw-succes-tempo: calc(var(--gw-succes-rang) * 1.2s);
+    /* Temps de lecture avant le départ de l'animation de sortie. */
+    --gw-succes-lecture: 9s;
+
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .9rem;
+    width: 100%;
+    padding: .8rem 1.05rem;
+    overflow: hidden;
+    border: 1px solid rgba(var(--gw-succes-couleur-rgb), .5);
+    border-radius: 1.15rem;
+    color: var(--gw-text);
+    text-decoration: none;
+    background: var(--gw-surface-solid);
+    box-shadow: var(--gw-shadow), 0 0 0 .35rem rgba(var(--gw-succes-couleur-rgb), .1);
+    pointer-events: auto;
+    animation:
+        gw-succes-entree .7s cubic-bezier(.16, 1, .3, 1) var(--gw-succes-tempo) both,
+        gw-succes-sortie .55s ease-in calc(var(--gw-succes-tempo) + var(--gw-succes-lecture)) forwards;
+}
+
+:root[data-bs-theme="dark"] .gw-succes-popup__carte {
+    --gw-succes-accent: var(--gw-succes-couleur);
+    --gw-succes-reflet: rgba(255, 255, 255, .18);
+    --gw-succes-halo: rgba(var(--gw-succes-couleur-rgb), .32);
+    --gw-succes-lueur-icone: 0 0 1.4rem rgba(var(--gw-succes-couleur-rgb), .5);
+    box-shadow:
+        inset 0 1px rgba(255, 255, 255, .07),
+        var(--gw-shadow),
+        0 0 0 .35rem rgba(var(--gw-succes-couleur-rgb), .12);
+}
+
+/* Survol ou focus : la sortie attend que l'utilisateur ait lu. */
+.gw-succes-popup__carte:hover,
+.gw-succes-popup__carte:focus-visible {
+    animation-play-state: paused;
+}
+
+.gw-succes-popup__carte--commun { --gw-succes-couleur: #58c8e8; --gw-succes-couleur-rgb: 88, 200, 232; }
+.gw-succes-popup__carte--rare { --gw-succes-couleur: #62d48a; --gw-succes-couleur-rgb: 98, 212, 138; }
+.gw-succes-popup__carte--epique { --gw-succes-couleur: #f3d458; --gw-succes-couleur-rgb: 243, 212, 88; }
+.gw-succes-popup__carte--mythique { --gw-succes-couleur: #fa9a4b; --gw-succes-couleur-rgb: 250, 154, 75; }
+.gw-succes-popup__carte--legendaire { --gw-succes-couleur: #e95461; --gw-succes-couleur-rgb: 233, 84, 97; }
+
+.gw-succes-popup__halo {
+    position: absolute;
+    inset: -50% -10% auto -10%;
+    height: 220%;
+    background: radial-gradient(58% 58% at 14% 50%, var(--gw-succes-halo), transparent 70%);
+    animation: gw-succes-halo 2.6s ease-in-out infinite;
+}
+
+.gw-succes-popup__icone {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 1rem;
+    color: #08101c;
+    font-size: 1.5rem;
+    background: linear-gradient(150deg, var(--gw-succes-couleur), rgba(var(--gw-succes-couleur-rgb), .62));
+    box-shadow: var(--gw-succes-lueur-icone);
+    animation: gw-succes-icone .85s cubic-bezier(.2, 1.55, .4, 1) calc(var(--gw-succes-tempo) + .12s) both;
+}
+
+/* Anneau lumineux : deux tours au déblocage, puis extinction. */
+.gw-succes-popup__icone::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -.34rem;
+    border-radius: inherit;
+    opacity: 0;
+    background: conic-gradient(from 0deg, transparent 0 58%, rgba(var(--gw-succes-couleur-rgb), .95) 80%, transparent 100%);
+    animation: gw-succes-anneau 2.5s cubic-bezier(.3, 0, .25, 1) calc(var(--gw-succes-tempo) + .1s) both;
+}
+
+.gw-succes-popup__corps {
+    display: grid;
+    gap: .08rem;
+    min-width: 0;
+}
+
+.gw-succes-popup__label {
+    color: var(--gw-succes-accent);
+    font-size: .66rem;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+}
+
+.gw-succes-popup__nom,
+.gw-succes-popup__description {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.gw-succes-popup__nom { font-size: 1.02rem; font-weight: 800; line-height: 1.25; }
+.gw-succes-popup__description { color: var(--gw-muted); font-size: .78rem; }
+
+.gw-succes-popup__points {
+    display: grid;
+    justify-items: center;
+    padding: .35rem .6rem;
+    border: 1px solid rgba(var(--gw-succes-couleur-rgb), .45);
+    border-radius: .8rem;
+    background: rgba(var(--gw-succes-couleur-rgb), .14);
+    line-height: 1;
+}
+
+.gw-succes-popup__points strong { color: var(--gw-succes-accent); font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.gw-succes-popup__points small { color: var(--gw-muted); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; }
+
+/* Reflet qui balaie la carte une fois ouverte. */
+.gw-succes-popup__eclat {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 35%, var(--gw-succes-reflet) 50%, transparent 65%);
+    transform: translateX(-120%);
+    animation: gw-succes-eclat 1.1s ease-out calc(var(--gw-succes-tempo) + .4s) both;
+}
+
+@keyframes gw-succes-entree {
+    from {
+        opacity: 0;
+        transform: translate(1.5rem, -.9rem) scale(.94);
+        clip-path: inset(0 100% 0 0 round 1.15rem);
+    }
+    to {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+        clip-path: inset(0 0 0 0 round 1.15rem);
+    }
+}
+
+@keyframes gw-succes-sortie {
+    from { opacity: 1; transform: translate(0, 0) scale(1); }
+    to { opacity: 0; visibility: hidden; transform: translate(1.2rem, -.4rem) scale(.97); }
+}
+
+@keyframes gw-succes-halo {
+    0%, 100% { opacity: .5; }
+    50% { opacity: 1; }
+}
+
+@keyframes gw-succes-icone {
+    from { opacity: 0; transform: scale(.35) rotate(-20deg); }
+    to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@keyframes gw-succes-anneau {
+    from { opacity: 0; transform: rotate(0); }
+    12% { opacity: 1; }
+    78% { opacity: 1; }
+    to { opacity: 0; transform: rotate(2turn); }
+}
+
+@keyframes gw-succes-eclat {
+    from { transform: translateX(-120%); }
+    to { transform: translateX(120%); }
+}
+
+/* Mouvement réduit : la carte apparaît et disparaît sans transition,
+   mais reste affichée le même temps de lecture. */
+@media (prefers-reduced-motion: reduce) {
+    .gw-succes-popup__carte { animation-duration: .01ms, .01ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gw-succes-popup__halo,
+    .gw-succes-popup__icone,
+    .gw-succes-popup__icone::before,
+    .gw-succes-popup__eclat { animation: none; }
+}
+
+:root[data-reduced-motion="true"] .gw-succes-popup__halo,
+:root[data-reduced-motion="true"] .gw-succes-popup__icone,
+:root[data-reduced-motion="true"] .gw-succes-popup__icone::before,
+:root[data-reduced-motion="true"] .gw-succes-popup__eclat {
+    animation: none;
+}
+
+@media (max-width: 575.98px) {
+    /* Trop étroit pour un alignement à droite : la popup occupe la largeur. */
+    .gw-succes-popup { left: .75rem; right: .75rem; width: auto; }
+    .gw-succes-popup__carte { gap: .7rem; padding: .7rem .85rem; }
+    .gw-succes-popup__icone { width: 2.6rem; height: 2.6rem; font-size: 1.25rem; }
+    .gw-succes-popup__description { display: none; }
+}
+
 /* Back-office */
 .gw-admin { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 1.5rem; }
 .gw-admin .bi { line-height: 1; }
@@ -7125,7 +7492,7 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 .min-w-0 { min-width: 0; }
 @media (max-width: 991.98px) { .gw-admin { grid-template-columns: 1fr; } .gw-admin > aside { position: static; } .gw-admin-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 575.98px) { .gw-admin-nav { grid-template-columns: 1fr 1fr; } .gw-admin-nav__link { justify-content: center; padding-inline: .5rem; font-size: .8rem; } }
-.gw-achievement{width:3.5rem;height:3.5rem;border-radius:1rem;display:grid;place-items:center;font-size:1.5rem;flex:0 0 auto}.gw-notification{display:flex;align-items:center;gap:1rem;padding:1.15rem 1.25rem 1.15rem 1.45rem;border-bottom:1px solid var(--bs-border-color);position:relative;transition:background-color .15s ease}.gw-notification:last-child{border-bottom:0}.gw-notification:hover{background:rgba(var(--gw-primary-rgb),.05)}.gw-notification--unread::before{content:"";position:absolute;top:0;bottom:0;left:0;width:.2rem;background:var(--gw-alert)}.gw-notification__icon{width:2.75rem;height:2.75rem;border-radius:.85rem;display:grid;place-items:center;background:rgba(var(--gw-primary-rgb),.14);color:var(--gw-primary);font-size:1.2rem;flex:0 0 auto}
+.gw-achievement{width:3.5rem;height:3.5rem;border-radius:1rem;display:grid;place-items:center;font-size:1.5rem;flex:0 0 auto;color:#fff;background:var(--reward-color, #58c8e8)}.gw-notification{display:flex;align-items:center;gap:1rem;padding:1.15rem 1.25rem 1.15rem 1.45rem;border-bottom:1px solid var(--bs-border-color);position:relative;transition:background-color .15s ease}.gw-notification:last-child{border-bottom:0}.gw-notification:hover{background:rgba(var(--gw-primary-rgb),.05)}.gw-notification--unread::before{content:"";position:absolute;top:0;bottom:0;left:0;width:.2rem;background:var(--gw-alert)}.gw-notification__icon{width:2.75rem;height:2.75rem;border-radius:.85rem;display:grid;place-items:center;background:rgba(var(--gw-primary-rgb),.14);color:var(--gw-primary);font-size:1.2rem;flex:0 0 auto}
 .gw-presence{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:var(--bs-secondary-bg);border:1px solid var(--bs-border-color)}.gw-presence--online{background:#35c759;border-color:#fff;box-shadow:0 0 0 2px rgba(53,199,89,.2)}.gw-community__avatar--sm{width:2rem;height:2rem;font-size:.85rem;flex:0 0 auto}.gw-community__media{width:100%;max-height:32rem;object-fit:cover}.gw-community__link{display:flex;align-items:center;gap:.65rem;padding:.8rem 1rem;border:1px solid var(--bs-border-color);border-radius:1rem;text-decoration:none;overflow:hidden}.gw-community__link span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gw-poll{padding:1rem;border-radius:1rem;background:rgba(var(--bs-primary-rgb),.06)}.gw-poll__option{position:relative;display:flex;align-items:center;gap:.6rem;padding:.65rem .75rem;margin:.4rem 0;border:1px solid var(--bs-border-color);border-radius:.75rem;overflow:hidden;cursor:pointer}.gw-poll__option>*:not(i){position:relative;z-index:1}.gw-poll__option span{flex-grow:1}.gw-poll__option i{position:absolute;inset:0 auto 0 0;background:rgba(var(--bs-primary-rgb),.14)}.gw-replies{border-left:3px solid rgba(var(--bs-primary-rgb),.2);padding-left:1rem}.gw-reply{display:flex;gap:.65rem;padding:.65rem 0;border-bottom:1px solid var(--bs-border-color)}.gw-reply:last-child{border-bottom:0}
 
 /* Navigation compacte inspirée de la barre Bootstrap de l'ancien site. */
@@ -7148,6 +7515,17 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
     width: auto !important;
     max-width: 100% !important;
     height: auto !important;
+}
+
+/* La carte « Écrit par » vit à l’intérieur du contenu : sans exception, la
+   règle ci-dessus rend l’avatar à son ratio d’origine et laisse le dégradé du
+   cadre apparaître sous la photo. */
+:root .gw-article-content .gw-author-card__media img,
+:root .jeu-contenu .gw-author-card__media img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
 }
 
 :root .gw-article-content .gw-bbcode-gallery img,
@@ -7234,6 +7612,28 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
         font-size: .8rem;
         letter-spacing: .02em;
         text-align: left;
+    }
+
+    /* Legacy teinte son rail en blanc pour la barre sombre du haut. Le tiroir
+       replié, lui, repose sur --gw-surface : sans reprise de la couleur du
+       thème, le libellé passe blanc sur blanc. */
+    :root[data-theme="legacy"] .gw-rail.is-open .gw-rail__item,
+    :root[data-theme="legacy"] .gw-rail.is-open .gw-rail__item:is(:hover, :focus-visible) {
+        color: var(--gw-text);
+    }
+
+    :root[data-theme="legacy"] .gw-rail.is-open .gw-rail__item:is(:hover, :focus-visible) {
+        background: rgba(var(--gw-primary-rgb), .1);
+    }
+
+    :root[data-theme="legacy"] .gw-rail.is-open .gw-rail__item.is-active {
+        color: #fff;
+    }
+
+    /* Les libellés sont masqués sous 768px pour la barre horizontale ; dans le
+       tiroir, il ne resterait que des icônes. */
+    :root[data-theme="legacy"] .gw-rail.is-open .gw-rail__label {
+        display: block;
     }
 
     :root .gw-rail__suite,
@@ -7384,7 +7784,7 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 }
 
 :root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-similar-card__visual {
-    height: clamp(250px, 28vw, 360px);
+    height: clamp(175px, 18vw, 240px);
     min-height: 0;
 }
 
@@ -7423,6 +7823,64 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 :root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3 {
     font-size: .88rem;
     line-height: 1.25;
+}
+
+/* Accueil : carrousel horizontal de neuf éléments, quatre visibles sur grand écran. */
+.gw-home-carousel__stage { min-width: 0; }
+.gw-home-carousel__arrow {
+    display: none;
+    width: 2rem; height: 2rem; padding: 0; place-items: center;
+    border: 1px solid var(--gw-border); border-radius: 50%; color: var(--gw-text);
+    background: var(--gw-surface-solid); box-shadow: var(--gw-shadow-soft);
+    transition: color .16s ease, border-color .16s ease, transform .16s ease, opacity .16s ease;
+}
+.gw-home-carousel__arrow:not(:disabled):hover { border-color: var(--gw-primary); color: var(--gw-primary); transform: scale(1.06); }
+.gw-home-carousel__arrow:disabled { opacity: .25; cursor: default; }
+.gw-home-shell.gw-disposition--carrousel .gw-home-carousel__stage { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 2rem; align-items: center; gap: .75rem; }
+.gw-home-shell.gw-disposition--carrousel .gw-home-carousel__arrow { display: grid; position: relative; z-index: 3; }
+.gw-home-shell.gw-disposition--carrousel .gw-collection.row {
+    --bs-gutter-x: 0;
+    display: flex !important; flex-wrap: nowrap !important; gap: 1rem; margin: 0;
+    overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; scroll-snap-type: x mandatory;
+    scrollbar-width: none; overscroll-behavior-inline: contain;
+}
+.gw-home-shell.gw-disposition--carrousel .gw-collection.row::-webkit-scrollbar { display: none; }
+.gw-home-shell.gw-disposition--carrousel .gw-collection.row > .col {
+    flex: 0 0 calc((100% - 3rem) / 4) !important; width: calc((100% - 3rem) / 4) !important;
+    max-width: none !important; padding: 0; scroll-snap-align: start;
+}
+.gw-home-shell.gw-disposition--carrousel .gw-collection :is(.gw-similar-card, .gw-article-card) { height: 100%; }
+.gw-home-shell.gw-disposition--carrousel .gw-home-menu { padding: 1rem !important; }
+.gw-home-shell.gw-disposition--carrousel .gw-similar-card__visual { height: clamp(175px, 18vw, 240px); min-height: 0; background: color-mix(in srgb, var(--gw-surface-solid) 88%, var(--gw-primary) 12%); }
+.gw-home-shell.gw-disposition--carrousel .gw-collection--jeux .gw-similar-card__visual { height: auto; aspect-ratio: 1; }
+.gw-home-shell.gw-disposition--carrousel .gw-similar-card__visual img { width: 100% !important; height: 100% !important; object-fit: contain !important; object-position: center; }
+.gw-home-shell.gw-disposition--carrousel .gw-similar-card > .p-3 { padding: .75rem !important; }
+.gw-home-shell.gw-disposition--carrousel .gw-similar-card h3 { display: -webkit-box; overflow: hidden; font-size: .9rem; line-height: 1.25; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.gw-home-shell.gw-disposition--carrousel .gw-home-card-meta { margin-top: .5rem !important; font-size: .75rem; }
+.gw-home-order--organizing .gw-home-sortable-section { min-height: 0 !important; padding: .75rem 1rem !important; cursor: grab; }
+.gw-home-order--organizing .gw-home-sortable-section:active { cursor: grabbing; }
+.gw-home-order--organizing .gw-home-sortable-section > :not(.gw-home-menu__entete) { display: none !important; }
+.gw-home-order--organizing .gw-home-menu__entete { margin-bottom: 0 !important; }
+.gw-home-order--organizing .gw-home-menu__entete h2 { font-size: 1rem; }
+.gw-home-order--organizing .gw-home-menu__lien { display: none; }
+.gw-home-order--organizing .gw-home-drag-handle { color: #fff; border-color: var(--gw-primary); background: var(--gw-primary); }
+.gw-home-shell:not(.gw-disposition--carrousel) .gw-collection--jeux > .col:nth-child(n + 9),
+.gw-home-shell:not(.gw-disposition--carrousel) .gw-collection--actualites > .col:nth-child(n + 5) { display: none; }
+
+/* Sous 1200 px, quatre vignettes deviennent trop étroites pour rester lisibles. */
+@media (max-width: 1199.98px) {
+    .gw-home-shell.gw-disposition--carrousel .gw-collection.row > .col { flex-basis: calc((100% - 2rem) / 3) !important; width: calc((100% - 2rem) / 3) !important; }
+}
+
+@media (max-width: 767.98px) {
+    .gw-home-shell.gw-disposition--carrousel .gw-collection.row > .col { flex-basis: calc((100% - 1rem) / 2) !important; width: calc((100% - 1rem) / 2) !important; }
+    .gw-home-shell.gw-disposition--carrousel .gw-collection--actualites .gw-similar-card__visual { height: 210px; }
+}
+
+@media (max-width: 479.98px) {
+    .gw-home-shell.gw-disposition--carrousel .gw-collection.row > .col { flex-basis: 100% !important; width: 100% !important; }
+    .gw-home-shell.gw-disposition--carrousel .gw-collection--jeux .gw-similar-card__visual { height: 280px; aspect-ratio: auto; }
+    .gw-home-menu__entete { align-items: flex-start !important; }
 }
 
 .gw-home-card-meta {

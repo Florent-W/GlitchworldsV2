@@ -1,4 +1,4 @@
-/** Modèles de contenu repris de l’ancien site GlitchWorlds. */
+/** Modèles de contenu repris de l’ancien site Glitchworlds. */
 export const MODELES_BBCODE = {
     glitch: {
         label: 'Glitch',

@@ -2,15 +2,20 @@
 
 namespace App\Service;
 
+use App\Entity\AchatBoutique;
+use App\Entity\Actualite;
 use App\Entity\Avis;
 use App\Entity\CommentaireActualite;
 use App\Entity\CommentaireJeu;
 use App\Entity\Jeu;
 use App\Entity\JeuBibliotheque;
+use App\Entity\ListeJeux;
+use App\Entity\Message;
 use App\Entity\Publication;
 use App\Entity\Succes;
 use App\Entity\SuccesUtilisateur;
 use App\Entity\Utilisateur;
+use App\Enum\StatutActualite;
 use App\Enum\StatutJeu;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -79,30 +84,41 @@ final readonly class GestionSucces
         $nombreCommentaires = $nombreCommentairesJeux + $nombreCommentairesActualites;
         $nombrePublications = $this->entityManager->getRepository(Publication::class)->count(['auteur' => $utilisateur]);
         $nombreAbonnements = $utilisateur->getAbonnements()->count();
-        $nombreJeuxApprouves = (int) $this->entityManager->createQueryBuilder()
-            ->select('COUNT(j.id)')
-            ->from(Jeu::class, 'j')
-            ->andWhere('j.createur = :utilisateur')
-            ->andWhere('j.statut = :statut')
-            ->setParameter('utilisateur', $utilisateur)
-            ->setParameter('statut', StatutJeu::Approuve)
-            ->getQuery()
-            ->getSingleScalarResult();
+        $nombreJeuxApprouves = $this->compterPourAuteur(Jeu::class, 'createur', $utilisateur, 'statut', StatutJeu::Approuve);
+        $nombreActualitesPubliees = $this->compterPourAuteur(Actualite::class, 'auteur', $utilisateur, 'statut', StatutActualite::Publiee);
+        $nombreListes = $this->entityManager->getRepository(ListeJeux::class)->count(['utilisateur' => $utilisateur]);
+        $nombreAchats = $this->entityManager->getRepository(AchatBoutique::class)->count(['utilisateur' => $utilisateur]);
+        $nombreMessages = $this->entityManager->getRepository(Message::class)->count(['auteur' => $utilisateur]);
 
         $criteres = [
             'premier_jeu' => $nombreJeux >= 1,
             'collectionneur_5' => $nombreJeux >= 5,
             'collectionneur_20' => $nombreJeux >= 20,
+            'collectionneur_50' => $nombreJeux >= 50,
             'premier_favori' => $nombreFavoris >= 1,
             'fan_10' => $nombreFavoris >= 10,
+            'fan_25' => $nombreFavoris >= 25,
             'premiere_note' => $nombreNotes >= 1,
             'critique_5' => $nombreNotes >= 5,
+            'critique_15' => $nombreNotes >= 15,
             'premier_commentaire' => $nombreCommentaires >= 1,
             'bavard_25' => $nombreCommentaires >= 25,
+            'bavard_50' => $nombreCommentaires >= 50,
             'premiere_publication' => $nombrePublications >= 1,
             'voix_de_la_communaute' => $nombrePublications >= 10,
+            'chroniqueur_25' => $nombrePublications >= 25,
             'premier_suivi' => $nombreAbonnements >= 1,
+            'social_10' => $nombreAbonnements >= 10,
             'createur_approuve' => $nombreJeuxApprouves >= 1,
+            'createur_5' => $nombreJeuxApprouves >= 5,
+            'premiere_liste' => $nombreListes >= 1,
+            'curateur_5' => $nombreListes >= 5,
+            'portrait' => trim((string) $utilisateur->getAvatar()) !== '',
+            'presentation' => trim((string) $utilisateur->getBiographie()) !== '',
+            'premiere_banniere' => trim((string) $utilisateur->getBanniere()) !== '',
+            'premiere_actualite' => $nombreActualitesPubliees >= 1,
+            'premier_achat' => $nombreAchats >= 1,
+            'premier_message' => $nombreMessages >= 1,
         ];
 
         foreach ([5, 10, 20, 50] as $niveau) {
@@ -110,5 +126,23 @@ final readonly class GestionSucces
         }
 
         return $criteres;
+    }
+
+    private function compterPourAuteur(
+        string $entite,
+        string $champAuteur,
+        Utilisateur $utilisateur,
+        string $champStatut,
+        mixed $statut,
+    ): int {
+        return (int) $this->entityManager->createQueryBuilder()
+            ->select('COUNT(e.id)')
+            ->from($entite, 'e')
+            ->andWhere('e.'.$champAuteur.' = :utilisateur')
+            ->andWhere('e.'.$champStatut.' = :statut')
+            ->setParameter('utilisateur', $utilisateur)
+            ->setParameter('statut', $statut)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

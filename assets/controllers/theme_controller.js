@@ -317,7 +317,7 @@ export default class extends Controller {
             glitchworlds: 'Glitchworlds',
             wii: 'Thème 1',
             ps3: 'Thème 2',
-            legacy: 'GlitchWorlds Legacy',
+            legacy: 'Glitchworlds Legacy',
             ds: 'Thème 3',
             dsi: 'Thème 4',
             '3ds': 'Thème 5',

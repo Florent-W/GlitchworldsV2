@@ -8,6 +8,7 @@ use App\Enum\StatutActualite;
 use App\Form\ActualiteType;
 use App\Repository\ActualiteRepository;
 use App\Service\ActualiteImageUploader;
+use App\Service\NotificationAbonnes;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -27,7 +28,7 @@ final class AdministrationActualiteController extends AbstractController
     }
 
     #[Route('/creer', name: 'creer')]
-    public function creer(Request $request, SluggerInterface $slugger, ActualiteRepository $actualiteRepository, ActualiteImageUploader $imageUploader, EntityManagerInterface $entityManager): Response
+    public function creer(Request $request, SluggerInterface $slugger, ActualiteRepository $actualiteRepository, ActualiteImageUploader $imageUploader, EntityManagerInterface $entityManager, NotificationAbonnes $notificationAbonnes): Response
     {
         $actualite = new Actualite();
         $formulaire = $this->createForm(ActualiteType::class, $actualite, ['bouton_libelle' => 'Créer l’actualité']);
@@ -42,6 +43,10 @@ final class AdministrationActualiteController extends AbstractController
             $entityManager->persist($actualite);
             $entityManager->flush();
             $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
+            if ($actualite->getStatut() === StatutActualite::Publiee) {
+                $notificationAbonnes->notifierActualite($actualite);
+                $entityManager->flush();
+            }
             $this->addFlash('success', 'L’actualité a été créée.');
 
             return $this->redirectToRoute('app_moderation_actualites');

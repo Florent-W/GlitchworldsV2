@@ -15,4 +15,42 @@
     --gw-border: rgba(0, 0, 0, .42);
 }
 
+:root[data-theme="legacy"] .gw-game-hero--home {
+    min-height: clamp(410px, 42vw, 520px);
+    border-top: 4px solid #080b0d;
+    background-image:
+        linear-gradient(90deg, rgba(2, 16, 39, .72) 0%, rgba(2, 16, 39, .34) 34%, rgba(2, 16, 39, .05) 68%, rgba(2, 16, 39, .18) 100%),
+        url('../../images/legacy-banner.jpg');
+    background-position: center, center;
+    background-size: cover, cover;
+    box-shadow: inset 0 -5px #061b38;
+}
+
+@media (max-width: 767.98px) {
+    :root[data-theme="legacy"] .gw-game-hero--home {
+        min-height: 390px;
+        background-position: center, 52% center;
+    }
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home::after {
+    background:
+        linear-gradient(180deg, rgba(0, 20, 42, .06), transparent 54%, rgba(2, 16, 39, .32)),
+        radial-gradient(ellipse at center, transparent 58%, rgba(0, 13, 35, .22) 100%);
+    mask-image: none;
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home :is(h1, .gw-game-hero__lead) {
+    text-shadow: 0 2px 5px #00131f, 0 0 18px rgba(0, 32, 64, .72);
+}
+
+/* La galerie plein écran doit recouvrir la navbar sticky du thème Legacy. */
+:root[data-theme="legacy"] .lg-backdrop {
+    z-index: 1200;
+}
+
+:root[data-theme="legacy"] .lg-outer {
+    z-index: 1210;
+}
+
 /* Mode sombre : :root[data-theme="legacy"][data-bs-theme="dark"] */

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
-{% block title %}Récompenses - GlitchWorlds{% endblock %}
-{% block meta_description %}Utilise tes points GlitchWorlds pour débloquer des badges et des titres de profil.{% endblock %}
+{% block title %}Récompenses - Glitchworlds{% endblock %}
+{% block meta_description %}Utilise tes points Glitchworlds pour débloquer des badges et des titres de profil.{% endblock %}
 {% block body %}
 <section class="gw-shop">
     <header class="gw-page-heading mb-3"><div><span class="gw-eyebrow"><i class="bi bi-gift-fill"></i> Personnalisation</span><h1 class="display-5 fw-bold mb-1">Récompenses</h1><p class="text-secondary mb-0">Utilise les points gagnés dans la communauté pour débloquer des éléments cosmétiques.</p></div>{% if app.user %}<div class="gw-shop__balance"><i class="bi bi-star-fill"></i><span><strong>{{ app.user.points|number_format(0, ',', ' ') }}</strong> points disponibles</span></div>{% else %}<a class="btn btn-primary" href="{{ path('app_connexion') }}">Se connecter pour débloquer</a>{% endif %}</header>

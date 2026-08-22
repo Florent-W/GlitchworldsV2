@@ -22,6 +22,35 @@ final class BbcodeConverter
         return trim($contenu);
     }
 
+    public function toCommentHtml(string $contenu): string
+    {
+        $contenu = htmlspecialchars($contenu, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $contenu = nl2br($contenu, false);
+        $contenu = str_replace(
+            ['[i]', '[/i]', '[b]', '[/b]', '[u]', '[/u]', '[citation]', '[/citation]'],
+            ['<em>', '</em>', '<strong>', '</strong>', '<u>', '</u>', '<blockquote class="blockquote">', '</blockquote>'],
+            $contenu,
+        );
+        $contenu = preg_replace_callback(
+            '#\[lien](.+?)\[/lien]\[texteLien](.*?)\[/texteLien]#s',
+            fn (array $correspondance): string => sprintf(
+                '<a href="%s" rel="noopener noreferrer">%s</a>',
+                $this->securiserUrl($correspondance[1], true),
+                $correspondance[2],
+            ),
+            $contenu,
+        ) ?? $contenu;
+
+        return preg_replace_callback(
+            '#\[lien](.+?)\[/lien]#s',
+            fn (array $correspondance): string => sprintf(
+                '<a href="%1$s" rel="noopener noreferrer">%1$s</a>',
+                $this->securiserUrl($correspondance[1], true),
+            ),
+            $contenu,
+        ) ?? $contenu;
+    }
+
     private function remplacerBalises(string $contenu, bool $avecLien): string
     {
         $contenu = preg_replace_callback(

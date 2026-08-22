@@ -59,4 +59,19 @@ final class BbcodeConverterTest extends TestCase
         self::assertStringContainsString('https://www.youtube.com/embed/dQw4w9WgXcQ', $html);
         self::assertStringNotContainsString('width="640"', $html);
     }
+
+    public function testLimiteLeBbcodeDesCommentairesAuxBalisesSimples(): void
+    {
+        $html = (new BbcodeConverter())->toCommentHtml(
+            '[b]Important[/b] [i]vite[/i] [lien]https://example.com[/lien][texteLien]Source[/texteLien] [image]https://example.com/image.png[/image] <script>alert(1)</script>',
+        );
+
+        self::assertStringContainsString('<strong>Important</strong>', $html);
+        self::assertStringContainsString('<em>vite</em>', $html);
+        self::assertStringContainsString('<a href="https://example.com" rel="noopener noreferrer">Source</a>', $html);
+        self::assertStringContainsString('[image]https://example.com/image.png[/image]', $html);
+        self::assertStringContainsString('&lt;script&gt;', $html);
+        self::assertStringNotContainsString('<img', $html);
+        self::assertStringNotContainsString('<script>', $html);
+    }
 }

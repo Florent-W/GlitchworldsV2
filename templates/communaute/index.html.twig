@@ -1,14 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Communauté - GlitchWorlds{% endblock %}
-{% block meta_description %}Retrouve les dernières contributions de la communauté GlitchWorlds.{% endblock %}
+{% block title %}Communauté - Glitchworlds{% endblock %}
+{% block meta_description %}Retrouve les dernières contributions de la communauté Glitchworlds.{% endblock %}
 
 {% block body %}
 <div class="gw-community">
     <header class="gw-community__header">
         <div class="d-flex align-items-center gap-3">
             <span class="gw-community__heading-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
-            <div><h1 class="h2 mb-0">Communauté</h1><p class="text-secondary mb-0">Échange, partage et progresse avec la communauté GlitchWorlds.</p></div>
+            <div><h1 class="h2 mb-0">Communauté</h1><p class="text-secondary mb-0">Échange, partage et progresse avec la communauté Glitchworlds.</p></div>
         </div>
         {% if app.user %}<a class="btn btn-primary rounded-pill px-4" href="{{ path('app_jeu_proposer') }}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Nouvelle création</a>{% endif %}
     </header>
@@ -17,6 +17,11 @@
         {% for cle, libelle in { fil: "Fil d'activité", discussions: 'Discussions', creations: 'Créations', actualites: 'Actualités' } %}
             <a class="nav-link{{ section == cle ? ' active' : '' }}" href="{{ path('app_communaute', { section: cle }) }}" {{ section == cle ? 'aria-current="page"' : '' }}>{{ libelle }}</a>
         {% endfor %}
+        {% if app.user %}
+            <a class="nav-link{{ section == 'abonnements' ? ' active' : '' }}" href="{{ path('app_communaute', { section: 'abonnements' }) }}" {{ section == 'abonnements' ? 'aria-current="page"' : '' }}>
+                <i class="bi bi-person-check-fill me-1" aria-hidden="true"></i>Abonnements
+            </a>
+        {% endif %}
     </nav>
 
     <div class="row g-4 mt-1">
@@ -48,22 +53,36 @@
             <div class="vstack gap-3" id="discussions">
                 {% for activite in activites %}
                     {% set element = activite.element %}
+                    {% set auteur = element.auteur is defined and element.auteur ? element.auteur : (element.createur is defined ? element.createur : null) %}
                     <article id="{{ activite.type == 'publication' ? 'publication-' ~ element.id : '' }}" class="gw-community__post">
-                        <span class="gw-community__avatar">{% if element.auteur is defined and element.auteur and element.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ element.auteur.id ~ '/' ~ element.auteur.avatar) }}" alt="" loading="lazy">{% else %}<i class="bi bi-{{ activite.type == 'jeu' ? 'controller' : (activite.type == 'actualite' ? 'newspaper' : 'person-fill') }}" aria-hidden="true"></i>{% endif %}</span>
+                        <span class="gw-community__avatar">{% if auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: auteur.id}) }}" aria-label="Voir le profil de {{ auteur.pseudo }}">{% if auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ auteur.id ~ '/' ~ auteur.avatar) }}" alt="" loading="lazy">{% else %}<i class="bi bi-{{ activite.type == 'jeu' ? 'controller' : (activite.type == 'actualite' ? 'newspaper' : (activite.type == 'note' ? 'star-fill' : 'person-fill')) }}" aria-hidden="true"></i>{% endif %}</a>{% else %}<i class="bi bi-{{ activite.type == 'jeu' ? 'controller' : (activite.type == 'actualite' ? 'newspaper' : 'person-fill') }}" aria-hidden="true"></i>{% endif %}</span>
                         <div class="flex-grow-1 min-w-0">
                             {% if activite.type == 'publication' %}
-                                <div class="d-flex flex-wrap align-items-center gap-2"><strong>{{ element.auteur ? element.auteur.pseudo : 'Ancien membre' }}</strong>{% if element.auteur %}<span class="gw-presence {{ element.auteur.enLigne ? 'gw-presence--online' }}" title="{{ element.auteur.enLigne ? 'En ligne' : 'Hors ligne' }}"></span>{% endif %}<span class="badge text-bg-success-subtle text-success-emphasis">Publication</span><time class="small text-secondary ms-auto" datetime="{{ element.publieeLe|date('c') }}">{{ element.publieeLe|format_datetime('medium', 'short', locale='fr') }}</time></div>
+                                <div class="d-flex flex-wrap align-items-center gap-2"><strong>{% if element.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: element.auteur.id}) }}">{{ element.auteur.pseudo }}</a>{% else %}Ancien membre{% endif %}</strong>{% if element.auteur %}<span class="gw-presence {{ element.auteur.enLigne ? 'gw-presence--online' }}" title="{{ element.auteur.enLigne ? 'En ligne' : 'Hors ligne' }}"></span>{% endif %}<span class="badge text-bg-success-subtle text-success-emphasis">Publication</span><time class="small text-secondary ms-auto" datetime="{{ element.publieeLe|date('c') }}">{{ element.publieeLe|format_datetime('medium', 'short', locale='fr') }}</time></div>
                                 <p class="mt-2 mb-2">{{ element.contenu|nl2br }}</p>
                                 {% if element.image %}<img class="img-fluid rounded-4 mb-3 gw-community__media" src="{{ asset('uploads/publications/' ~ element.id ~ '/' ~ element.image) }}" alt="" loading="lazy">{% endif %}
                                 {% if element.lien %}<a class="gw-community__link mb-3" href="{{ element.lien }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-link-45deg"></i><span>{{ element.lien }}</span><i class="bi bi-box-arrow-up-right ms-auto"></i></a>{% endif %}
                                 {% if element.sondage %}<form class="gw-poll mb-3" method="post" action="{{ path('app_publication_voter', {id: element.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('voter-publication-' ~ element.id) }}"><h3 class="h6">{{ element.questionSondage }}</h3>{% set totalVotes = element.votes|length %}{% for choix in element.optionsSondage %}{% set nombre = element.nombreVotesPour(loop.index0) %}<label class="gw-poll__option"><input type="radio" name="option" value="{{ loop.index0 }}" required {{ not app.user ? 'disabled' }}><span>{{ choix }}</span><small>{{ totalVotes ? ((nombre / totalVotes) * 100)|round : 0 }} %</small><i style="width:{{ totalVotes ? ((nombre / totalVotes) * 100)|round : 0 }}%"></i></label>{% endfor %}<div class="d-flex justify-content-between align-items-center mt-2"><small class="text-secondary">{{ totalVotes }} vote{{ totalVotes > 1 ? 's' }}</small>{% if app.user %}<button class="btn btn-sm btn-primary">Voter</button>{% endif %}</div></form>{% endif %}
                                 <div class="d-flex flex-wrap gap-2">{% if app.user %}<form method="post" action="{{ path('app_publication_aimer', { id: element.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('aimer-publication-' ~ element.id) }}"><button class="btn btn-sm {{ element.aimePar.contains(app.user) ? 'btn-primary' : 'btn-outline-primary' }}" type="submit"><i class="bi bi-heart{{ element.aimePar.contains(app.user) ? '-fill' : '' }} me-1"></i>{{ element.aimePar|length }}</button></form>{% else %}<span class="btn btn-sm btn-outline-secondary disabled"><i class="bi bi-heart me-1"></i>{{ element.aimePar|length }}</span>{% endif %}{% if is_granted('PUBLICATION_MODIFIER', element) %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_publication_modifier', { id: element.id }) }}"><i class="bi bi-pencil me-1"></i>Modifier</a>{% endif %}{% if is_granted('PUBLICATION_SUPPRIMER', element) %}<form method="post" action="{{ path('app_publication_supprimer', { id: element.id }) }}" onsubmit="return confirm('Supprimer cette publication ?')"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-publication-' ~ element.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash me-1"></i>Supprimer</button></form>{% endif %}{% if app.user and app.user != element.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'publication', id: element.id}) }}"><i class="bi bi-flag me-1"></i>Signaler</a>{% endif %}</div>
-                                {% if element.reponses is not empty %}<div class="gw-replies mt-3">{% for reponse in element.reponses %}<div class="gw-reply"><span class="gw-community__avatar gw-community__avatar--sm">{% if reponse.auteur and reponse.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ reponse.auteur.id ~ '/' ~ reponse.auteur.avatar) }}" alt="" loading="lazy">{% else %}<i class="bi bi-person-fill"></i>{% endif %}</span><div><div class="d-flex gap-2 align-items-center"><strong class="small">{{ reponse.auteur ? reponse.auteur.pseudo : 'Ancien membre' }}</strong>{% if reponse.auteur %}<span class="gw-presence {{ reponse.auteur.enLigne ? 'gw-presence--online' }}"></span>{% endif %}<time class="small text-secondary">{{ reponse.publieeLe|format_datetime('short', 'short', locale='fr') }}</time></div><p class="mb-0">{{ reponse.contenu|nl2br }}</p></div></div>{% endfor %}</div>{% endif %}
+                                {% if element.reponses is not empty %}<div class="gw-replies mt-3">{% for reponse in element.reponses %}<div class="gw-reply"><span class="gw-community__avatar gw-community__avatar--sm">{% if reponse.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}" aria-label="Voir le profil de {{ reponse.auteur.pseudo }}">{% if reponse.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ reponse.auteur.id ~ '/' ~ reponse.auteur.avatar) }}" alt="" loading="lazy">{% else %}<i class="bi bi-person-fill"></i>{% endif %}</a>{% else %}<i class="bi bi-person-fill"></i>{% endif %}</span><div><div class="d-flex gap-2 align-items-center"><strong class="small">{% if reponse.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}">{{ reponse.auteur.pseudo }}</a>{% else %}Ancien membre{% endif %}</strong>{% if reponse.auteur %}<span class="gw-presence {{ reponse.auteur.enLigne ? 'gw-presence--online' }}"></span>{% endif %}<time class="small text-secondary">{{ reponse.publieeLe|format_datetime('short', 'short', locale='fr') }}</time></div><p class="mb-0">{{ reponse.contenu|nl2br }}</p></div></div>{% endfor %}</div>{% endif %}
                                 {% if app.user %}<form class="d-flex gap-2 mt-3" method="post" action="{{ path('app_publication_repondre', {id: element.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('repondre-publication-' ~ element.id) }}"><label class="visually-hidden" for="reponse-{{ element.id }}">Répondre</label><input id="reponse-{{ element.id }}" class="form-control form-control-sm" name="contenu" minlength="2" maxlength="600" placeholder="Écrire une réponse…" required><button class="btn btn-sm btn-primary" aria-label="Envoyer la réponse"><i class="bi bi-send-fill"></i></button></form>{% endif %}
                             {% elseif activite.type == 'commentaire_jeu' %}
-                                <div class="d-flex flex-wrap gap-2"><strong>{{ element.auteur ? element.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-primary-subtle text-primary">Discussion</span><time class="small text-secondary ms-auto">{{ element.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div><h2 class="h5 mt-2">{{ element.jeu.nom }}</h2><p>{{ element.contenu|slice(0, 320) }}</p><a class="btn btn-sm btn-outline-primary" href="{{ path('app_jeu_show', { slug: element.jeu.slug, id: element.jeu.id }) }}#commentaires">Voir la discussion</a>
+                                <div class="d-flex flex-wrap gap-2"><strong>{% if element.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: element.auteur.id}) }}">{{ element.auteur.pseudo }}</a>{% else %}Ancien membre{% endif %}</strong><span class="badge text-bg-primary-subtle text-primary">Discussion</span><time class="small text-secondary ms-auto">{{ element.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div><h2 class="h5 mt-2">{{ element.jeu.nom }}</h2><p>{{ element.contenu|slice(0, 320) }}</p><a class="btn btn-sm btn-outline-primary" href="{{ path('app_jeu_show', { slug: element.jeu.slug, id: element.jeu.id }) }}#commentaires">Voir la discussion</a>
                             {% elseif activite.type == 'commentaire_actualite' %}
-                                <div class="d-flex flex-wrap gap-2"><strong>{{ element.auteur ? element.auteur.pseudo : 'Ancien membre' }}</strong><span class="badge text-bg-info-subtle text-info-emphasis">Discussion</span><time class="small text-secondary ms-auto">{{ element.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div><h2 class="h5 mt-2">{{ element.actualite.titre }}</h2><p>{{ element.contenu|slice(0, 320) }}</p><a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_voir', { slug: element.actualite.slug, id: element.actualite.id }) }}#commentaires">Voir la discussion</a>
+                                <div class="d-flex flex-wrap gap-2"><strong>{% if element.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: element.auteur.id}) }}">{{ element.auteur.pseudo }}</a>{% else %}Ancien membre{% endif %}</strong><span class="badge text-bg-info-subtle text-info-emphasis">Discussion</span><time class="small text-secondary ms-auto">{{ element.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time></div><h2 class="h5 mt-2">{{ element.actualite.titre }}</h2><p>{{ element.contenu|slice(0, 320) }}</p><a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_voir', { slug: element.actualite.slug, id: element.actualite.id }) }}#commentaires">Voir la discussion</a>
+                            {% elseif activite.type == 'note' %}
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <p class="mb-0">
+                                        <strong>{% if element.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: element.auteur.id}) }}">{{ element.auteur.pseudo }}</a>{% else %}Ancien membre{% endif %}</strong>
+                                        a noté
+                                        <a href="{{ path('app_jeu_show', { slug: element.jeu.slug, id: element.jeu.id }) }}">{{ element.jeu.nom }}</a>
+                                    </p>
+                                    <span class="gw-community__rating">
+                                        <span class="gw-community__stars" role="img" aria-label="{{ element.note }} sur 5">{% for etoile in 1..5 %}<i class="bi bi-star{{ etoile <= element.note ? '-fill' : '' }}" aria-hidden="true"></i>{% endfor %}</span>
+                                        <strong>{{ element.note|number_format(0, ',', ' ') }}</strong>
+                                    </span>
+                                    <time class="small text-secondary ms-auto" datetime="{{ element.dateAvis|date('c') }}">{{ element.dateAvis|format_datetime('medium', 'short', locale='fr') }}</time>
+                                </div>
                             {% elseif activite.type == 'jeu' %}
                                 <span class="badge text-bg-primary-subtle text-primary">Nouvelle création</span><h2 class="h5 mt-2">{{ element.nom }}</h2><p>{{ element.description }}</p><a class="btn btn-sm btn-primary" href="{{ path('app_jeu_show', { slug: element.slug, id: element.id }) }}">Voir la fiche</a>
                             {% else %}
@@ -71,7 +90,21 @@
                             {% endif %}
                         </div>
                     </article>
-                {% else %}<div class="gw-panel p-5 text-center text-secondary">Aucun contenu dans cette section pour le moment.</div>{% endfor %}
+                {% else %}
+                    {% if section == 'abonnements' %}
+                        <div class="gw-panel p-5 text-center text-secondary">
+                            <i class="bi bi-person-plus-fill fs-1 d-block mb-2 text-primary" aria-hidden="true"></i>
+                            {% if suivisCount == 0 %}
+                                <p class="mb-1">Tu ne suis encore personne.</p>
+                                <p class="mb-0">Abonne-toi à un membre depuis son profil pour retrouver ici ses publications, ses jeux et ses actualités.</p>
+                            {% else %}
+                                <p class="mb-0">Les {{ suivisCount }} membre{{ suivisCount > 1 ? 's' : '' }} que tu suis n’ont rien publié récemment.</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="gw-panel p-5 text-center text-secondary">Aucun contenu dans cette section pour le moment.</div>
+                    {% endif %}
+                {% endfor %}
             </div>
             {% if pages > 1 %}<nav class="mt-4" aria-label="Pagination du fil"><ul class="pagination justify-content-center"><li class="page-item{{ page == 1 ? ' disabled' : '' }}"><a class="page-link" href="{{ path('app_communaute', { section: section, page: page - 1 }) }}">Précédent</a></li><li class="page-item disabled"><span class="page-link">{{ page }} / {{ pages }}</span></li><li class="page-item{{ page == pages ? ' disabled' : '' }}"><a class="page-link" href="{{ path('app_communaute', { section: section, page: page + 1 }) }}">Suivant</a></li></ul></nav>{% endif %}
         </main>

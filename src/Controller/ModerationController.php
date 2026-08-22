@@ -26,6 +26,7 @@ use App\Enum\StatutSignalement;
 use App\Entity\Signalement;
 use App\Entity\Utilisateur;
 use App\Service\JournalModeration;
+use App\Service\NotificationAbonnes;
 use App\Service\NotificationPropositionModeration;
 
 #[Route('/moderation', name: 'app_moderation_')]
@@ -167,6 +168,7 @@ final class ModerationController extends AbstractController
         GestionSucces $gestionSucces,
         JournalModeration $journal,
         NotificationPropositionModeration $notificationProposition,
+        NotificationAbonnes $notificationAbonnes,
     ): Response {
         if ($jeu->getStatut() !== StatutJeu::EnAttente) {
             throw $this->createNotFoundException('Cette proposition n’est plus en attente.');
@@ -182,6 +184,9 @@ final class ModerationController extends AbstractController
         $moderateur = $this->getUser();
         $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, $decision, 'jeu', $jeu->getId(), ($decision === 'approuver' ? 'Approbation' : 'Refus').' du jeu '.$jeu->getNom());
         $notificationProposition->notifierJeu($jeu, $decision === 'approuver');
+        if ($decision === 'approuver') {
+            $notificationAbonnes->notifierJeu($jeu);
+        }
         $entityManager->flush();
         if ($decision === 'approuver' && $jeu->getCreateur() instanceof Utilisateur) {
             // Notification au créateur via GestionSucces ; pas de flash côté modérateur.
@@ -216,6 +221,8 @@ final class ModerationController extends AbstractController
         EntityManagerInterface $entityManager,
         JournalModeration $journal,
         NotificationPropositionModeration $notificationProposition,
+        NotificationAbonnes $notificationAbonnes,
+        GestionSucces $gestionSucces,
     ): Response {
         if ($actualite->getStatut() !== StatutActualite::EnAttente) {
             throw $this->createNotFoundException('Cette proposition n’est plus en attente.');
@@ -240,7 +247,13 @@ final class ModerationController extends AbstractController
             ($decision === 'approuver' ? 'Approbation' : 'Refus').' de l’actualité '.$actualite->getTitre(),
         );
         $notificationProposition->notifierActualite($actualite, $decision === 'approuver');
+        if ($decision === 'approuver') {
+            $notificationAbonnes->notifierActualite($actualite);
+        }
         $entityManager->flush();
+        if ($decision === 'approuver' && $actualite->getAuteur() instanceof Utilisateur) {
+            $gestionSucces->verifier($actualite->getAuteur());
+        }
         $this->addFlash('success', $decision === 'approuver' ? 'L’actualité a été publiée.' : 'L’actualité a été refusée.');
 
         return $this->redirectToRoute('app_moderation_actualites');

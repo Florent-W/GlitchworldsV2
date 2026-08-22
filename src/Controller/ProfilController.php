@@ -81,7 +81,7 @@ final class ProfilController extends AbstractController
             'listes' => $listes,
             'notesJeux' => $avisRepository->trouverResumesPour([...$jeuxPublies, ...$jeuxFavoris, ...$jeuxDesListes]),
             'achatsBoutique' => $achats->trouverPourUtilisateur($membre),
-            'succes' => $succesRepository->findAll(),
+            'succes' => $succesRepository->trouverTousParDifficulte(),
             'succesAcquis' => $succesAcquis,
             'codesAcquis' => array_map(static fn ($d) => $d->getSucces()?->getCode(), $succesAcquis),
         ]);
@@ -113,7 +113,7 @@ final class ProfilController extends AbstractController
     }
 
     #[Route('/membre/{id}/biographie', name: 'app_profil_biographie', requirements: ['id' => '\\d+'], methods: ['POST'])]
-    public function modifierBiographie(Utilisateur $membre, Request $request, EntityManagerInterface $entityManager): Response
+    public function modifierBiographie(Utilisateur $membre, Request $request, EntityManagerInterface $entityManager, GestionSucces $gestionSucces): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur || $utilisateur !== $membre) {
@@ -125,6 +125,7 @@ final class ProfilController extends AbstractController
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $entityManager->flush();
+            $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
             $this->addFlash('success', 'Ta présentation a été mise à jour.');
         }
 
