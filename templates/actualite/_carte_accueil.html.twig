@@ -3,7 +3,13 @@
 <article class="gw-similar-card h-100" data-carte-type="actualite" data-son-survol="survol-article">
     <a class="gw-similar-card__visual gw-similar-card__visual--{{ cat }}" href="{{ path('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}" aria-label="Lire {{ actualite.titre }}">
         {% if actualite.fichierVignetteListe %}
-            <img class="w-100 h-100 object-fit-cover" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.fichierVignetteListe) }}" alt="" loading="lazy" decoding="async">
+            {% include '_image_responsive.html.twig' with {
+                fichier: actualite.fichierVignetteListe,
+                dossier: 'uploads/actualites/' ~ actualite.id,
+                classes: 'w-100 h-100 object-fit-cover',
+                alt: '',
+                sizes: '(max-width: 576px) 100vw, (max-width: 1200px) 50vw, 25vw'
+            } only %}
         {% else %}
             {% if cat == 'glitchs' %}
                 <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>

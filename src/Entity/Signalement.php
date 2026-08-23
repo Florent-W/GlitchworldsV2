@@ -40,6 +40,18 @@ class Signalement
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Publication $publication = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $profil = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Avis $avis = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Message $message = null;
+
     #[ORM\Column(enumType: MotifSignalement::class)]
     private MotifSignalement $motif = MotifSignalement::Autre;
 
@@ -70,6 +82,12 @@ class Signalement
     public function setCommentaireActualite(?CommentaireActualite $commentaire): static { $this->commentaireActualite = $commentaire; return $this; }
     public function getPublication(): ?Publication { return $this->publication; }
     public function setPublication(?Publication $publication): static { $this->publication = $publication; return $this; }
+    public function getProfil(): ?Utilisateur { return $this->profil; }
+    public function setProfil(?Utilisateur $profil): static { $this->profil = $profil; return $this; }
+    public function getAvis(): ?Avis { return $this->avis; }
+    public function setAvis(?Avis $avis): static { $this->avis = $avis; return $this; }
+    public function getMessage(): ?Message { return $this->message; }
+    public function setMessage(?Message $message): static { $this->message = $message; return $this; }
     public function getMotif(): MotifSignalement { return $this->motif; }
     public function setMotif(MotifSignalement $motif): static { $this->motif = $motif; return $this; }
     public function getDetails(): ?string { return $this->details; }
@@ -79,6 +97,6 @@ class Signalement
     public function getSignaleLe(): \DateTimeImmutable { return $this->signaleLe; }
     public function getTraiteLe(): ?\DateTimeImmutable { return $this->traiteLe; }
     public function cloturer(StatutSignalement $statut, Utilisateur $moderateur): static { $this->statut = $statut; $this->traitePar = $moderateur; $this->traiteLe = new \DateTimeImmutable(); return $this; }
-    public function getTypeCible(): string { return $this->jeu ? 'Jeu' : ($this->commentaireJeu ? 'Commentaire de jeu' : ($this->commentaireActualite ? 'Commentaire d’actualité' : ($this->publication ? 'Publication' : 'Contenu supprimé'))); }
-    public function getExtraitCible(): string { return $this->jeu?->getNom() ?? $this->commentaireJeu?->getContenu() ?? $this->commentaireActualite?->getContenu() ?? $this->publication?->getContenu() ?? 'Ce contenu n’existe plus.'; }
+    public function getTypeCible(): string { return $this->jeu ? 'Jeu' : ($this->commentaireJeu ? 'Commentaire de jeu' : ($this->commentaireActualite ? 'Commentaire d’actualité' : ($this->publication ? 'Publication' : ($this->profil ? 'Profil' : ($this->avis ? 'Avis' : ($this->message ? 'Message privé' : 'Contenu supprimé')))))); }
+    public function getExtraitCible(): string { return $this->jeu?->getNom() ?? $this->commentaireJeu?->getContenu() ?? $this->commentaireActualite?->getContenu() ?? $this->publication?->getContenu() ?? $this->profil?->getPseudo() ?? $this->avis?->getContenu() ?? $this->message?->getContenu() ?? 'Ce contenu n’existe plus.'; }
 }

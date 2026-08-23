@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Charte de contribution et de modération - Glitchworlds{% endblock %}
+{% block meta_description %}Règles de la communauté Glitchworlds, signalements et décisions de modération.{% endblock %}
+
+{% block body %}
+<div class="gw-legal-page">
+    <header class="gw-panel p-4 p-lg-5 mb-4">
+        <span class="gw-eyebrow">Communauté</span>
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 mt-2">
+            <span class="gw-legal-page__icon" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+            <div>
+                <h1 class="display-6 mb-2">Charte de contribution et de modération</h1>
+                <p class="lead text-secondary mb-1">Comment participer sereinement à Glitchworlds et comment les contenus signalés sont traités.</p>
+                <p class="small text-secondary mb-0">Dernière mise à jour : 23 août 2026</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="row g-4">
+        <aside class="col-lg-4 col-xl-3">
+            {% set sommaire %}
+                <a href="#esprit">Esprit du site</a>
+                <a href="#attendus">Comportements attendus</a>
+                <a href="#interdits">Contenus interdits</a>
+                <a href="#contributions">Fiches, avis et publications</a>
+                <a href="#signalement">Signaler un contenu</a>
+                <a href="#moderation">Modération</a>
+                <a href="#sanctions">Sanctions possibles</a>
+                <a href="#recours">Contester une décision</a>
+            {% endset %}
+            {{ include('pages/_nav_legale.html.twig', { page_active: 'charte', sommaire: sommaire }) }}
+        </aside>
+
+        <div class="col-lg-8 col-xl-9">
+            <div class="gw-panel p-4 p-lg-5 gw-legal-page__content">
+                <section id="esprit">
+                    <h2><i class="bi bi-heart-fill" aria-hidden="true"></i> Esprit du site</h2>
+                    <p>Glitchworlds est un lieu d’échange autour des jeux vidéo : découvrir, documenter, commenter, partager. La qualité de l’expérience dépend du respect mutuel entre membres, visiteurs et équipe de modération.</p>
+                    <p class="mb-0">Cette charte complète les <a href="{{ path('app_conditions_utilisation') }}">conditions d’utilisation</a>. En cas de contradiction, les règles les plus protectrices pour la communauté et la conformité légale prévalent.</p>
+                </section>
+
+                <section id="attendus">
+                    <h2><i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i> Comportements attendus</h2>
+                    <ul>
+                        <li>Reste courtois, même en désaccord : critique le contenu, pas la personne.</li>
+                        <li>Indique tes sources lorsque tu apportes une information factuelle sur un jeu.</li>
+                        <li>Respecte le spoiler : préviens ou masque les révélations majeures lorsque c’est pertinent.</li>
+                        <li>Utilise les outils prévus (signalement, blocage de membre) plutôt que des règlements de compte publics.</li>
+                        <li>Signale les contenus problématiques plutôt que de les amplifier.</li>
+                    </ul>
+                    <p class="mb-0">Les modérateurs et administrateurs interviennent pour garantir ce cadre. Leur décision s’appuie sur les faits disponibles et l’intérêt collectif du service.</p>
+                </section>
+
+                <section id="interdits">
+                    <h2><i class="bi bi-x-octagon-fill" aria-hidden="true"></i> Contenus interdits</h2>
+                    <p>Les contenus suivants sont prohibés sur l’ensemble du site (fiches, commentaires, publications, profils, messages signalés) :</p>
+                    <ul>
+                        <li><strong>Spam ou publicité</strong> : messages répétitifs, liens commerciaux non sollicités, automatisation abusive.</li>
+                        <li><strong>Harcèlement ou propos insultants</strong> : attaques personnelles, menaces, incitation à la haine.</li>
+                        <li><strong>Contenu illégal ou dangereux</strong> : apologie de crimes, incitation à la violence, contenus sexualisés impliquant des mineurs, etc.</li>
+                        <li><strong>Informations trompeuses</strong> : fausses annonces, arnaques, usurpation d’identité.</li>
+                        <li><strong>Atteinte aux droits d’auteur</strong> : diffusion non autorisée d’œuvres protégées ou utilisation abusive de marques.</li>
+                    </ul>
+                    <p class="mb-0">Tout autre contenu manifestement incompatible avec le bon fonctionnement du site peut également être retiré.</p>
+                </section>
+
+                <section id="contributions">
+                    <h2><i class="bi bi-pencil-square" aria-hidden="true"></i> Fiches, avis et publications</h2>
+                    <p>Les propositions de fiches jeu sont examinées avant publication. Une fiche doit décrire le jeu concerné avec sérieux ; les médias joints doivent respecter les droits des ayants droit.</p>
+                    <p>Les notes et avis expriment une opinion personnelle. Elles ne doivent pas se limiter à des insultes ou à du contenu hors sujet. Les commentaires doivent apporter quelque chose à la discussion.</p>
+                    <p>Les publications du fil communautaire et les messages privés relèvent des mêmes principes lorsqu’ils sont signalés ou rendus publics par la modération dans le cadre d’un traitement.</p>
+                    <p class="mb-0">Tu peux modifier ou supprimer tes propres contenus lorsque l’interface le permet. La modération peut intervenir si un contenu reste accessible et pose problème.</p>
+                </section>
+
+                <section id="signalement">
+                    <h2><i class="bi bi-flag-fill" aria-hidden="true"></i> Signaler un contenu</h2>
+                    <p>Un bouton de signalement est disponible sur les contenus concernés. Lors d’un signalement, tu peux choisir un motif parmi :</p>
+                    <ul>
+                        <li>Spam ou publicité ;</li>
+                        <li>Harcèlement ou propos insultants ;</li>
+                        <li>Contenu illégal ou dangereux ;</li>
+                        <li>Informations trompeuses ;</li>
+                        <li>Atteinte aux droits d’auteur ;</li>
+                        <li>Autre raison, avec une courte explication.</li>
+                    </ul>
+                    <p>Les signalements abusifs ou répétés sans fondement peuvent eux-mêmes faire l’objet d’une sanction.</p>
+                    <p class="mb-0">Tu peux aussi bloquer un membre depuis son profil pour ne plus voir ses contenus dans ton expérience personnelle.</p>
+                </section>
+
+                <section id="moderation">
+                    <h2><i class="bi bi-shield-shaded" aria-hidden="true"></i> Modération</h2>
+                    <p>Les modérateurs et administrateurs disposent d’outils pour examiner les signalements, valider ou refuser des fiches, retirer des commentaires, publications ou avis, et journaliser leurs actions.</p>
+                    <p>Chaque signalement reçoit un statut : en attente, traité ou rejeté. Lorsque c’est possible, la décision est proportionnée au manquement constaté.</p>
+                    <p>Glitchworlds ne garantit pas un délai de traitement fixe, mais les signalements graves (contenu illégal, menace) sont priorisés.</p>
+                    <p class="mb-0">La modération n’est pas un arbitrage permanent de débats : un désaccord d’opinion, tant qu’il reste respectueux, ne justifie pas à lui seul une suppression.</p>
+                </section>
+
+                <section id="sanctions">
+                    <h2><i class="bi bi-hammer" aria-hidden="true"></i> Sanctions possibles</h2>
+                    <p>Selon la gravité et la répétition des manquements, Glitchworlds peut appliquer :</p>
+                    <ul>
+                        <li>un avertissement ou une demande de modification ;</li>
+                        <li>la suppression ou la modification d’un contenu ;</li>
+                        <li>le rejet d’une fiche ou d’une proposition ;</li>
+                        <li>une suspension temporaire ou définitive du compte ;</li>
+                        <li>le signalement aux autorités compétentes en cas d’infraction pénale avérée.</li>
+                    </ul>
+                    <p class="mb-0">Les sanctions visent à protéger la communauté et le service, pas à punir un simple désaccord.</p>
+                </section>
+
+                <section id="recours">
+                    <h2><i class="bi bi-chat-left-text-fill" aria-hidden="true"></i> Contester une décision</h2>
+                    <p>Si tu estimes qu’une décision de modération est injustifiée, tu peux contacter l’équipe à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a> ou via la messagerie interne si tu disposes d’un compte.</p>
+                    <p>Indique le contenu concerné, la date approximative et les éléments utiles à la réexamen. Une réponse pourra ne pas être possible pour chaque demande, mais les erreurs manifestes seront corrigées.</p>
+                    <p class="mb-0">Pour les questions relatives aux données personnelles liées à la modération, consulte la <a href="{{ path('app_confidentialite') }}">politique de confidentialité</a>.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

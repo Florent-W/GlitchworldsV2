@@ -97,6 +97,9 @@ final class ProfilController extends AbstractController
         if ($utilisateur === $membre) {
             throw $this->createAccessDeniedException('Tu ne peux pas suivre ton propre profil.');
         }
+        if ($utilisateur->interactionBloqueeAvec($membre)) {
+            throw $this->createAccessDeniedException('Cette interaction n’est pas disponible entre ces deux membres.');
+        }
         if (!$this->isCsrfTokenValid('suivre-'.$membre->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
@@ -108,6 +111,30 @@ final class ProfilController extends AbstractController
         if (!$suitDeja && $utilisateur->suit($membre)) {
             $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
         }
+
+        return $this->redirectToRoute('app_profil', ['id' => $membre->getId()]);
+    }
+
+    #[Route('/membre/{id}/bloquer', name: 'app_profil_bloquer', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function bloquer(Utilisateur $membre, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur || $utilisateur === $membre) {
+            throw $this->createAccessDeniedException();
+        }
+        if (!$this->isCsrfTokenValid('bloquer-'.$membre->getId(), $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        if ($utilisateur->aBloque($membre)) {
+            $utilisateur->debloquer($membre);
+            $message = $membre->getPseudo().' a été débloqué.';
+        } else {
+            $utilisateur->bloquer($membre);
+            $message = $membre->getPseudo().' a été bloqué. Cette personne ne peut plus échanger avec toi.';
+        }
+        $entityManager->flush();
+        $this->addFlash('success', $message);
 
         return $this->redirectToRoute('app_profil', ['id' => $membre->getId()]);
     }

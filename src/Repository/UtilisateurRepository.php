@@ -106,6 +106,20 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
     }
 
     /** @return list<Utilisateur> */
+    public function trouverDestinatairesDisponibles(Utilisateur $utilisateur): array
+    {
+        return $this->createQueryBuilder('candidat')
+            ->leftJoin('candidat.membresBloques', 'aBloque', 'WITH', 'aBloque = :utilisateur')
+            ->leftJoin('candidat.bloquePar', 'bloquePar', 'WITH', 'bloquePar = :utilisateur')
+            ->andWhere('candidat != :utilisateur')
+            ->andWhere('aBloque.id IS NULL')
+            ->andWhere('bloquePar.id IS NULL')
+            ->setParameter('utilisateur', $utilisateur)
+            ->orderBy('candidat.pseudo', 'ASC')
+            ->getQuery()->getResult();
+    }
+
+    /** @return list<Utilisateur> */
     public function trouverClassement(int $limite = 100): array
     {
         return $this->createQueryBuilder('utilisateur')

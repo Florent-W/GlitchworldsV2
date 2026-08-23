@@ -34,7 +34,7 @@
                         </a>
                         <div class="gw-game-card__body">
                             <h2 class="gw-game-card__title"><a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h2>
-                            {% if jeu.developpeur %}<p class="gw-game-card__developer">Auteur : {{ jeu.developpeur }}</p>{% endif %}
+                            {% if jeu.pseudoAuteurFiche %}<p class="gw-game-card__author">Par {{ jeu.pseudoAuteurFiche }}</p>{% endif %}
                             <div class="gw-game-card__tags">
                                 {% if jeu.categorie %}<span class="gw-tag">{{ jeu.categorie.nom }}</span>{% endif %}
                                 {% for genre in jeu.genres|slice(0, 2) %}<span class="gw-tag">{{ genre.nom }}</span>{% endfor %}

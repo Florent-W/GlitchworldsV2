@@ -21,6 +21,7 @@ final class CompteType extends AbstractType
         $builder
             ->add('pseudo', null, [
                 'label' => 'Nom d’utilisateur',
+                'help' => 'C’est ton identifiant principal pour te connecter.',
                 'constraints' => [
                     new Assert\NotBlank(normalizer: 'trim'),
                     new Assert\Length(min: 3, max: 50, normalizer: 'trim'),
@@ -28,7 +29,7 @@ final class CompteType extends AbstractType
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Adresse e-mail',
-                'help' => 'Elle servira aussi d’identifiant de connexion.',
+                'help' => 'Utilisée pour la récupération de mot de passe. Tu peux aussi t’en servir pour te connecter.',
                 'constraints' => [
                     new Assert\NotBlank(message: 'Ajoute une adresse e-mail.'),
                     new Assert\Email(message: 'Cette adresse e-mail n’est pas valide.'),

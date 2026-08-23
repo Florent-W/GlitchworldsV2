@@ -9,13 +9,14 @@
     <p class="text-secondary">Connecte-toi pour retrouver la communauté Glitchworlds.</p>
 
     {% if erreur %}
-        <div class="alert alert-danger">E-mail, pseudo ou mot de passe incorrect.</div>
+        <div class="alert alert-danger">Pseudo, e-mail ou mot de passe incorrect.</div>
     {% endif %}
 
     <form method="post" action="{{ path('app_connexion') }}">
         <div class="mb-3">
-            <label class="form-label" for="connexion-identifiant">Adresse e-mail ou pseudo</label>
-            <input class="form-control form-control-lg" id="connexion-identifiant" name="identifiant" type="text" value="{{ derniereAdresse }}" autocomplete="username" required autofocus>
+            <label class="form-label" for="connexion-identifiant">Pseudo</label>
+            <input class="form-control form-control-lg" id="connexion-identifiant" name="identifiant" type="text" value="{{ dernierIdentifiant }}" autocomplete="username" required autofocus>
+            <div class="form-text">Tu peux aussi utiliser ton adresse e-mail.</div>
         </div>
         <div class="mb-3">
             <div class="d-flex justify-content-between"><label class="form-label" for="connexion-mot-de-passe">Mot de passe</label><a href="{{ path('app_mot_de_passe_oublie') }}">Mot de passe oublié ?</a></div>
@@ -25,12 +26,12 @@
         <button class="btn btn-primary btn-lg w-100" type="submit">Se connecter</button>
     </form>
 
-    <div class="d-flex align-items-center gap-3 my-4"><hr class="flex-grow-1"><span class="small text-secondary">Ou continuer avec</span><hr class="flex-grow-1"></div>
-    <div class="row g-2">
-        <div class="col-sm-4"><a class="btn btn-outline-secondary w-100" href="{{ path('app_oauth_connexion', {provider: 'google'}) }}"><i class="bi bi-google me-2"></i>Google</a></div>
-        <div class="col-sm-4"><a class="btn btn-outline-secondary w-100" href="{{ path('app_oauth_connexion', {provider: 'discord'}) }}"><i class="bi bi-discord me-2"></i>Discord</a></div>
-        <div class="col-sm-4"><a class="btn btn-outline-secondary w-100" href="{{ path('app_oauth_connexion', {provider: 'github'}) }}"><i class="bi bi-github me-2"></i>GitHub</a></div>
-    </div>
+    {% if oauth_google_actif %}
+        <div class="d-flex align-items-center gap-3 my-4"><hr class="flex-grow-1"><span class="small text-secondary">Ou continuer avec</span><hr class="flex-grow-1"></div>
+        <div class="row g-2 justify-content-center">
+            <div class="col-sm-6"><a class="btn btn-outline-secondary w-100" href="{{ path('app_oauth_connexion') }}"><i class="bi bi-google me-2"></i>Continuer avec Google</a></div>
+        </div>
+    {% endif %}
 
     <p class="text-center mt-4 mb-0">Pas encore de compte ? <a href="{{ path('app_inscription') }}">S’inscrire</a></p>
 </section>

@@ -10,9 +10,32 @@
     </aside>
     <section class="gw-messenger__chat">
         {% if conversation %}
-            <header class="p-3 border-bottom d-flex justify-content-between align-items-center"><strong class="h5 mb-0">{{ autreMembre ? autreMembre.pseudo : 'Membre supprimé' }}</strong><form method="post" action="{{ path('app_messages_archiver', { id: conversation.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('archiver-conversation-' ~ conversation.id) }}"><button class="btn btn-sm btn-outline-secondary" type="submit"><i class="bi bi-archive me-1"></i>{{ conversation.estArchiveePar(app.user) ? 'Restaurer' : 'Archiver' }}</button></form></header>
-            <div class="gw-messenger__messages">{% for message in conversation.messages %}<div class="gw-message{{ message.auteur == app.user ? ' gw-message--mine' : '' }}"><p>{{ message.contenu|nl2br }}</p>{% if message.pieceJointe %}<a class="d-block mt-2 {{ message.auteur == app.user ? 'text-white' : '' }}" href="{{ path('app_messages_piece_jointe', { conversation: conversation.id, message: message.id }) }}"><i class="bi bi-paperclip me-1"></i>Pièce jointe</a>{% endif %}<time datetime="{{ message.envoyeLe|date('c') }}">{{ message.envoyeLe|format_datetime('none', 'short', locale='fr') }}{% if message.auteur == app.user %} · {{ message.luLe ? 'Lu' : 'Envoyé' }}{% endif %}</time></div>{% else %}<p class="text-secondary text-center my-auto">Commence la discussion.</p>{% endfor %}</div>
-            <div class="p-3 border-top">{{ form_start(formulaireMessage) }}<div class="d-flex gap-2 align-items-end"><div class="flex-grow-1">{{ form_widget(formulaireMessage.contenu, { attr: { class: 'form-control mb-2' } }) }}{{ form_widget(formulaireMessage.fichier, { attr: { class: 'form-control form-control-sm' } }) }}</div><button class="btn btn-primary btn-lg" type="submit" aria-label="Envoyer"><i class="bi bi-send-fill"></i></button></div>{{ form_end(formulaireMessage) }}</div>
+            <header class="p-3 border-bottom d-flex justify-content-between align-items-center gap-3">
+                <strong class="h5 mb-0">{{ autreMembre ? autreMembre.pseudo : 'Membre supprimé' }}</strong>
+                <div class="d-flex gap-2">
+                    {% if autreMembre %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_profil', {id: autreMembre.id}) }}">Profil</a>{% endif %}
+                    <form method="post" action="{{ path('app_messages_archiver', { id: conversation.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('archiver-conversation-' ~ conversation.id) }}"><button class="btn btn-sm btn-outline-secondary" type="submit"><i class="bi bi-archive me-1"></i>{{ conversation.estArchiveePar(app.user) ? 'Restaurer' : 'Archiver' }}</button></form>
+                </div>
+            </header>
+            <div class="gw-messenger__messages">
+                {% for message in conversation.messages %}
+                    <div class="gw-message{{ message.auteur == app.user ? ' gw-message--mine' : '' }}">
+                        <p>{{ message.contenu|nl2br }}</p>
+                        {% if message.pieceJointe %}<a class="d-block mt-2 {{ message.auteur == app.user ? 'text-white' : '' }}" href="{{ path('app_messages_piece_jointe', { conversation: conversation.id, message: message.id }) }}"><i class="bi bi-paperclip me-1"></i>Pièce jointe</a>{% endif %}
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                            <time datetime="{{ message.envoyeLe|date('c') }}">{{ message.envoyeLe|format_datetime('none', 'short', locale='fr') }}{% if message.auteur == app.user %} · {{ message.luLe ? 'Lu' : 'Envoyé' }}{% endif %}</time>
+                            {% if message.auteur and message.auteur != app.user %}<a class="small {{ message.auteur == app.user ? 'text-white' : 'text-danger' }}" href="{{ path('app_signaler', {type: 'message', id: message.id}) }}" aria-label="Signaler ce message"><i class="bi bi-flag-fill" aria-hidden="true"></i></a>{% endif %}
+                        </div>
+                    </div>
+                {% else %}<p class="text-secondary text-center my-auto">Commence la discussion.</p>{% endfor %}
+            </div>
+            <div class="p-3 border-top">
+                {% if conversationBloquee %}
+                    <div class="alert alert-secondary mb-0"><i class="bi bi-slash-circle me-2" aria-hidden="true"></i>Les messages sont désactivés car une des deux personnes a bloqué l’autre.</div>
+                {% else %}
+                    {{ form_start(formulaireMessage) }}<div class="d-flex gap-2 align-items-end"><div class="flex-grow-1">{{ form_widget(formulaireMessage.contenu, { attr: { class: 'form-control mb-2' } }) }}{{ form_widget(formulaireMessage.fichier, { attr: { class: 'form-control form-control-sm' } }) }}</div><button class="btn btn-primary btn-lg" type="submit" aria-label="Envoyer"><i class="bi bi-send-fill"></i></button></div>{{ form_end(formulaireMessage) }}
+                {% endif %}
+            </div>
         {% else %}<div class="m-auto text-center p-5"><i class="bi bi-envelope fs-1 text-primary"></i><h2 class="h4 mt-3">Aucun message</h2><a class="btn btn-primary" href="{{ path('app_messages_nouveau') }}">Démarrer une conversation</a></div>{% endif %}
     </section>
     <aside class="gw-messenger__profile d-none d-xl-block">{% if conversation %}<div class="text-center p-4"><span class="gw-community__avatar mx-auto mb-3"><i class="bi bi-person-fill"></i></span><h2 class="h5">{{ autreMembre ? autreMembre.pseudo : 'Membre supprimé' }}</h2><p class="text-secondary small">Membre de Glitchworlds</p>{% if autreMembre and autreMembre.jeuxFavoris is not empty %}<hr><h3 class="h6 text-start">Jeux favoris</h3><div class="list-group list-group-flush text-start">{% for jeu in autreMembre.jeuxFavoris|slice(0, 3) %}<a class="list-group-item list-group-item-action px-0" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a>{% endfor %}</div>{% endif %}</div>{% endif %}</aside>

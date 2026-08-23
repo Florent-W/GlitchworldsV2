@@ -9,6 +9,8 @@
     Actualités{% if page > 1 %} (page {{ page }}){% endif %} - Glitchworlds
 {%- endblock %}
 {% block meta_description %}Retrouve les actualités, mods, glitchs et tutoriels sélectionnés par Glitchworlds.{% endblock %}
+{% block canonical %}{{ url(route_liste, (categorieSelectionnee and route_liste == 'app_actualites' ? {categorie: categorieSelectionnee.value} : {})|merge(page > 1 ? {page: page} : {})) }}{% endblock %}
+{% block robots_meta %}{{ recherche is not empty ? 'noindex,follow' : 'index,follow' }}{% endblock %}
 
 {% block body %}
 <section class="gw-panel p-4 p-lg-5">

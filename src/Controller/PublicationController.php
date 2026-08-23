@@ -133,5 +133,13 @@ final class PublicationController extends AbstractController
         $vote->setOptionChoisie($option); $entityManager->persist($vote); $entityManager->flush(); return $this->redirect($this->generateUrl('app_communaute').'#publication-'.$publication->getId());
     }
 
-    private function optionsSondage(mixed $valeur): array { return array_slice(array_values(array_unique(array_filter(array_map('trim', preg_split('/\R/', (string) $valeur) ?: [])))), 0, 6); }
+    private function optionsSondage(mixed $valeur): array
+    {
+        $options = preg_split('/\R/', (string) $valeur) ?: [];
+        $options = array_map('trim', $options);
+        $options = array_filter($options);
+        $options = array_unique($options);
+
+        return array_slice(array_values($options), 0, 6);
+    }
 }

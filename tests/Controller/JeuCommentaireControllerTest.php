@@ -11,6 +11,44 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class JeuCommentaireControllerTest extends WebTestCase
 {
+    public function testLesCommentairesSontPaginesDixParDix(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $suffixe = bin2hex(random_bytes(5));
+        $jeu = (new Jeu())
+            ->setNom('Jeu pagination '.$suffixe)
+            ->setSlug('jeu-pagination-'.$suffixe)
+            ->setDescription('Jeu utilisé pour tester la pagination.')
+            ->setStatut(StatutJeu::Approuve);
+        $entityManager->persist($jeu);
+        for ($numero = 1; $numero <= 11; ++$numero) {
+            $entityManager->persist(
+                (new CommentaireJeu())
+                    ->setJeu($jeu)
+                    ->setContenu('Commentaire pagination '.$numero)
+                    ->setDateCommentaire(new \DateTimeImmutable(sprintf('2026-01-%02d 12:00:00', $numero))),
+            );
+        }
+        $entityManager->flush();
+        $jeuId = $jeu->getId();
+
+        $crawler = $client->request('GET', sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeu->getId()));
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('#commentaires', 'Commentaire pagination 11');
+        self::assertCount(10, $crawler->filter('#commentaires .vstack.gap-3 > .gw-comment'));
+        self::assertSelectorTextContains('#commentaires .pagination', '1 / 2');
+
+        $crawler = $client->request('GET', sprintf('/jeu/%s-%d?commentaires_page=2', $jeu->getSlug(), $jeu->getId()));
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('#commentaires', 'Commentaire pagination 1');
+        self::assertCount(1, $crawler->filter('#commentaires .vstack.gap-3 > .gw-comment'));
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->remove($entityManager->find(Jeu::class, $jeuId));
+        $entityManager->flush();
+    }
+
     public function testUnUtilisateurConnectePeutCommenterLeJeuAffiche(): void
     {
         $client = self::createClient();

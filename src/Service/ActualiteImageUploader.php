@@ -10,6 +10,7 @@ final class ActualiteImageUploader
     public function __construct(
         #[Autowire('%kernel.project_dir%/public/uploads/actualites')]
         private readonly string $dossierCible,
+        private readonly OptimiseurImage $optimiseur,
     ) {
     }
 
@@ -24,16 +25,13 @@ final class ActualiteImageUploader
             throw new \RuntimeException('Impossible de créer le dossier des images d’actualités.');
         }
 
-        $extension = $image->guessExtension() ?: 'jpg';
-        $nom = $type.'.'.$extension;
-        foreach (glob($dossierActualite.'/'.$type.'.*') ?: [] as $ancien) {
+        foreach (glob($dossierActualite.'/'.$type.'*') ?: [] as $ancien) {
             if (is_file($ancien)) {
                 unlink($ancien);
             }
         }
-        $image->move($dossierActualite, $nom);
 
-        return $nom;
+        return $this->optimiseur->enregistrer($image, $dossierActualite, $type);
     }
 
     public function supprimerImages(int $actualiteId): void

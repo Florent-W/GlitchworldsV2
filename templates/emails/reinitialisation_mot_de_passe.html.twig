@@ -1,0 +1,31 @@
+{% extends 'emails/_layout.html.twig' %}
+
+{% block title %}Réinitialisation de mot de passe - Glitchworlds{% endblock %}
+{% block heading %}Réinitialisation de mot de passe{% endblock %}
+
+{% block content %}
+    <p style="margin:0 0 16px;">Bonjour {{ pseudo }},</p>
+    <p style="margin:0 0 16px;">Nous avons reçu une demande de réinitialisation de mot de passe pour ton compte Glitchworlds associé à cette adresse e-mail.</p>
+    <p style="margin:0 0 20px;">Si tu es bien à l’origine de cette demande, utilise le bouton ci-dessous pour choisir un nouveau mot de passe. Le lien reste valable pendant <strong>1 heure</strong>.</p>
+
+    <p style="margin:0 0 24px;text-align:center;">
+        <a href="{{ lien }}"
+           style="display:inline-block;padding:12px 22px;border-radius:8px;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:600;">
+            Choisir un nouveau mot de passe
+        </a>
+    </p>
+
+    <p style="margin:0 0 12px;font-size:14px;color:#475569;">Si le bouton ne fonctionne pas, copie ce lien dans ton navigateur :</p>
+    <p style="margin:0 0 20px;word-break:break-all;font-size:13px;color:#2563eb;">{{ lien }}</p>
+
+    <p style="margin:0 0 12px;padding:12px 14px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;font-size:14px;color:#475569;">
+        Si tu n’as pas demandé cette réinitialisation, tu peux ignorer cet e-mail. Ton mot de passe actuel restera inchangé.
+    </p>
+
+    <p style="margin:0;font-size:14px;color:#64748b;">Pour toute question, écris à <a href="mailto:contact@glitchworlds.com" style="color:#2563eb;text-decoration:none;">contact@glitchworlds.com</a>.</p>
+{% endblock %}
+
+{% block footer %}
+    <p style="margin:0 0 8px;">Cet e-mail a été envoyé par <strong>Glitchworlds</strong> suite à une demande sur ton compte.</p>
+    <p style="margin:0;">Site : <a href="{{ site_url }}" style="color:#2563eb;text-decoration:none;">{{ site_url }}</a></p>
+{% endblock %}

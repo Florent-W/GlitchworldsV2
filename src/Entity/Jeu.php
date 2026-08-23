@@ -256,6 +256,17 @@ class Jeu
         return $this;
     }
 
+    public function getPseudoAuteurFiche(): ?string
+    {
+        if ($this->createur instanceof Utilisateur) {
+            return $this->createur->getPseudo();
+        }
+
+        $pseudoLegacy = trim((string) ($this->developpeur ?? ''));
+
+        return $pseudoLegacy !== '' ? $pseudoLegacy : null;
+    }
+
     /**
      * @return Collection<int, Plateforme>
      */

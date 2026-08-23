@@ -174,13 +174,41 @@
                 </div>
                 <div id="confidentialite" class="mt-5 border-top pt-4 scroll-mt">
                     <h3 class="h5 mb-3">Confidentialité et compte</h3>
-                    <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-3 rounded border p-3 mb-4 text-decoration-none" href="{{ path('app_confidentialite') }}">
+                    <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-3 rounded border p-3 mb-3 text-decoration-none" href="{{ path('app_confidentialite') }}">
                         <span class="d-flex align-items-center gap-3">
                             <span class="gw-settings__icon"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i></span>
                             <span><strong class="d-block">Politique de confidentialité</strong><small class="text-secondary">Données personnelles, cookies, publicité AdSense et exercice de tes droits.</small></span>
                         </span>
                         <i class="bi bi-chevron-right" aria-hidden="true"></i>
                     </a>
+                    <div class="d-grid gap-2 mb-4">
+                        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-3 rounded border p-3 text-decoration-none" href="{{ path('app_mentions_legales') }}">
+                            <span class="d-flex align-items-center gap-3">
+                                <span class="gw-settings__icon"><i class="bi bi-building" aria-hidden="true"></i></span>
+                                <span><strong class="d-block">Mentions légales</strong><small class="text-secondary">Éditeur, contact et cadre juridique du site.</small></span>
+                            </span>
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-3 rounded border p-3 text-decoration-none" href="{{ path('app_conditions_utilisation') }}">
+                            <span class="d-flex align-items-center gap-3">
+                                <span class="gw-settings__icon"><i class="bi bi-file-earmark-text-fill" aria-hidden="true"></i></span>
+                                <span><strong class="d-block">Conditions d’utilisation</strong><small class="text-secondary">Règles d’accès, de compte et d’usage du service.</small></span>
+                            </span>
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-3 rounded border p-3 text-decoration-none" href="{{ path('app_charte_moderation') }}">
+                            <span class="d-flex align-items-center gap-3">
+                                <span class="gw-settings__icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
+                                <span><strong class="d-block">Charte de contribution</strong><small class="text-secondary">Règles communautaires, signalements et modération.</small></span>
+                            </span>
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                    {{ include('pages/_bouton_consentement.html.twig', {
+                        classes: 'btn btn-outline-primary d-flex align-items-center gap-2 mb-4',
+                        label: 'Gérer mes choix publicitaires et cookies',
+                        icon: 'bi-cookie'
+                    }) }}
                     <div class="form-check form-switch d-flex align-items-start gap-3 ps-0 mb-4">
                         <div class="flex-grow-1"><label class="form-check-label fw-semibold" for="profil-prive">Profil privé</label><small class="d-block text-secondary">Cache ton profil aux visiteurs non connectés.</small></div>
                         <input class="form-check-input fs-4 m-0" type="checkbox" role="switch" id="profil-prive" data-preferences-target="profilPrive" data-action="preferences#changerProfilPrive">

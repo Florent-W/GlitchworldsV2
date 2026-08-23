@@ -4,7 +4,14 @@
 {% block meta_description %}{{ actualite.description }}{% endblock %}
 {% block og_type %}article{% endblock %}
 {% block canonical %}{{ url('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}{% endblock %}
-{% block structured_data %}<script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Article', headline: actualite.titre, description: actualite.description, datePublished: actualite.publieeLe|date('c'), author: { '@type': 'Person', name: actualite.auteur ? actualite.auteur.pseudo : 'Glitchworlds' } }|json_encode|raw }}</script>{% endblock %}
+{% block og_image %}
+    {%- set imagePartage = actualite.banniere and not (actualite.banniere starts with 'legacy:')
+        ? actualite.banniere
+        : (actualite.miniature and not (actualite.miniature starts with 'legacy:') ? actualite.miniature : null) -%}
+    {{- imagePartage ? absolute_url(asset('uploads/actualites/' ~ actualite.id ~ '/' ~ imagePartage)) : parent() -}}
+{% endblock %}
+{% block og_image_alt %}Illustration de {{ actualite.titre }}{% endblock %}
+{% block structured_data %}<script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Article', headline: actualite.titre, description: actualite.description, image: block('og_image')|trim, url: url('app_actualite_voir', {slug: actualite.slug, id: actualite.id}), mainEntityOfPage: url('app_actualite_voir', {slug: actualite.slug, id: actualite.id}), datePublished: actualite.publieeLe|date('c'), author: { '@type': 'Person', name: actualite.auteur ? actualite.auteur.pseudo : 'Glitchworlds' } }|json_encode|raw }}</script>{% endblock %}
 
 {% block body %}
 <article class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 980px">
@@ -19,7 +26,18 @@
     <p class="lead text-secondary">{{ actualite.description }}</p>
     <p class="small text-secondary">Publié le {{ actualite.publieeLe|format_datetime('long', 'none', locale='fr') }}{% if actualite.auteur %} par {{ actualite.auteur.pseudo }}{% endif %}</p>
     {% set imageArticle = actualite.banniere and not (actualite.banniere starts with 'legacy:') ? actualite.banniere : (actualite.miniature and not (actualite.miniature starts with 'legacy:') ? actualite.miniature : null) %}
-    {% if imageArticle %}<img class="img-fluid rounded-4 w-100 mb-4" src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ imageArticle) }}" alt="Illustration de {{ actualite.titre }}" style="max-height: 520px; object-fit: cover" loading="eager" fetchpriority="high" decoding="async">{% endif %}
+    {% if imageArticle %}
+        {% include '_image_responsive.html.twig' with {
+            fichier: imageArticle,
+            dossier: 'uploads/actualites/' ~ actualite.id,
+            classes: 'img-fluid rounded-4 w-100 mb-4',
+            alt: 'Illustration de ' ~ actualite.titre,
+            style: 'max-height: 520px; object-fit: cover',
+            loading: 'eager',
+            fetchpriority: true,
+            sizes: '(max-width: 980px) 100vw, 980px'
+        } only %}
+    {% endif %}
     <hr>
     <div class="gw-article-content">{{ actualite.contenu|bbcode }}</div>
     {% include '_auteur_fiche.html.twig' with { auteur: actualite.auteur } only %}
@@ -93,6 +111,19 @@
             <p class="text-secondary">Aucun commentaire pour le moment.</p>
         {% endfor %}
     </div>
+    {% if pagesCommentaires > 1 %}
+        <nav class="mb-4" aria-label="Pagination des commentaires">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item{{ pageCommentaires == 1 ? ' disabled' : '' }}">
+                    <a class="page-link" href="{{ path('app_actualite_voir', {slug: actualite.slug, id: actualite.id, commentaires_page: pageCommentaires - 1}) }}#commentaires">Précédents</a>
+                </li>
+                <li class="page-item disabled"><span class="page-link">{{ pageCommentaires }} / {{ pagesCommentaires }}</span></li>
+                <li class="page-item{{ pageCommentaires == pagesCommentaires ? ' disabled' : '' }}">
+                    <a class="page-link" href="{{ path('app_actualite_voir', {slug: actualite.slug, id: actualite.id, commentaires_page: pageCommentaires + 1}) }}#commentaires">Suivants</a>
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
     <div class="border-top pt-4">
         {{ form_start(formulaireCommentaire) }}
             {% include '_editeur_commentaire.html.twig' with { champ: formulaireCommentaire.contenu } only %}

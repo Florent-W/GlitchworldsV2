@@ -9,12 +9,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'Cette adresse e-mail est déjà utilisée.')]
-class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {
     /** Ambiances visuelles disponibles, indépendantes du mode clair/sombre. */
     public const PALETTES = ['glitchworlds', 'wii', 'ps3', 'legacy', 'ds', 'dsi', '3ds'];
@@ -104,6 +105,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::JSON)]
     private array $sessionsConnectees = [];
 
+    /**
+     * Empreinte de sécurité sérialisée dans chaque jeton de connexion.
+     * La modifier rend invalides les jetons créés avec l'ancienne valeur.
+     */
+    #[ORM\Column(options: ['default' => 1])]
+    private int $versionSession = 1;
+
     #[ORM\Column(length: 64, nullable: true, unique: true)]
     private ?string $jetonReinitialisation = null;
 
@@ -147,12 +155,25 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: self::class, mappedBy: 'abonnements')]
     private Collection $abonnes;
 
+    /** @var Collection<int, self> */
+    #[ORM\ManyToMany(targetEntity: self::class, inversedBy: 'bloquePar')]
+    #[ORM\JoinTable(name: 'utilisateur_blocage')]
+    #[ORM\JoinColumn(name: 'bloqueur_id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'bloque_id', onDelete: 'CASCADE')]
+    private Collection $membresBloques;
+
+    /** @var Collection<int, self> */
+    #[ORM\ManyToMany(targetEntity: self::class, mappedBy: 'membresBloques')]
+    private Collection $bloquePar;
+
     public function __construct()
     {
         $this->jeuxFavoris = new ArrayCollection();
         $this->fichesMisesEnAvant = new ArrayCollection();
         $this->abonnements = new ArrayCollection();
         $this->abonnes = new ArrayCollection();
+        $this->membresBloques = new ArrayCollection();
+        $this->bloquePar = new ArrayCollection();
         $this->inscritLe = new \DateTimeImmutable();
     }
 
@@ -199,7 +220,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return $this->email ?? $this->pseudo;
+        return $this->pseudo;
     }
 
     /** @return list<string> */
@@ -230,6 +251,15 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
+    }
+
+    public function isEqualTo(UserInterface $user): bool
+    {
+        return $user instanceof self
+            && hash_equals($this->getUserIdentifier(), $user->getUserIdentifier())
+            && hash_equals((string) $this->getPassword(), (string) $user->getPassword())
+            && $this->versionSession === $user->versionSession
+            && $this->getRoles() === $user->getRoles();
     }
 
     public function getAvatar(): ?string
@@ -343,6 +373,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function getSessionsConnectees(): array { return is_array($this->sessionsConnectees) ? $this->sessionsConnectees : []; }
     /** @param array<string, array<string, mixed>> $sessions */
     public function setSessionsConnectees(array $sessions): static { $this->sessionsConnectees = $sessions; return $this; }
+    public function getVersionSession(): int { return $this->versionSession; }
+    public function invaliderAutresSessions(): static { ++$this->versionSession; return $this; }
     public function getJetonReinitialisation(): ?string { return $this->jetonReinitialisation; }
     public function getExpirationJetonReinitialisation(): ?\DateTimeImmutable { return $this->expirationJetonReinitialisation; }
     public function definirJetonReinitialisation(?string $hash, ?\DateTimeImmutable $expiration): static { $this->jetonReinitialisation = $hash; $this->expirationJetonReinitialisation = $expiration; return $this; }
@@ -360,6 +392,20 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function ajouterFicheMiseEnAvant(Jeu $jeu): static { if (!$this->fichesMisesEnAvant->contains($jeu)) { $this->fichesMisesEnAvant->add($jeu); } return $this; }
     public function retirerFicheMiseEnAvant(Jeu $jeu): static { $this->fichesMisesEnAvant->removeElement($jeu); return $this; }
     public function viderFichesMisesEnAvant(): static { $this->fichesMisesEnAvant->clear(); return $this; }
+    /** @return Collection<int, self> */
+    public function getMembresBloques(): Collection { return $this->membresBloques; }
+    public function aBloque(self $membre): bool { return $this->membresBloques->contains($membre); }
+    public function interactionBloqueeAvec(self $membre): bool { return $this->aBloque($membre) || $membre->aBloque($this); }
+    public function bloquer(self $membre): static
+    {
+        if ($membre !== $this && !$this->membresBloques->contains($membre)) {
+            $this->membresBloques->add($membre);
+            $this->nePlusSuivre($membre);
+            $membre->nePlusSuivre($this);
+        }
+        return $this;
+    }
+    public function debloquer(self $membre): static { $this->membresBloques->removeElement($membre); return $this; }
 
     public function getNiveau(): int
     {

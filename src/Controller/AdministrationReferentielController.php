@@ -15,8 +15,19 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 final class AdministrationReferentielController extends AbstractController
 {
     private const TYPES = ['categories' => [CategorieJeu::class, 'Catégories'], 'genres' => [Genre::class, 'Genres'], 'langues' => [Langue::class, 'Langues'], 'plateformes' => [Plateforme::class, 'Plateformes']];
+
     #[Route('/{type}', name: 'liste', requirements: ['type' => 'categories|genres|langues|plateformes'], methods: ['GET'])]
-    public function liste(string $type, EntityManagerInterface $em): Response { [$classe, $titre] = self::TYPES[$type]; return $this->render('administration/referentiels.html.twig', ['type' => $type, 'titre' => $titre, 'elements' => $em->getRepository($classe)->findBy([], ['nom' => 'ASC']), 'types' => self::TYPES]); }
+    public function liste(string $type, EntityManagerInterface $em): Response
+    {
+        [$classe, $titre] = self::TYPES[$type];
+
+        return $this->render('administration/referentiels.html.twig', [
+            'type' => $type,
+            'titre' => $titre,
+            'elements' => $em->getRepository($classe)->findBy([], ['nom' => 'ASC']),
+            'types' => self::TYPES,
+        ]);
+    }
     #[Route('/{type}/enregistrer', name: 'enregistrer', requirements: ['type' => 'categories|genres|langues|plateformes'], methods: ['POST'])]
     public function enregistrer(string $type, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {

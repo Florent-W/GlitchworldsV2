@@ -10,6 +10,7 @@ final readonly class JeuGalerieUploader
     public function __construct(
         private string $projectDir,
         private SluggerInterface $slugger,
+        private OptimiseurImage $optimiseur,
     ) {
     }
 
@@ -21,11 +22,15 @@ final readonly class JeuGalerieUploader
         }
 
         $base = $this->slugger->slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME))->lower();
-        $extension = $image->guessExtension() ?: 'bin';
-        $nom = sprintf('galerie-%s-%s.%s', $base ?: 'image', bin2hex(random_bytes(4)), $extension);
-        $image->move($dossier, $nom);
+        $baseFichier = sprintf('galerie-%s-%s', $base ?: 'image', bin2hex(random_bytes(4)));
+        if ('image/gif' === $image->getMimeType()) {
+            $nom = $baseFichier.'.gif';
+            $image->move($dossier, $nom);
 
-        return $nom;
+            return $nom;
+        }
+
+        return $this->optimiseur->enregistrer($image, $dossier, $baseFichier);
     }
 
     public function enregistrerHabillage(UploadedFile $image, int $jeuId, string $type): string
@@ -39,27 +44,25 @@ final readonly class JeuGalerieUploader
             throw new \RuntimeException('Impossible de créer le dossier du jeu.');
         }
 
-        $extension = $image->guessExtension() ?: 'jpg';
-        $nom = $type.'.'.$extension;
-        foreach (glob($dossier.'/'.$type.'.*') ?: [] as $ancien) {
+        foreach (glob($dossier.'/'.$type.'*') ?: [] as $ancien) {
             if (is_file($ancien)) {
                 unlink($ancien);
             }
         }
-        $image->move($dossier, $nom);
 
-        return $nom;
+        return $this->optimiseur->enregistrer($image, $dossier, $type);
     }
 
     public function supprimer(string $nom, int $jeuId): void
     {
-        if (!preg_match('/^galerie-[a-z0-9-]+\.(?:jpe?g|png|webp|gif)$/i', $nom)) {
+        if (!preg_match('/^(galerie-[a-z0-9-]+)(?:\.opt)?\.(?:jpe?g|png|webp|gif)$/i', $nom, $correspondances)) {
             return;
         }
 
-        $fichier = $this->dossier($jeuId).DIRECTORY_SEPARATOR.$nom;
-        if (is_file($fichier)) {
-            unlink($fichier);
+        foreach (glob($this->dossier($jeuId).DIRECTORY_SEPARATOR.$correspondances[1].'*') ?: [] as $fichier) {
+            if (is_file($fichier)) {
+                unlink($fichier);
+            }
         }
     }
 

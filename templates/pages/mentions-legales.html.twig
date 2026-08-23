@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mentions légales - Glitchworlds{% endblock %}
+{% block meta_description %}Éditeur, contact et cadre juridique du site Glitchworlds.{% endblock %}
+
+{% block body %}
+<div class="gw-legal-page">
+    <header class="gw-panel p-4 p-lg-5 mb-4">
+        <span class="gw-eyebrow">Informations légales</span>
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 mt-2">
+            <span class="gw-legal-page__icon" aria-hidden="true"><i class="bi bi-building"></i></span>
+            <div>
+                <h1 class="display-6 mb-2">Mentions légales</h1>
+                <p class="lead text-secondary mb-1">Qui édite Glitchworlds, comment nous contacter et dans quel cadre le site est proposé.</p>
+                <p class="small text-secondary mb-0">Dernière mise à jour : 23 août 2026</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="row g-4">
+        <aside class="col-lg-4 col-xl-3">
+            {% set sommaire %}
+                <a href="#editeur">Éditeur du site</a>
+                <a href="#publication">Directeur de publication</a>
+                <a href="#contact">Contact</a>
+                <a href="#propriete">Propriété intellectuelle</a>
+                <a href="#responsabilite">Responsabilité</a>
+                <a href="#liens">Liens et contenus tiers</a>
+            {% endset %}
+            {{ include('pages/_nav_legale.html.twig', { page_active: 'mentions', sommaire: sommaire }) }}
+        </aside>
+
+        <div class="col-lg-8 col-xl-9">
+            <div class="gw-panel p-4 p-lg-5 gw-legal-page__content">
+                <section id="editeur">
+                    <h2><i class="bi bi-person-badge-fill" aria-hidden="true"></i> Éditeur du site</h2>
+                    <p>Le site <strong>Glitchworlds</strong>, accessible à l’adresse <a href="{{ path('app_home') }}">Glitchworlds.com</a>, est édité par l’équipe responsable de la plateforme Glitchworlds.</p>
+                    <p class="mb-0">Pour toute question relative au site, tu peux écrire à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a>. Si tu possèdes un compte, tu peux aussi contacter l’administration via la messagerie interne.</p>
+                </section>
+
+                <section id="publication">
+                    <h2><i class="bi bi-megaphone-fill" aria-hidden="true"></i> Directeur de publication</h2>
+                    <p class="mb-0">Le directeur de la publication est l’éditeur du site Glitchworlds, joignable à l’adresse <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a>.</p>
+                </section>
+
+                <section id="contact">
+                    <h2><i class="bi bi-envelope-fill" aria-hidden="true"></i> Contact</h2>
+                    <p>Les demandes générales, signalements et questions juridiques peuvent être adressées à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a>.</p>
+                    <p class="mb-0">Pour les questions relatives aux données personnelles, consulte la <a href="{{ path('app_confidentialite') }}">politique de confidentialité</a>.</p>
+                </section>
+
+                <section id="propriete">
+                    <h2><i class="bi bi-c-circle-fill" aria-hidden="true"></i> Propriété intellectuelle</h2>
+                    <p>La structure du site, sa charte graphique, son logo, ses textes d’interface et les éléments originaux produits par Glitchworlds sont protégés par le droit d’auteur. Toute reproduction non autorisée peut constituer une contrefaçon.</p>
+                    <p>Les jeux, marques, images et autres contenus mentionnés sur Glitchworlds appartiennent à leurs ayants droit respectifs. Les fiches, captures et médias publiés par la communauté le sont sous la responsabilité de leurs auteurs.</p>
+                    <p class="mb-0">Pour signaler une atteinte à tes droits, consulte la <a href="{{ path('app_charte_moderation') }}">charte de contribution</a> ou écris à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a>.</p>
+                </section>
+
+                <section id="responsabilite">
+                    <h2><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Responsabilité</h2>
+                    <p>Glitchworlds met en œuvre des moyens raisonnables pour assurer l’accès au service et la fiabilité des informations qu’il publie directement. Le site peut toutefois être interrompu pour maintenance ou subir des aléas techniques indépendants de sa volonté.</p>
+                    <p>Les contenus publiés par les membres (fiches de jeux, commentaires, publications, messages, notes) n’engagent que leurs auteurs. Glitchworlds modère a posteriori lorsque cela est nécessaire, sans garantir l’exactitude ou la légalité de l’ensemble des contributions.</p>
+                    <p class="mb-0">L’utilisation du site implique l’acceptation des <a href="{{ path('app_conditions_utilisation') }}">conditions d’utilisation</a>.</p>
+                </section>
+
+                <section id="liens">
+                    <h2><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Liens et contenus tiers</h2>
+                    <p>Glitchworlds peut contenir des liens vers des sites ou services externes, ainsi que des contenus intégrés, par exemple des vidéos ou des publicités. Ces ressources sont soumises aux conditions et politiques de leurs éditeurs respectifs.</p>
+                    <p class="mb-0">L’éditeur n’exerce aucun contrôle permanent sur les sites tiers et décline toute responsabilité quant à leur contenu ou à leurs pratiques.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

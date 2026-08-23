@@ -1,3 +1,1101 @@
+:root[data-theme="ps3"],
+:root[data-gw-theme="ps3"] {
+    --gw-primary: #48b8ff;
+    --gw-primary-rgb: 72, 184, 255;
+    --gw-primary-dark: #1f8bd9;
+    --gw-secondary: #8b6cff;
+    --gw-secondary-rgb: 139, 108, 255;
+    --gw-background: #06111f;
+    --gw-background-accent: #0b1a30;
+    --gw-surface: rgba(10, 25, 44, 0.82);
+    --gw-surface-solid: rgba(20, 39, 65, 0.9);
+    --gw-text: #f2f8ff;
+    --gw-muted: #a9bdd1;
+    --gw-border: rgba(145, 205, 255, 0.22);
+    --gw-radius-md: .9rem;
+    --gw-radius-lg: 1.1rem;
+    --gw-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.42);
+    --gw-shadow-soft: 0 .5rem 1.5rem rgba(4, 10, 20, .45);
+    --gw-glow: 0 0 0 2px rgba(72, 184, 255, 0.28), 0 0 24px rgba(72, 184, 255, 0.2);
+}
+
+:root[data-theme="ps3"] body,
+:root[data-gw-theme="ps3"] body {
+    background-image:
+        radial-gradient(100% 85% at 50% -10%, rgba(72, 184, 255, .2), transparent 55%),
+        radial-gradient(90% 90% at 80% 25%, rgba(139, 108, 255, .18), transparent 62%),
+        radial-gradient(120% 90% at 0% 90%, rgba(33, 101, 176, .18), transparent 58%),
+        linear-gradient(180deg, #06111f 0%, #08192e 45%, #0b1731 100%);
+}
+
+/* PS3 : navigation horizontale, verre sombre et vagues lumineuses. */
+:root[data-theme="ps3"] body::before {
+    opacity: .8;
+    background:
+        radial-gradient(90% 28% at 48% 32%, transparent 66%, rgba(72, 184, 255, .16) 68%, transparent 71%),
+        radial-gradient(110% 32% at 58% 75%, transparent 67%, rgba(139, 108, 255, .13) 69%, transparent 72%);
+    animation: gw-ps3-wave 14s ease-in-out infinite alternate;
+}
+
+:root[data-theme="ps3"] .gw-topbar {
+    padding: .55rem .8rem;
+    border: 1px solid rgba(145, 205, 255, .16);
+    border-radius: 1rem;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .05), 0 1rem 2.6rem rgba(0, 0, 0, .28);
+}
+
+@media (min-width: 768px) {
+    :root[data-theme="wii"] {
+        --gw-rail-width: 100%;
+    }
+    :root[data-theme="wii"] .gw-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    :root[data-theme="wii"] .gw-rail {
+        position: static;
+        padding: .8rem;
+        border: 1px solid rgba(255, 255, 255, .92);
+        border-radius: 1.65rem;
+        background: rgba(231, 241, 247, .72);
+        box-shadow: inset 0 1px #fff, 0 .75rem 1.8rem rgba(70, 120, 155, .13);
+    }
+    :root[data-theme="wii"] .gw-rail__list {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: .7rem;
+        padding: 0;
+    }
+    :root[data-theme="wii"] .gw-rail__item {
+        min-height: 108px;
+        padding: .85rem .5rem;
+        border: 1px solid #becdd7;
+        border-radius: .75rem;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(232, 238, 242, .96));
+        box-shadow: inset 0 1px #fff, 0 .22rem .48rem rgba(82, 105, 120, .15);
+    }
+    :root[data-theme="wii"] .gw-rail__item i {
+        font-size: 2rem;
+    }
+    :root[data-theme="wii"] .gw-rail__label {
+        font-size: .68rem;
+    }
+    :root[data-theme="wii"] .gw-rail__item.is-active {
+        background:
+            radial-gradient(100% 80% at 50% 0, rgba(255, 255, 255, .38), transparent 55%),
+            linear-gradient(180deg, #38b8f2, #0785d0);
+    }
+
+    :root[data-theme="ds"] {
+        --gw-rail-width: 100%;
+    }
+    :root[data-theme="ds"] .gw-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    :root[data-theme="ds"] .gw-rail {
+        position: static;
+        padding: .75rem;
+        border: 2px solid #b0bcc8;
+        border-radius: .85rem;
+        background: linear-gradient(180deg, #f4f6f8, #e4e9ef);
+        box-shadow: inset 0 1px rgba(255, 255, 255, .85), 0 2px 8px rgba(43, 49, 55, .1);
+    }
+    :root[data-theme="ds"] .gw-rail__list {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: .65rem;
+        padding: 0;
+    }
+    :root[data-theme="ds"] .gw-rail__item {
+        min-height: 102px;
+        padding: .8rem .45rem;
+        border: 1px solid #b8c4ce;
+        border-radius: .65rem;
+        background: linear-gradient(180deg, #fff, #eef2f6);
+        box-shadow: inset 0 1px rgba(255, 255, 255, .92), 0 1px 3px rgba(43, 49, 55, .08);
+    }
+    :root[data-theme="ds"] .gw-rail__item i {
+        font-size: 1.85rem;
+    }
+    :root[data-theme="ds"] .gw-rail__label {
+        font-size: .66rem;
+        font-weight: 600;
+    }
+    :root[data-theme="ds"] .gw-rail__item.is-active {
+        background: linear-gradient(180deg, #3aa8e0, #0084c7);
+        box-shadow: inset 0 1px rgba(255, 255, 255, .28), 0 0 0 2px rgba(0, 132, 199, .22);
+    }
+
+    :root[data-theme="dsi"] {
+        --gw-rail-width: 100%;
+    }
+    :root[data-theme="dsi"] .gw-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    :root[data-theme="dsi"] .gw-rail {
+        position: static;
+        padding: .85rem;
+        border: 3px solid #252b31;
+        border-radius: 1.15rem;
+        background: linear-gradient(180deg, #fff, #f0f8fd);
+        box-shadow: inset 0 1px rgba(255, 255, 255, .95), 0 4px 16px rgba(30, 90, 130, .1);
+    }
+    :root[data-theme="dsi"] .gw-rail__list {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: .75rem;
+        padding: 0;
+    }
+    :root[data-theme="dsi"] .gw-rail__item {
+        min-height: 108px;
+        padding: .85rem .5rem;
+        border-radius: 1rem;
+    }
+    :root[data-theme="dsi"] .gw-rail__item i {
+        font-size: 2rem;
+    }
+    :root[data-theme="dsi"] .gw-rail__label {
+        position: relative;
+        z-index: 1;
+        font-size: .67rem;
+        font-weight: 600;
+    }
+    :root[data-theme="dsi"] .gw-rail__item.is-active {
+        transform: translateY(-2px) scale(1.02);
+    }
+
+    :root[data-theme="ps3"] {
+        --gw-ps3-rail-width: clamp(5rem, 6.8vw, 7rem);
+    }
+    /* La colonne d'icônes est fixée à droite : on réserve sa largeur
+       sur tout le shell pour que rien ne passe dessous. */
+    :root[data-theme="ps3"] .gw-app {
+        padding-right: calc(var(--gw-ps3-rail-width) + clamp(1rem, 2vw, 2rem));
+    }
+    :root[data-theme="ps3"] .gw-layout {
+        position: relative;
+        grid-template-columns: minmax(0, 1fr);
+    }
+    :root[data-theme="ps3"] .gw-rail {
+        position: fixed;
+        z-index: 1020;
+        top: 50%;
+        right: clamp(.5rem, 1.2vw, 1rem);
+        left: auto;
+        width: var(--gw-ps3-rail-width);
+        max-height: calc(100vh - 2rem);
+        transform: translateY(-50%);
+        padding: 0;
+        overflow-y: auto;
+        scrollbar-width: none;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+    :root[data-theme="ps3"] .gw-rail::-webkit-scrollbar { width: 0; }
+    :root[data-theme="ps3"] .gw-main {
+        min-height: 36rem;
+    }
+    :root[data-theme="ps3"] .gw-rail__list {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: clamp(.15rem, .7vh, .55rem);
+        padding: .35rem 0;
+    }
+    :root[data-theme="ps3"] .gw-rail__list > li { flex: 0 0 auto; }
+    :root[data-theme="ps3"] .gw-rail__item {
+        width: 100%;
+        min-height: 0;
+        gap: .15rem;
+        padding: clamp(.3rem, .9vh, .7rem) .2rem;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        color: #dceeff;
+        opacity: .9;
+        text-shadow: 0 2px .35rem rgba(0, 0, 0, .95), 0 0 .55rem rgba(72, 184, 255, .38);
+    }
+    :root[data-theme="ps3"] .gw-rail__item i {
+        font-size: clamp(1.4rem, 2.6vh, 2.1rem);
+        color: #e6f5ff;
+        -webkit-text-stroke: .35px rgba(255, 255, 255, .8);
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .9)) drop-shadow(0 0 .65rem rgba(72, 184, 255, .62));
+    }
+    :root[data-theme="ps3"] .gw-rail__item:not(.is-active) .gw-rail__label {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+    }
+    :root[data-theme="ps3"] .gw-rail__item.is-active {
+        transform: scale(1.06);
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+    :root[data-theme="ps3"] .gw-rail__item.is-active i {
+        font-size: clamp(1.75rem, 3.3vh, 2.6rem);
+        color: #fff;
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .95)) drop-shadow(0 0 .85rem rgba(72, 184, 255, 1));
+    }
+    :root[data-theme="ps3"] .gw-rail__item.is-active .gw-rail__label {
+        margin-top: .15rem;
+        font-size: .65rem;
+        letter-spacing: .04em;
+        text-shadow: 0 0 .65rem rgba(72, 184, 255, .85);
+    }
+    :root[data-theme="ps3"] .gw-rail__badge {
+        top: .05rem;
+        right: .05rem;
+        padding: 0 .25rem;
+        font-size: .5rem;
+    }
+}
+
+:root[data-theme="ps3"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .accordion-item),
+:root[data-theme="ps3"] :is(.gw-community__composer, .gw-community__post, .gw-community__side, .gw-similar-card, .gw-comment) {
+    color: var(--gw-text);
+    background-color: rgba(10, 25, 44, .88);
+    border-color: rgba(145, 205, 255, .2);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .035), 0 .8rem 2rem rgba(0, 0, 0, .25);
+}
+
+:root[data-theme="ps3"] :is(.table, .table > :not(caption) > * > *, .list-group-item) {
+    color: var(--gw-text);
+    background-color: transparent;
+    border-color: rgba(145, 205, 255, .14);
+}
+
+:root[data-theme="ps3"] :is(.form-control, .form-select, .input-group-text) {
+    color: var(--gw-text);
+    background-color: rgba(3, 14, 28, .78);
+    border-color: rgba(145, 205, 255, .24);
+}
+
+:root[data-theme="ps3"] :is(.form-control, .form-select):focus {
+    color: #fff;
+    background-color: rgba(4, 18, 34, .92);
+    border-color: #48b8ff;
+    box-shadow: 0 0 0 .2rem rgba(72, 184, 255, .16), 0 0 1.2rem rgba(72, 184, 255, .18);
+}
+
+:root[data-theme="ps3"] :is(.btn-primary, .btn-gw, .nav-pills .nav-link.active, .page-item.active .page-link) {
+    color: #fff;
+    background: linear-gradient(115deg, #147fc7, #5365d8 58%, #7756d6);
+    border-color: rgba(151, 216, 255, .55);
+    box-shadow: 0 0 1.1rem rgba(72, 184, 255, .2);
+}
+
+:root[data-theme="ps3"] :is(.btn-outline-primary, .page-link) {
+    color: #84d1ff;
+    border-color: rgba(72, 184, 255, .42);
+    background-color: rgba(5, 20, 38, .58);
+}
+
+:root[data-theme="ps3"] :is(.btn-outline-primary, .page-link):hover {
+    color: #fff;
+    background-color: rgba(72, 184, 255, .2);
+    box-shadow: 0 0 1rem rgba(72, 184, 255, .2);
+}
+
+:root[data-theme="ps3"] .gw-autocomplete {
+    color: var(--gw-text);
+    background: rgba(7, 20, 37, .98);
+    border-color: rgba(145, 205, 255, .25);
+    box-shadow: 0 1.4rem 3.5rem rgba(0, 0, 0, .55);
+}
+
+:root[data-theme="ps3"] .gw-rail__item:hover { transform: translateY(-2px) scale(1.035); }
+:root[data-theme="ps3"] .gw-bottombar { display: none; }
+
+/* Statut topbar (horloge + messages) : repris de la bottombar, visible uniquement en PS3 */
+.gw-topbar-status { display: none; }
+
+:root[data-theme="ps3"] .gw-topbar-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-right: 0.3rem;
+    padding-right: 0.6rem;
+    border-right: 1px solid rgba(145, 205, 255, .25);
+}
+
+:root[data-theme="ps3"] .gw-topbar-status__clock,
+:root[data-theme="ps3"] .gw-topbar-status__clock time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.05;
+    color: var(--gw-text);
+}
+
+:root[data-theme="ps3"] .gw-topbar-status__clock strong {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+:root[data-theme="ps3"] .gw-topbar-status__clock span {
+    font-size: 0.6rem;
+    color: var(--gw-muted);
+}
+
+:root[data-theme="ps3"] .gw-topbar-status__messages {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--gw-surface-solid);
+    color: var(--gw-primary);
+    text-decoration: none;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+:root[data-theme="ps3"] .gw-topbar-status__messages:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--gw-shadow-soft);
+}
+
+@keyframes gw-ps3-wave {
+    from { transform: translate3d(-1.5%, -1%, 0) scale(1.02); }
+    to { transform: translate3d(1.5%, 1%, 0) scale(1.06); }
+}
+
+/* --- PS3 en clair : même architecture, verre laiteux --- */
+:root[data-theme="ps3"][data-bs-theme="light"] {
+    --gw-primary: #0f7fc4;
+    --gw-primary-rgb: 15, 127, 196;
+    --gw-primary-dark: #0a5f95;
+    --gw-secondary: #6c5ce7;
+    --gw-secondary-rgb: 108, 92, 231;
+    --gw-background: #eef6fd;
+    --gw-background-accent: #dcecfa;
+    --gw-surface: rgba(255, 255, 255, .84);
+    --gw-surface-solid: #ffffff;
+    --gw-text: #0d2135;
+    --gw-muted: #5a7288;
+    --gw-border: rgba(15, 127, 196, .22);
+    --gw-shadow: 0 1rem 3rem rgba(28, 78, 120, .18);
+    --gw-shadow-soft: 0 .5rem 1.5rem rgba(28, 78, 120, .14);
+    --gw-glow: 0 0 0 2px rgba(15, 127, 196, .24), 0 0 24px rgba(15, 127, 196, .16);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] body {
+    background-image:
+        radial-gradient(100% 85% at 50% -10%, rgba(15, 127, 196, .16), transparent 55%),
+        radial-gradient(90% 90% at 80% 25%, rgba(108, 92, 231, .14), transparent 62%),
+        radial-gradient(120% 90% at 0% 90%, rgba(78, 156, 214, .16), transparent 58%),
+        linear-gradient(180deg, #f4faff 0%, #e7f2fc 45%, #dceafa 100%);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] body::before {
+    opacity: .7;
+    background:
+        radial-gradient(90% 28% at 48% 32%, transparent 66%, rgba(15, 127, 196, .14) 68%, transparent 71%),
+        radial-gradient(110% 32% at 58% 75%, transparent 67%, rgba(108, 92, 231, .12) 69%, transparent 72%);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-topbar {
+    border-color: var(--gw-border);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .8), 0 1rem 2.6rem rgba(28, 78, 120, .14);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-logo__name,
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-logo__tagline {
+    color: var(--gw-text);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-rail__item.is-active {
+    color: #063a5e;
+    background: linear-gradient(180deg, rgba(15, 127, 196, .22), rgba(108, 92, 231, .16));
+    border-color: rgba(15, 127, 196, .5);
+    text-shadow: none;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-rail__item.is-active i,
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-rail__item.is-active .gw-rail__label {
+    color: #063a5e;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-rail__item:hover {
+    box-shadow: 0 0 1rem rgba(15, 127, 196, .2);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .accordion-item),
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.gw-community__composer, .gw-community__post, .gw-community__side, .gw-similar-card, .gw-comment) {
+    background-color: rgba(255, 255, 255, .92);
+    border-color: var(--gw-border);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .9), 0 .8rem 2rem rgba(28, 78, 120, .12);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.table, .table > :not(caption) > * > *, .list-group-item) {
+    border-color: rgba(15, 127, 196, .16);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.form-control, .form-select, .input-group-text) {
+    background-color: rgba(255, 255, 255, .95);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.form-control, .form-select):focus {
+    color: var(--gw-text);
+    background-color: #ffffff;
+    border-color: #0f7fc4;
+    box-shadow: 0 0 0 .2rem rgba(15, 127, 196, .16);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.btn-primary, .btn-gw, .nav-pills .nav-link.active, .page-item.active .page-link) {
+    background: linear-gradient(115deg, #1188d1, #4f74dd 58%, #7756d6);
+    border-color: rgba(15, 127, 196, .45);
+    box-shadow: 0 .35rem .9rem rgba(28, 78, 120, .18);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.btn-outline-primary, .page-link) {
+    color: #0a5f95;
+    border-color: rgba(15, 127, 196, .38);
+    background-color: rgba(255, 255, 255, .72);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.btn-outline-primary, .page-link):hover {
+    color: #ffffff;
+    background-color: #0f7fc4;
+    box-shadow: 0 0 .9rem rgba(15, 127, 196, .22);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete {
+    background: #ffffff;
+    border-color: var(--gw-border);
+    box-shadow: 0 1.4rem 3.5rem rgba(28, 78, 120, .22);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-topbar-status {
+    border-right-color: var(--gw-border);
+}
+
+.gw-rail__badge {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: var(--gw-radius-pill);
+    background: var(--gw-secondary);
+    color: #fff;
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.gw-rail__badge--alerte {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.3rem;
+    background: var(--gw-alert);
+    font-size: 0.62rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    text-transform: none;
+}
+
+.gw-main {
+    min-width: 0;
+}
+
+/* Accueil PS3 : contenu inspiré du XMB à partir des listes de jeux. */
+:root[data-theme="ps3"] .gw-3ds-screen--bottom {
+    display: block;
+    padding: clamp(1rem, 2.5vw, 2rem) clamp(.75rem, 3vw, 2.5rem);
+    color: #f4f8ff;
+    background: transparent;
+}
+
+:root[data-theme="ps3"] .gw-home-disposition {
+    margin-bottom: 1.5rem !important;
+}
+
+:root[data-theme="ps3"] .gw-home-disposition .btn {
+    border-color: rgba(190, 225, 255, .24);
+    color: rgba(235, 246, 255, .78);
+    background: rgba(8, 24, 43, .28);
+    box-shadow: none;
+    backdrop-filter: blur(8px);
+}
+
+:root[data-theme="ps3"] .gw-home-disposition .btn.active {
+    border-color: rgba(175, 225, 255, .62);
+    color: #fff;
+    background: rgba(72, 184, 255, .24);
+    box-shadow: 0 0 1rem rgba(72, 184, 255, .2);
+}
+
+:root[data-theme="ps3"] .gw-3ds-screen--bottom > :is(.gw-home-menu, .gw-home-menu--communaute) {
+    position: relative;
+    margin-bottom: clamp(2.25rem, 5vw, 4rem) !important;
+    padding: 0 !important;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    color: #f4f8ff;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+:root[data-theme="ps3"] .gw-home-menu__entete {
+    position: relative;
+    justify-content: flex-start !important;
+    width: max-content;
+    margin-bottom: 1.1rem !important;
+    padding-left: 3.4rem;
+}
+
+:root[data-theme="ps3"] .gw-home-menu__entete h2 {
+    color: #fff;
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    font-weight: 400;
+    letter-spacing: .025em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, .9), 0 0 1rem rgba(72, 184, 255, .55);
+}
+
+:root[data-theme="ps3"] .gw-home-menu__entete h2 .bi {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    color: #e9f7ff !important;
+    font-size: 2.35rem;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .85)) drop-shadow(0 0 .65rem rgba(72, 184, 255, .7));
+    transform: translateY(-50%);
+}
+
+:root[data-theme="ps3"] .gw-home-menu__lien {
+    margin-left: 1rem;
+    color: rgba(215, 238, 255, .72);
+    font-size: .7rem;
+    text-decoration: none;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
+}
+
+:root[data-theme="ps3"] .gw-home-menu__lien:hover {
+    color: #fff;
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille .gw-collection.row {
+    --bs-gutter-x: 0;
+    --bs-gutter-y: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(118px, 148px));
+    justify-content: start;
+    gap: clamp(1rem, 2.3vw, 1.8rem);
+    margin: 0;
+    padding-left: clamp(.5rem, 4vw, 3.4rem);
+    overflow: visible;
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille .gw-collection.row > .col {
+    width: auto;
+    max-width: none;
+    padding: 0;
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille :is(.gw-similar-card, .gw-article-card) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: auto;
+    min-height: 0;
+    height: auto;
+    padding: 0;
+    overflow: visible !important;
+    border: 0;
+    border-radius: 0;
+    color: #fff;
+    background: transparent;
+    box-shadow: none;
+    transition: transform .16s ease, filter .16s ease;
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille :is(.gw-similar-card, .gw-article-card):is(:hover, :focus-within) {
+    z-index: 5;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    box-shadow: none;
+    filter: drop-shadow(0 0 .85rem rgba(112, 205, 255, .7));
+    transform: scale(1.09);
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille .gw-similar-card__visual,
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille .gw-article-card :is(.card-img-top, .gw-article-card__img) {
+    display: flex;
+    width: clamp(90px, 9vw, 118px) !important;
+    height: clamp(90px, 9vw, 118px) !important;
+    min-height: 0;
+    margin-inline: auto;
+    overflow: hidden;
+    border: 1px solid rgba(220, 241, 255, .28);
+    border-radius: .18rem;
+    object-fit: cover;
+    box-shadow: 0 5px 13px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(255, 255, 255, .12);
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille :is(.gw-similar-card > .p-3, .gw-article-card .card-body) {
+    padding: .55rem .1rem 0 !important;
+    text-align: center;
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille :is(.gw-similar-card h3, .gw-article-card .card-title) {
+    margin: 0;
+    color: rgba(238, 247, 255, .9);
+    font-size: .72rem;
+    font-weight: 400;
+    line-height: 1.25;
+    text-shadow: 0 2px 3px rgba(0, 0, 0, .95);
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille :is(.gw-similar-card, .gw-article-card):is(:hover, :focus-within) :is(h3, .card-title) {
+    color: #fff;
+}
+
+:root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille :is(.gw-similar-card .d-flex.flex-wrap, .gw-similar-card .gw-tag, .gw-similar-card .small.text-secondary, .gw-article-card .badge, .gw-article-card .card-text, .gw-article-card .small.text-secondary) {
+    display: none !important;
+}
+
+:root[data-theme="ps3"] .gw-home-menu--communaute :is(.gw-activity__item, .gw-members__item) {
+    border-color: rgba(180, 220, 255, .14);
+    color: #edf7ff;
+    background: rgba(5, 18, 34, .3);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .04);
+    backdrop-filter: blur(7px);
+}
+
+:root[data-theme="ps3"] .gw-home-menu--communaute > .row {
+    --bs-gutter-x: 3rem;
+    --bs-gutter-y: 2rem;
+}
+
+:root[data-theme="ps3"] .gw-home-menu--communaute :is(.gw-activity, .gw-members) {
+    display: grid;
+    gap: .8rem;
+}
+
+:root[data-theme="ps3"] .gw-home-menu--communaute :is(.gw-activity__item, .gw-members__item) {
+    margin: 0;
+    padding: 1rem 1.1rem;
+}
+
+:root[data-theme="ps3"] .gw-rail__badge--alerte {
+    display: grid;
+    width: 1.2rem;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    padding: 0;
+    place-items: center;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    :root[data-theme="ps3"] .gw-rail {
+        overflow: hidden;
+    }
+
+    :root[data-theme="ps3"] .gw-rail__viewport {
+        position: relative;
+        display: block;
+        max-height: calc(100dvh - 2rem);
+        overflow: hidden;
+    }
+
+    :root[data-theme="ps3"] .gw-rail__list {
+        max-height: calc(100dvh - 2rem);
+        padding-block: 1.6rem;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scroll-padding-block: 1.6rem;
+    }
+
+    :root[data-theme="ps3"] .gw-rail__item:not(.is-active) .gw-rail__label {
+        display: block;
+        position: absolute;
+        top: 50%;
+        right: calc(100% + .4rem);
+        left: auto;
+        flex: none;
+        width: max-content;
+        height: auto;
+        max-height: none;
+        margin: 0;
+        padding: .2rem .4rem;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(-50%);
+        font-size: .68rem;
+        font-weight: 500;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+
+    :root[data-theme="ps3"] .gw-rail__item {
+        transition: color .12s ease, opacity .12s ease, transform .12s ease;
+    }
+
+    :root[data-theme="ps3"] .gw-rail__item:is(.is-active, :hover, :focus-visible) {
+        transform: none;
+    }
+
+    :root[data-theme="ps3"] .gw-rail__item i,
+    :root[data-theme="ps3"] .gw-rail__item.is-active i {
+        font-size: clamp(1.4rem, 2.6vh, 2.1rem);
+        transform: scale(1);
+        transition: color .12s ease, filter .12s ease, transform .14s ease;
+        transform-origin: center;
+    }
+
+    :root[data-theme="ps3"] .gw-rail__item:hover i,
+    :root[data-theme="ps3"] .gw-rail__item:focus-visible i {
+        transform: scale(1.14);
+    }
+
+    :root[data-theme="ps3"] .gw-rail__item.is-active .gw-rail__label {
+        position: static;
+        width: max-content;
+        height: auto;
+        max-height: none;
+        margin-top: .15rem;
+        padding: .2rem .4rem;
+        border-radius: .3rem;
+        color: #fff !important;
+        background: rgba(0, 10, 28, .58);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .28);
+        opacity: 1;
+        font-size: .78rem;
+        font-weight: 600;
+        line-height: 1.15;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, .95);
+        transform: none;
+        transition: opacity .1s ease;
+        white-space: nowrap;
+    }
+
+    :root[data-theme="ps3"] .gw-rail__item:is(.is-active, :hover, :focus-visible) i {
+        color: #fff !important;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .8)) drop-shadow(0 0 .35rem rgba(72, 184, 255, .55));
+    }
+}
+
+@media (max-width: 575.98px) {
+    :root[data-theme="ps3"] .gw-home-shell.gw-disposition--grille .gw-collection.row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding-left: 0;
+        gap: .75rem;
+    }
+
+    :root[data-theme="ps3"] .gw-home-menu__lien {
+        display: none;
+    }
+}
+
+/* PS3 : listes de contenu verticales, proches des sous-menus du XMB. */
+:root[data-theme="ps3"][data-bs-theme="light"] {
+    --gw-background: #123f82;
+    --gw-background-accent: #256fb4;
+    --gw-surface: rgba(7, 31, 73, .5);
+    --gw-surface-solid: #123f78;
+    --gw-text: #ffffff;
+    --gw-muted: #d6efff;
+    --gw-border: rgba(218, 242, 255, .3);
+    --gw-shadow: 0 1rem 3rem rgba(0, 38, 76, .3);
+    --gw-shadow-soft: 0 .5rem 1.5rem rgba(0, 38, 76, .25);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] body {
+    color: #fff;
+    background-color: #123f82;
+    background-image:
+        radial-gradient(95% 75% at 12% 0%, rgba(101, 182, 232, .58), transparent 58%),
+        radial-gradient(85% 68% at 92% 18%, rgba(21, 76, 151, .5), transparent 66%),
+        linear-gradient(155deg, #287cbd 0%, #174f96 43%, #0b285f 76%, #071a42 100%);
+    background-attachment: fixed;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] body::before {
+    display: block;
+    position: fixed;
+    z-index: 0;
+    inset: 0;
+    opacity: .9;
+    content: "";
+    pointer-events: none;
+    background:
+        radial-gradient(100% 32% at 42% 43%, transparent 64%, rgba(180, 224, 250, .28) 66%, transparent 70%),
+        radial-gradient(120% 38% at 60% 72%, transparent 65%, rgba(72, 152, 215, .28) 67%, transparent 71%),
+        linear-gradient(180deg, rgba(255, 255, 255, .08), transparent 55%);
+    animation: gw-ps3-wave 14s ease-in-out infinite alternate;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.gw-topbar, .gw-panel, .gw-page-panel, .gw-search-box) {
+    color: #fff;
+    border-color: rgba(218, 242, 255, .28);
+    background: rgba(5, 26, 66, .42);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .09), 0 .7rem 1.8rem rgba(0, 40, 80, .2);
+    backdrop-filter: blur(10px);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] :is(.text-secondary, .text-body-secondary) {
+    color: #d6efff !important;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete {
+    color: #fff;
+    border-color: rgba(190, 226, 255, .32);
+    background: rgba(5, 25, 62, .96);
+    box-shadow: 0 1rem 2.5rem rgba(0, 10, 35, .45);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete__item {
+    color: #fff;
+    border-bottom-color: rgba(190, 226, 255, .16);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete__item :is(strong, span) {
+    color: #fff;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete__item small,
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete__header,
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete__empty {
+    color: #c7e9ff;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-autocomplete__item:is(:hover, .is-active) {
+    color: #fff;
+    background: rgba(72, 184, 255, .2);
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-home-shell .gw-collection :is(.gw-similar-card, .gw-article-card) {
+    color: #edf8ff;
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-home-shell .gw-collection :is(.gw-similar-card, .gw-article-card):is(:hover, :focus-within) {
+    color: #fff;
+    filter: drop-shadow(0 0 .8rem rgba(225, 248, 255, .9));
+}
+
+:root[data-theme="ps3"][data-bs-theme="light"] .gw-3ds-screen--bottom :is(h2, h3, .card-title, h2 a, h3 a, .card-title a) {
+    color: #fff !important;
+    text-shadow: 0 2px 3px rgba(0, 15, 45, .85);
+}
+
+:root[data-theme="ps3"] .gw-home-disposition {
+    display: none !important;
+}
+
+:root[data-theme="ps3"] .gw-3ds-screen--bottom {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    padding-top: clamp(2rem, 6vh, 4.5rem);
+}
+
+:root[data-theme="ps3"] .gw-3ds-screen--bottom > .gw-home-menu {
+    display: grid;
+    grid-template-columns: clamp(180px, 21vw, 260px) minmax(0, 1fr);
+    align-items: start;
+    column-gap: clamp(1.25rem, 4vw, 3.5rem);
+    width: 100%;
+    min-height: 190px;
+    padding: clamp(1.25rem, 2.5vw, 2rem) !important;
+    border: 1px solid rgba(190, 226, 255, .3);
+    border-radius: .55rem;
+    background: linear-gradient(100deg, rgba(5, 24, 63, .68), rgba(12, 54, 110, .44) 58%, rgba(24, 86, 145, .16));
+    box-shadow: 0 .8rem 2rem rgba(0, 12, 42, .18);
+    backdrop-filter: blur(10px);
+}
+
+:root[data-theme="ps3"] .gw-home-menu__entete {
+    position: sticky;
+    top: 1rem;
+    display: block !important;
+    width: auto;
+    padding: 3.8rem 0 0;
+}
+
+:root[data-theme="ps3"] .gw-home-menu__entete h2 .bi {
+    top: 0;
+    left: 0;
+    font-size: 3rem;
+    transform: none;
+}
+
+:root[data-theme="ps3"] .gw-home-menu__lien {
+    display: inline-block;
+    margin: .5rem 0 0;
+}
+
+:root[data-theme="ps3"] .gw-home-shell :is(.gw-disposition--grille, .gw-disposition--double, .gw-disposition--liste),
+:root[data-theme="ps3"] .gw-home-shell .gw-collection.row {
+    min-width: 0;
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection.row {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .3rem;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection.row > .col {
+    flex: none;
+    width: min(100%, 680px);
+    max-width: none;
+    padding: 0;
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection :is(.gw-similar-card, .gw-article-card) {
+    display: grid;
+    grid-template-columns: 100px minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    min-height: 112px;
+    height: auto;
+    padding: .45rem .65rem;
+    overflow: visible !important;
+    border: 0;
+    border-radius: 0;
+    color: rgba(235, 246, 255, .78);
+    background: transparent;
+    box-shadow: none;
+    transition: color .15s ease, transform .16s ease, filter .16s ease;
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection :is(.gw-similar-card, .gw-article-card):is(:hover, :focus-within) {
+    z-index: 4;
+    color: #fff;
+    background: transparent;
+    box-shadow: none;
+    filter: drop-shadow(0 0 .7rem rgba(105, 205, 255, .65));
+    transform: translateX(14px) scale(1.04);
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection .gw-similar-card__visual,
+:root[data-theme="ps3"] .gw-home-shell .gw-collection .gw-article-card :is(.card-img-top, .gw-article-card__img) {
+    grid-column: 1;
+    grid-row: 1;
+    width: 96px !important;
+    height: 96px !important;
+    min-height: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: .1rem;
+    object-fit: cover;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .55);
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection :is(.gw-similar-card > .p-3, .gw-article-card .card-body) {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    padding: 0 !important;
+    overflow: visible;
+    text-align: left;
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection :is(.gw-similar-card h3, .gw-article-card .card-title) {
+    margin: 0;
+    color: inherit;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.25;
+    text-align: left;
+    text-shadow: 0 2px 3px rgba(0, 0, 0, .95);
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection :is(.gw-similar-card .d-flex.flex-wrap, .gw-similar-card .gw-tag, .gw-similar-card .small.text-secondary, .gw-article-card .badge, .gw-article-card .card-text, .gw-article-card .small.text-secondary) {
+    display: none !important;
+}
+
+@media (max-width: 767.98px) {
+    :root[data-theme="ps3"] .gw-3ds-screen--bottom {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    :root[data-theme="ps3"] .gw-3ds-screen--bottom > .gw-home-menu {
+        grid-template-columns: 1fr;
+    }
+
+    :root[data-theme="ps3"] .gw-home-menu__entete {
+        position: static;
+        padding: 0 0 0 3rem;
+    }
+
+    :root[data-theme="ps3"] .gw-home-menu__entete h2 .bi {
+        top: 50%;
+        font-size: 2rem;
+        transform: translateY(-50%);
+    }
+}
+
+:root[data-theme="ps3"] .gw-topbar,
+:root[data-theme="ps3"] .gw-rail,
+:root[data-theme="ps3"] .gw-panel,
+:root[data-theme="ps3"] .gw-community,
+:root[data-theme="ps3"] .gw-search-box,
+:root[data-theme="ps3"] .gw-filter-panel,
+:root[data-theme="ps3"] .gw-clock {
+    background: var(--gw-surface);
+    border-color: var(--gw-border);
+    backdrop-filter: blur(12px);
+}
+
+:root[data-theme="ps3"] .gw-logo__name,
+:root[data-theme="ps3"] .gw-logo__tagline {
+    color: #d9ebff;
+}
+
+:root[data-theme="ps3"] .gw-rail {
+    padding-block: .8rem;
+}
+
+:root[data-theme="ps3"] .gw-rail__item {
+    border-radius: .85rem;
+    opacity: .72;
+    transform-origin: center;
+}
+
+:root[data-theme="ps3"] .gw-rail__item:hover {
+    opacity: .95;
+    box-shadow: 0 0 1rem rgba(72, 184, 255, 0.22);
+}
+
+:root[data-theme="ps3"] .gw-rail__item.is-active {
+    opacity: 1;
+    color: #ffffff;
+    transform: scale(1.06);
+    background: linear-gradient(180deg, rgba(72, 184, 255, 0.26), rgba(139, 108, 255, 0.2));
+    border-color: rgba(155, 216, 255, 0.72);
+    text-shadow: 0 0 1rem rgba(72, 184, 255, 0.8);
+}
+
+:root[data-theme="ps3"] .gw-rail__item.is-active i,
+:root[data-theme="ps3"] .gw-rail__item.is-active .gw-rail__label {
+    color: #ffffff;
+}
+
 /* Personnalisation du thème 2. */
 :root[data-theme-style="theme2"] {
     --gw-primary: #48b8ff;

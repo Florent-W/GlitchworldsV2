@@ -2,6 +2,53 @@
  * Personnalisation du thème Glitchworlds.
  * Les composants communs restent définis dans ../app.css.
  */
+/* Accueil Glitchworlds : grille par défaut plus compacte. */
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-home-menu:not(.gw-home-menu--communaute) {
+    padding: 1.1rem !important;
+}
+
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-similar-card__visual {
+    height: clamp(175px, 18vw, 240px);
+    min-height: 0;
+}
+
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-similar-card__visual img {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-collection--jeux .gw-similar-card__visual img {
+    object-fit: contain !important;
+    object-position: center;
+}
+
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-collection--jeux .gw-similar-card__visual {
+    height: auto;
+    aspect-ratio: 1;
+}
+
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-collection--actualites .gw-similar-card__visual img {
+    object-fit: contain !important;
+    object-position: center;
+}
+
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-similar-card__visual {
+    background: color-mix(in srgb, var(--gw-surface-solid) 88%, var(--gw-primary) 12%);
+}
+
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-similar-card > .p-3 {
+    padding: .7rem !important;
+}
+
+:root[data-theme="glitchworlds"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3 {
+    font-size: .88rem;
+    line-height: 1.25;
+}
+
 :root[data-theme="glitchworlds"] {
     --gw-theme-stylesheet: "glitchworlds";
     --gw-primary: #2f7df6;

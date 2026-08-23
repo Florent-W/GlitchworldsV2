@@ -102,7 +102,7 @@ final class RechercheController extends AbstractController
                 'type' => 'Jeu',
                 'icone' => 'controller',
                 'titre' => $jeu->getNom(),
-                'detail' => $jeu->getDeveloppeur() ? 'Auteur : '.$jeu->getDeveloppeur() : 'Fiche de jeu',
+                'detail' => $jeu->getPseudoAuteurFiche() ? 'Par '.$jeu->getPseudoAuteurFiche() : 'Fiche de jeu',
                 'miniature' => str_starts_with((string) $jeu->getMiniature(), 'miniature.')
                     ? $assets->getUrl('uploads/jeux/'.$jeu->getId().'/'.$jeu->getMiniature())
                     : null,

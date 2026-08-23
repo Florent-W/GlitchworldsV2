@@ -4,14 +4,12 @@ namespace App\Controller;
 
 use App\Entity\CommentaireActualite;
 use App\Entity\CommentaireJeu;
-use App\Enum\CategorieActualite;
-use App\Enum\StatutJeu;
 use App\Repository\AvisRepository;
 use App\Repository\CommentaireJeuRepository;
-use App\Repository\ActualiteRepository;
 use App\Repository\CommentaireActualiteRepository;
-use App\Repository\JeuRepository;
 use App\Repository\UtilisateurRepository;
+use App\Service\ContenuAccueil;
+use App\Service\StatistiquesPlateforme;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,18 +18,19 @@ final class HomeController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
     public function accueil(
-        JeuRepository $jeuRepository,
         UtilisateurRepository $utilisateurRepository,
         CommentaireJeuRepository $commentaireJeuRepository,
-        ActualiteRepository $actualiteRepository,
         CommentaireActualiteRepository $commentaireActualiteRepository,
         AvisRepository $avisRepository,
+        ContenuAccueil $contenuAccueil,
+        StatistiquesPlateforme $statistiquesPlateforme,
     ): Response
     {
-        $nouveautes = $jeuRepository->trouverNouveautes(9);
-        $populaires = $jeuRepository->trouverPopulaires(9);
-        $dernieresActualites = $actualiteRepository->trouverDernieres(9);
-        $derniersGlitchs = $actualiteRepository->trouverDernieres(9, CategorieActualite::Glitchs);
+        $nouveautes = $contenuAccueil->nouveautes();
+        $populaires = $contenuAccueil->populaires();
+        $dernieresActualites = $contenuAccueil->dernieresActualites();
+        $derniersGlitchs = $contenuAccueil->derniersGlitchs();
+        $statistiques = $statistiquesPlateforme->obtenir();
 
         return $this->render('home/index.html.twig', [
             'nouveautes' => $nouveautes,
@@ -41,15 +40,15 @@ final class HomeController extends AbstractController
             'dernieresActualites' => $dernieresActualites,
             'derniersGlitchs' => $derniersGlitchs,
             'commentairesActualites' => $commentaireActualiteRepository->compterParActualites([...$dernieresActualites, ...$derniersGlitchs]),
-            'actualitesMisesEnAvant' => $actualiteRepository->trouverMisesEnAvant(),
+            'actualitesMisesEnAvant' => $contenuAccueil->misesEnAvant(),
             'activiteRecente' => $this->construireActiviteRecente(
                 $commentaireJeuRepository->trouverDerniersPublics(6),
                 $commentaireActualiteRepository->trouverDerniersPublics(6),
             ),
             'nouveauxMembres' => $utilisateurRepository->trouverRecents(6),
-            'totalJeux' => $jeuRepository->count(['statut' => StatutJeu::Approuve]),
-            'totalMembres' => $utilisateurRepository->count([]),
-            'totalCommentaires' => $commentaireJeuRepository->count([]) + $commentaireActualiteRepository->count([]),
+            'totalJeux' => $statistiques['jeux'],
+            'totalMembres' => $statistiques['membres'],
+            'totalCommentaires' => $statistiques['commentaires'],
         ]);
     }
 

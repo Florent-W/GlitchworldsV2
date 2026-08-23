@@ -19,6 +19,23 @@ final class ActualiteRepository extends ServiceEntityRepository
         parent::__construct($registry, Actualite::class);
     }
 
+    /**
+     * @param list<int> $identifiants
+     * @return list<Actualite>
+     */
+    public function trouverParIdentifiants(array $identifiants): array
+    {
+        if ([] === $identifiants) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('actualite')
+            ->andWhere('actualite.id IN (:identifiants)')
+            ->setParameter('identifiants', $identifiants)
+            ->getQuery()
+            ->getResult();
+    }
+
     /** @return array{actualites: list<Actualite>, page: int, pages: int, total: int} */
     public function trouverPubliees(int $page, int $limite, ?CategorieActualite $categorie, string $recherche = ''): array
     {

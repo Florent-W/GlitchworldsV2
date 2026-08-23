@@ -23,7 +23,7 @@ final class OauthAuthenticator extends OAuth2Authenticator
     public function authenticate(Request $request): Passport
     {
         $fournisseur = $request->attributes->getString('provider');
-        if (!in_array($fournisseur, ['google', 'discord', 'github'], true)) { throw new AuthenticationException('Fournisseur OAuth inconnu.'); }
+        if ($fournisseur !== 'google') { throw new AuthenticationException('Fournisseur OAuth inconnu.'); }
         $client = $this->clients->getClient('oauth_'.$fournisseur);
         $profil = $client->fetchUserFromToken($this->fetchAccessToken($client)); $identifiant = (string) $profil->getId();
         return new SelfValidatingPassport(new UserBadge($fournisseur.':'.$identifiant, fn (): Utilisateur => $this->chargerUtilisateur($fournisseur, $identifiant, $profil)));

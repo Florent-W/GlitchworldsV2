@@ -21,7 +21,7 @@ class CommentaireJeuRepository extends ServiceEntityRepository
     /**
      * @return list<CommentaireJeu>
      */
-    public function trouverRecents(Jeu $jeu, int $limite = 5): array
+    public function trouverRecents(Jeu $jeu, int $limite = 10, int $decalage = 0): array
     {
         $identifiants = $this->createQueryBuilder('racine')
             ->select('racine.id')
@@ -29,6 +29,7 @@ class CommentaireJeuRepository extends ServiceEntityRepository
             ->andWhere('racine.parent IS NULL')
             ->setParameter('jeu', $jeu)
             ->orderBy('racine.dateCommentaire', 'DESC')
+            ->setFirstResult(max(0, $decalage))
             ->setMaxResults($limite)
             ->getQuery()->getSingleColumnResult();
 
@@ -55,6 +56,17 @@ class CommentaireJeuRepository extends ServiceEntityRepository
     public function compterPourJeu(Jeu $jeu): int
     {
         return $this->count(['jeu' => $jeu]);
+    }
+
+    public function compterRacinesPourJeu(Jeu $jeu): int
+    {
+        return (int) $this->createQueryBuilder('commentaire')
+            ->select('COUNT(commentaire.id)')
+            ->andWhere('commentaire.jeu = :jeu')
+            ->andWhere('commentaire.parent IS NULL')
+            ->setParameter('jeu', $jeu)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**

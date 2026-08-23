@@ -102,12 +102,26 @@ final class ActualiteController extends AbstractController
             ]).'#commentaires');
         }
 
+        $commentairesParPage = 10;
+        $totalCommentairesRacines = $commentaireRepository->compterRacinesPourActualite($actualite);
+        $pagesCommentaires = max(1, (int) ceil($totalCommentairesRacines / $commentairesParPage));
+        $pageCommentaires = min(
+            max(1, $request->query->getInt('commentaires_page', 1)),
+            $pagesCommentaires,
+        );
+
         return $this->render('actualite/voir.html.twig', [
             'actualite' => $actualite,
             'actualitePrecedente' => $actualiteRepository->trouverPrecedente($actualite),
             'actualiteSuivante' => $actualiteRepository->trouverSuivante($actualite),
-            'commentaires' => $commentaireRepository->trouverRecents($actualite),
+            'commentaires' => $commentaireRepository->trouverRecents(
+                $actualite,
+                $commentairesParPage,
+                ($pageCommentaires - 1) * $commentairesParPage,
+            ),
             'totalCommentaires' => $commentaireRepository->count(['actualite' => $actualite]),
+            'pageCommentaires' => $pageCommentaires,
+            'pagesCommentaires' => $pagesCommentaires,
             'formulaireCommentaire' => $formulaire,
         ]);
     }

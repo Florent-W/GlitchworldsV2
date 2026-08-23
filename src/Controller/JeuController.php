@@ -145,6 +145,13 @@ final class JeuController extends AbstractController
         ]);
 
         $jeuxSimilaires = $jeuRepository->trouverSimilaires($jeu);
+        $commentairesParPage = 10;
+        $totalCommentairesRacines = $commentaireJeuRepository->compterRacinesPourJeu($jeu);
+        $pagesCommentaires = max(1, (int) ceil($totalCommentairesRacines / $commentairesParPage));
+        $pageCommentaires = min(
+            max(1, $request->query->getInt('commentaires_page', 1)),
+            $pagesCommentaires,
+        );
 
         return $this->render('jeu/show.html.twig', [
             'jeu' => $jeu,
@@ -155,8 +162,14 @@ final class JeuController extends AbstractController
             'jeuSuivant' => $jeuRepository->trouverSuivant($jeu),
             'resumeAvis' => $avisRepository->trouverResume($jeu),
             'avisPublies' => $avisRepository->trouverAvisPourJeu($jeu),
-            'commentaires' => $commentaireJeuRepository->trouverRecents($jeu),
+            'commentaires' => $commentaireJeuRepository->trouverRecents(
+                $jeu,
+                $commentairesParPage,
+                ($pageCommentaires - 1) * $commentairesParPage,
+            ),
             'totalCommentaires' => $commentaireJeuRepository->compterPourJeu($jeu),
+            'pageCommentaires' => $pageCommentaires,
+            'pagesCommentaires' => $pagesCommentaires,
             'formulaireCommentaire' => $formulaireCommentaire,
             'formulaireNote' => $formulaireNote,
             'avisUtilisateur' => $avisUtilisateur,

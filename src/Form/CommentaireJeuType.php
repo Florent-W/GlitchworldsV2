@@ -21,7 +21,7 @@ final class CommentaireJeuType extends AbstractType
                 'attr' => [
                     'rows' => 4,
                     'maxlength' => 1000,
-                    'placeholder' => 'Partage ton avis sur ce jeu...',
+                    'placeholder' => 'Écris ton commentaire...',
                 ],
             ])
             ->add('publier', SubmitType::class, [

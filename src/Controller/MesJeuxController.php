@@ -56,7 +56,15 @@ final class MesJeuxController extends AbstractController
     }
 
     #[Route('/jeu/{id}/retirer', name: 'app_mes_jeux_retirer', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function retirer(JeuBibliotheque $entree, Request $request, EntityManagerInterface $em): Response { $this->verifierProprietaire($entree->getUtilisateur()); $this->csrf('retirer-bibliotheque-'.$entree->getId(), $request); $em->remove($entree); $em->flush(); return $this->redirectToRoute('app_mes_jeux'); }
+    public function retirer(JeuBibliotheque $entree, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->verifierProprietaire($entree->getUtilisateur());
+        $this->csrf('retirer-bibliotheque-'.$entree->getId(), $request);
+        $em->remove($entree);
+        $em->flush();
+
+        return $this->redirectToRoute('app_mes_jeux');
+    }
 
     #[Route('/listes', name: 'app_liste_jeux_creer', methods: ['POST'])]
     public function creerListe(Request $request, EntityManagerInterface $em, GestionSucces $succes): Response
@@ -75,12 +83,59 @@ final class MesJeuxController extends AbstractController
     }
 
     #[Route('/listes/{id}/jeu/{jeuId}', name: 'app_liste_jeux_basculer', requirements: ['id' => '\d+', 'jeuId' => '\d+'], methods: ['POST'])]
-    public function basculerListe(ListeJeux $liste, int $jeuId, Request $request, EntityManagerInterface $em): Response { $this->verifierProprietaire($liste->getUtilisateur()); $this->csrf('liste-'.$liste->getId().'-jeu-'.$jeuId, $request); $jeu = $em->find(Jeu::class, $jeuId); if (!$jeu) { throw $this->createNotFoundException(); } $liste->contient($jeu) ? $liste->retirerJeu($jeu) : $liste->ajouterJeu($jeu); $em->flush(); return $this->redirectToRoute('app_mes_jeux', ['_fragment' => 'listes']); }
+    public function basculerListe(ListeJeux $liste, int $jeuId, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->verifierProprietaire($liste->getUtilisateur());
+        $this->csrf('liste-'.$liste->getId().'-jeu-'.$jeuId, $request);
+
+        $jeu = $em->find(Jeu::class, $jeuId);
+        if (!$jeu) {
+            throw $this->createNotFoundException();
+        }
+
+        if ($liste->contient($jeu)) {
+            $liste->retirerJeu($jeu);
+        } else {
+            $liste->ajouterJeu($jeu);
+        }
+
+        $em->flush();
+
+        return $this->redirectToRoute('app_mes_jeux', ['_fragment' => 'listes']);
+    }
 
     #[Route('/listes/{id}/supprimer', name: 'app_liste_jeux_supprimer', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function supprimerListe(ListeJeux $liste, Request $request, EntityManagerInterface $em): Response { $this->verifierProprietaire($liste->getUtilisateur()); $this->csrf('supprimer-liste-'.$liste->getId(), $request); $em->remove($liste); $em->flush(); return $this->redirectToRoute('app_mes_jeux'); }
+    public function supprimerListe(ListeJeux $liste, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->verifierProprietaire($liste->getUtilisateur());
+        $this->csrf('supprimer-liste-'.$liste->getId(), $request);
+        $em->remove($liste);
+        $em->flush();
 
-    private function membre(): Utilisateur { $membre = $this->getUser(); if (!$membre instanceof Utilisateur) { throw $this->createAccessDeniedException(); } return $membre; }
-    private function verifierProprietaire(?Utilisateur $proprietaire): void { if ($proprietaire !== $this->membre()) { throw $this->createAccessDeniedException(); } }
-    private function csrf(string $id, Request $request): void { if (!$this->isCsrfTokenValid($id, $request->request->getString('_token'))) { throw $this->createAccessDeniedException('Jeton CSRF invalide.'); } }
+        return $this->redirectToRoute('app_mes_jeux');
+    }
+
+    private function membre(): Utilisateur
+    {
+        $membre = $this->getUser();
+        if (!$membre instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $membre;
+    }
+
+    private function verifierProprietaire(?Utilisateur $proprietaire): void
+    {
+        if ($proprietaire !== $this->membre()) {
+            throw $this->createAccessDeniedException();
+        }
+    }
+
+    private function csrf(string $id, Request $request): void
+    {
+        if (!$this->isCsrfTokenValid($id, $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+    }
 }

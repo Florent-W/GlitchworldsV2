@@ -14,6 +14,11 @@
 
 {% block canonical %}{{ url('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}{% endblock %}
 {% block og_type %}article{% endblock %}
+{% block og_image %}
+    {%- set imagePartage = jeu.banniere starts with 'banniere.' ? jeu.banniere : (jeu.miniature starts with 'miniature.' ? jeu.miniature : null) -%}
+    {{- imagePartage ? absolute_url(asset('uploads/jeux/' ~ jeu.id ~ '/' ~ imagePartage)) : parent() -}}
+{% endblock %}
+{% block og_image_alt %}Illustration de {{ jeu.nom }}{% endblock %}
 
 {% block structured_data %}
     {% set descriptionStructuree = jeu.description is not empty
@@ -24,6 +29,7 @@
         '@type': 'VideoGame',
         name: jeu.nom,
         url: url('app_jeu_show', { slug: jeu.slug, id: jeu.id }),
+        image: block('og_image')|trim,
         description: descriptionStructuree,
         genre: jeu.genres|map(item => item.nom),
         gamePlatform: jeu.plateformes|map(item => item.nom),
@@ -32,8 +38,10 @@
     {% if jeu.dateSortie %}
         {% set schema = schema|merge({ datePublished: jeu.dateSortie|date('Y-m-d') }) %}
     {% endif %}
-    {% if jeu.developpeur %}
-        {% set schema = schema|merge({ author: { '@type': 'Person', name: jeu.developpeur } }) %}
+    {% if auteurFiche %}
+        {% set schema = schema|merge({ author: { '@type': 'Person', name: auteurFiche.pseudo } }) %}
+    {% elseif jeu.pseudoAuteurFiche %}
+        {% set schema = schema|merge({ author: { '@type': 'Person', name: jeu.pseudoAuteurFiche } }) %}
     {% endif %}
     {% if resumeAvis.moyenne is not null %}
         {% set schema = schema|merge({ aggregateRating: {
@@ -162,33 +170,6 @@
             <section class="gw-quick-info h-100" aria-labelledby="infos-jeu-title">
                 <h2 id="infos-jeu-title" class="h5 mb-3">Infos du jeu</h2>
 
-                {% if resumeAvis.moyenne is not null %}
-                    <div class="gw-rating mb-3">
-                        <i class="bi bi-star-fill" aria-hidden="true"></i>
-                        <strong>{{ resumeAvis.moyenne }}</strong><span>/5</span>
-                        <small>{{ resumeAvis.total }} avis</small>
-                    </div>
-                {% endif %}
-
-                {% if app.user %}
-                    <div class="border-top pt-3 mb-3">
-                        {{ form_start(formulaireNote) }}
-                            {{ form_row(formulaireNote.note) }}
-                            {{ form_row(formulaireNote.contenu) }}
-                            {{ form_widget(formulaireNote.enregistrer) }}
-                        {{ form_end(formulaireNote) }}
-                    </div>
-                {% else %}
-                    <p class="small"><a href="{{ path('app_connexion') }}">Connecte-toi</a> pour noter ce jeu.</p>
-                {% endif %}
-
-                {% if jeu.developpeur %}
-                    <div class="gw-quick-info__item">
-                        <i class="bi bi-person-fill" aria-hidden="true"></i>
-                        <div><span>Auteur de la fiche</span><strong>{{ jeu.developpeur }}</strong></div>
-                    </div>
-                {% endif %}
-
                 {% if jeu.dateSortie %}
                     <div class="gw-quick-info__item">
                         <i class="bi bi-calendar-event" aria-hidden="true"></i>
@@ -264,6 +245,55 @@
         </aside>
     </div>
 
+    <section class="gw-game-rate mt-4" id="noter" aria-labelledby="noter-title">
+        <div class="gw-panel gw-game-rate__panel p-4">
+            <div class="gw-game-rate__head">
+                <h2 id="noter-title" class="h5 mb-0">Noter ce jeu</h2>
+                {% if resumeAvis.moyenne is not null %}
+                    <p class="gw-game-rate__summary mb-0">
+                        <i class="bi bi-star-fill" aria-hidden="true"></i>
+                        <strong>{{ resumeAvis.moyenne }}</strong>
+                        <span>{{ resumeAvis.total }} avis</span>
+                    </p>
+                {% else %}
+                    <p class="gw-game-rate__summary gw-game-rate__summary--empty mb-0">Aucune note pour l’instant</p>
+                {% endif %}
+            </div>
+
+            {% if app.user %}
+                {% if avisUtilisateur %}
+                    <p class="gw-game-rate__hint mb-0" role="status">
+                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        Tu as déjà publié un avis. Tu peux le modifier ci-dessous.
+                    </p>
+                {% endif %}
+                {{ form_start(formulaireNote, { attr: { class: 'gw-game-rate__form' } }) }}
+                    <div class="gw-game-rate__stars">
+                        {{ form_label(formulaireNote.note) }}
+                        {{ form_widget(formulaireNote.note) }}
+                        {{ form_errors(formulaireNote.note) }}
+                    </div>
+                    <div class="gw-game-rate__body">
+                        <div class="gw-game-rate__comment">
+                            {{ form_widget(formulaireNote.contenu, { attr: { placeholder: 'Ton avis (facultatif)', rows: 3 } }) }}
+                            {{ form_errors(formulaireNote.contenu) }}
+                        </div>
+                        <div class="gw-game-rate__actions">
+                            {{ form_widget(formulaireNote.enregistrer, {
+                                label: avisUtilisateur ? 'Modifier mon avis' : 'Publier mon avis',
+                                attr: { class: 'btn btn-primary' }
+                            }) }}
+                        </div>
+                    </div>
+                {{ form_end(formulaireNote) }}
+            {% else %}
+                <p class="gw-game-rate__guest mb-0">
+                    <a href="{{ path('app_connexion') }}">Connecte-toi</a> pour noter ce jeu et laisser un avis.
+                </p>
+            {% endif %}
+        </div>
+    </section>
+
     {% if jeu.galerie is not empty %}
         <section class="gw-panel p-3 p-md-4 mt-4" aria-labelledby="galerie-title">
             <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
@@ -299,7 +329,7 @@
 
         {% include '_auteur_fiche.html.twig' with {
             auteur: auteurFiche,
-            auteurPseudo: auteurFiche ? null : jeu.developpeur
+            auteurPseudo: auteurFiche ? null : jeu.pseudoAuteurFiche
         } only %}
     </section>
 
@@ -357,6 +387,9 @@
                         <div class="min-w-0">
                         <header class="d-flex flex-wrap align-items-center gap-2 mb-2">
                             <strong>{% if avis.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: avis.auteur.id}) }}">{{ avis.auteur.pseudo }}</a>{% else %}Ancien membre{% endif %}</strong>
+                            {% if app.user and avis.auteur and avis.auteur.id == app.user.id %}
+                                <span class="badge text-bg-success"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Votre avis</span>
+                            {% endif %}
                             <span class="gw-review__rating" aria-label="Note : {{ avis.note|number_format(0) }} sur 5">
                                 <i class="bi bi-star-fill" aria-hidden="true"></i>
                                 {{ avis.note|number_format(0) }}/5
@@ -377,6 +410,12 @@
                                         <span class="d-none d-sm-inline ms-1">Supprimer</span>
                                     </button>
                                 </form>
+                            {% endif %}
+                            {% if app.user and avis.auteur != app.user %}
+                                <a class="btn btn-sm btn-outline-danger" href="{{ path('app_signaler', {type: 'avis', id: avis.id}) }}" aria-label="Signaler cet avis">
+                                    <i class="bi bi-flag-fill" aria-hidden="true"></i>
+                                    <span class="d-none d-sm-inline ms-1">Signaler</span>
+                                </a>
                             {% endif %}
                         </header>
                         <div class="gw-review__content">{{ avis.contenu|nl2br }}</div>
@@ -481,6 +520,20 @@
             </div>
             {% else %}
                 <p class="text-secondary">Aucun commentaire pour le moment.</p>
+            {% endif %}
+
+            {% if pagesCommentaires > 1 %}
+                <nav class="mb-4" aria-label="Pagination des commentaires">
+                    <ul class="pagination justify-content-center mb-0">
+                        <li class="page-item{{ pageCommentaires == 1 ? ' disabled' : '' }}">
+                            <a class="page-link" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id, commentaires_page: pageCommentaires - 1}) }}#commentaires">Précédents</a>
+                        </li>
+                        <li class="page-item disabled"><span class="page-link">{{ pageCommentaires }} / {{ pagesCommentaires }}</span></li>
+                        <li class="page-item{{ pageCommentaires == pagesCommentaires ? ' disabled' : '' }}">
+                            <a class="page-link" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id, commentaires_page: pageCommentaires + 1}) }}#commentaires">Suivants</a>
+                        </li>
+                    </ul>
+                </nav>
             {% endif %}
 
             <div class="border-top pt-4">

@@ -131,8 +131,16 @@ final class ParametresController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $utilisateur->setSessionsConnectees([]);
+        // La version est incluse dans l'utilisateur sérialisé dans le jeton de
+        // sécurité. La session courante conserve l'objet mis à jour ; les
+        // autres jetons, qui portent encore l'ancienne version, sont rejetés
+        // par Utilisateur::isEqualTo() à leur prochaine requête.
+        $utilisateur
+            ->invaliderAutresSessions()
+            ->setSessionsConnectees([]);
         $entityManager->flush();
+
+        $this->addFlash('success', 'Les autres appareils ont été déconnectés.');
 
         return $this->redirectToRoute('app_parametres');
     }

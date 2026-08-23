@@ -19,7 +19,17 @@
         <meta property="og:title" content="{{ block('title')|striptags|trim }}">
         <meta property="og:description" content="{{ block('meta_description')|striptags|trim }}">
         <meta property="og:url" content="{{ block('canonical')|trim }}">
+        <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('og-default.jpg')) }}{% endblock %}">
+        <meta property="og:image:alt" content="{% block og_image_alt %}Glitchworlds{% endblock %}">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ block('title')|striptags|trim }}">
+        <meta name="twitter:description" content="{{ block('meta_description')|striptags|trim }}">
+        <meta name="twitter:image" content="{{ block('og_image')|trim }}">
+        <meta name="twitter:image:alt" content="{{ block('og_image_alt')|striptags|trim }}">
         {% block structured_data %}{% endblock %}
+        {# La balise AdSense charge aussi la CMP Google « Confidentialité et
+           messages » publiée pour ce site (CMP TCF n° 300). #}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1179428382006278" crossorigin="anonymous"></script>
         <script>
             (function () {
                 try {
@@ -284,6 +294,8 @@
                 </main>
             </div>
 
+            {{ include('_pied_legal.html.twig') }}
+
             <footer class="gw-bottombar">
                 <div class="gw-bottombar__side">
                     {% block bottombar_video_controls %}{% endblock %}
@@ -316,6 +328,10 @@
                 {# Bande de copyright de l'ancien site : seul le thème legacy l'affiche. #}
                 <p class="gw-bottombar__copyright">
                     &copy; {{ 'now'|date('Y') }} Copyright : <a href="{{ path('app_home') }}">Glitchworlds.com</a>
+                    · <a href="{{ path('app_mentions_legales') }}">Mentions légales</a>
+                    · <a href="{{ path('app_confidentialite') }}">Confidentialité</a>
+                    · <a href="{{ path('app_conditions_utilisation') }}">Conditions d’utilisation</a>
+                    · <a href="{{ path('app_charte_moderation') }}">Charte de contribution</a>
                 </p>
             </footer>
         </div>

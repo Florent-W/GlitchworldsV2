@@ -31,7 +31,18 @@
             <div class="carousel-inner">
                 {% for actualite in actualitesMisesEnAvant %}
                     <article class="carousel-item{{ loop.first ? ' active' : '' }} position-relative">
-                        {% if actualite.fichierVignetteListe %}<img src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ actualite.fichierVignetteListe) }}" class="d-block w-100 object-fit-cover" style="height: clamp(260px, 42vw, 480px)" alt=""{% if not loop.first %} loading="lazy"{% endif %}>{% else %}<div class="bg-primary-subtle" style="height: clamp(260px, 42vw, 480px)"></div>{% endif %}
+                        {% if actualite.fichierVignetteListe %}
+                            {% include '_image_responsive.html.twig' with {
+                                fichier: actualite.fichierVignetteListe,
+                                dossier: 'uploads/actualites/' ~ actualite.id,
+                                classes: 'd-block w-100 object-fit-cover',
+                                style: 'height: clamp(260px, 42vw, 480px)',
+                                alt: '',
+                                loading: loop.first ? 'eager' : 'lazy',
+                                fetchpriority: loop.first,
+                                sizes: '100vw'
+                            } only %}
+                        {% else %}<div class="bg-primary-subtle" style="height: clamp(260px, 42vw, 480px)"></div>{% endif %}
                         <div class="carousel-caption text-start bg-dark bg-opacity-75 rounded-4 p-3 p-md-4 mb-3"><span class="badge text-bg-primary mb-2">{{ actualite.categorie.label }}</span><h2 class="h3">{{ actualite.titre }}</h2><p class="d-none d-md-block">{{ actualite.description }}</p><a class="btn btn-light" href="{{ path('app_actualite_voir', {slug: actualite.slug, id: actualite.id}) }}">Lire l’actualité</a></div>
                     </article>
                 {% endfor %}

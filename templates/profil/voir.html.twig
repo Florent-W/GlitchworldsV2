@@ -77,15 +77,25 @@
                 {% if app.user == membre %}
                     <a class="btn btn-primary" href="{{ path('app_compte_modifier') }}"><i class="bi bi-pencil-fill me-2"></i>Modifier le profil</a>
                     <a class="btn btn-outline-secondary" href="{{ path('app_compte') }}"><i class="bi bi-gear-fill me-2"></i>Mon compte</a>
+                    <a class="btn btn-outline-danger" href="{{ path('app_deconnexion') }}" data-turbo="false"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Se déconnecter</a>
                 {% elseif app.user %}
-                    <form method="post" action="{{ path('app_profil_suivre', {id: membre.id}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('suivre-' ~ membre.id) }}">
-                        <button class="btn {{ app.user.suit(membre) ? 'btn-outline-primary' : 'btn-primary' }}" title="{{ app.user.suit(membre) ? 'Tu reçois une notification à chaque publication de ce membre.' : 'Reçois une notification à chaque publication de ce membre et retrouve son activité dans ton fil Abonnements.' }}"><i class="bi bi-person-{{ app.user.suit(membre) ? 'dash' : 'plus' }}-fill me-2"></i>{{ app.user.suit(membre) ? 'Ne plus suivre' : 'Suivre' }}</button>
-                    </form>
-                    {% if app.user.suit(membre) %}
-                        <a class="btn btn-outline-secondary" href="{{ path('app_communaute', {section: 'abonnements'}) }}"><i class="bi bi-person-check-fill me-2"></i>Mon fil d’abonnements</a>
+                    {% if not app.user.interactionBloqueeAvec(membre) %}
+                        <form method="post" action="{{ path('app_profil_suivre', {id: membre.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('suivre-' ~ membre.id) }}">
+                            <button class="btn {{ app.user.suit(membre) ? 'btn-outline-primary' : 'btn-primary' }}" title="{{ app.user.suit(membre) ? 'Tu reçois une notification à chaque publication de ce membre.' : 'Reçois une notification à chaque publication de ce membre et retrouve son activité dans ton fil Abonnements.' }}"><i class="bi bi-person-{{ app.user.suit(membre) ? 'dash' : 'plus' }}-fill me-2"></i>{{ app.user.suit(membre) ? 'Ne plus suivre' : 'Suivre' }}</button>
+                        </form>
+                        {% if app.user.suit(membre) %}
+                            <a class="btn btn-outline-secondary" href="{{ path('app_communaute', {section: 'abonnements'}) }}"><i class="bi bi-person-check-fill me-2"></i>Mon fil d’abonnements</a>
+                        {% endif %}
+                        <a class="btn btn-outline-primary" href="{{ path('app_messages_nouveau', {destinataire: membre.id}) }}"><i class="bi bi-envelope-fill me-2"></i>Message</a>
+                    {% elseif not app.user.aBloque(membre) %}
+                        <span class="btn btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-slash-circle me-2"></i>Interactions indisponibles</span>
                     {% endif %}
-                    <a class="btn btn-outline-primary" href="{{ path('app_messages_nouveau', {destinataire: membre.id}) }}"><i class="bi bi-envelope-fill me-2"></i>Message</a>
+                    <form method="post" action="{{ path('app_profil_bloquer', {id: membre.id}) }}" onsubmit="return confirm('{{ app.user.aBloque(membre) ? 'Débloquer ce membre ?' : 'Bloquer ce membre ? Vous ne pourrez plus échanger de messages.' }}');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('bloquer-' ~ membre.id) }}">
+                        <button class="btn btn-outline-{{ app.user.aBloque(membre) ? 'secondary' : 'danger' }}" type="submit"><i class="bi bi-{{ app.user.aBloque(membre) ? 'unlock-fill' : 'person-x-fill' }} me-2"></i>{{ app.user.aBloque(membre) ? 'Débloquer' : 'Bloquer' }}</button>
+                    </form>
+                    <a class="btn btn-outline-danger" href="{{ path('app_signaler', {type: 'profil', id: membre.id}) }}"><i class="bi bi-flag-fill me-2"></i>Signaler</a>
                 {% else %}
                     <a class="btn btn-primary" href="{{ path('app_connexion') }}">Se connecter pour suivre</a>
                 {% endif %}

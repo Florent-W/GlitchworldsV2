@@ -15,6 +15,17 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class HomeControllerTest extends WebTestCase
 {
+    public function testAccueilExposeLesMetadonneesDePartageSocial(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('meta[property="og:image"][content$="/og-default.jpg"]');
+        self::assertSelectorExists('meta[name="twitter:card"][content="summary_large_image"]');
+        self::assertSelectorExists('meta[name="twitter:image"][content$="/og-default.jpg"]');
+    }
+
     public function testAccueilAfficheUniquementLesJeuxApprouves(): void
     {
         $client = self::createClient();

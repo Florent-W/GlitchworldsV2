@@ -38,24 +38,36 @@ final class MessagerieController extends AbstractController
             return $this->redirectToRoute('app_messages_voir', ['id' => $conversations[0]->getId()]);
         }
 
-        return $this->render('messagerie/index.html.twig', ['conversations' => $conversations, 'conversation' => null, 'formulaireMessage' => null, 'recherche' => $recherche, 'archivees' => $archivees, 'nonLus' => array_reduce($conversations, static function (array $nombres, Conversation $item) use ($messageRepository, $utilisateur): array { $nombres[$item->getId()] = $messageRepository->compterNonLus($utilisateur, $item); return $nombres; }, []), 'totalNonLus' => $messageRepository->compterNonLus($utilisateur)]);
+        return $this->render('messagerie/index.html.twig', [
+            'conversations' => $conversations,
+            'conversation' => null,
+            'formulaireMessage' => null,
+            'recherche' => $recherche,
+            'archivees' => $archivees,
+            'nonLus' => $this->compterNonLusParConversation($conversations, $messageRepository, $utilisateur),
+            'totalNonLus' => $messageRepository->compterNonLus($utilisateur),
+        ]);
     }
 
     #[Route('/nouveau', name: 'app_messages_nouveau')]
     public function nouveau(Request $request, ConversationRepository $repository, UtilisateurRepository $utilisateurRepository, EntityManagerInterface $entityManager, PieceJointeMessageUploader $uploader, CentreNotifications $notifications, GestionSucces $gestionSucces): Response
     {
+        $utilisateur = $this->utilisateur();
         $donnees = [];
         $destinataireId = $request->query->getInt('destinataire');
         if ($destinataireId > 0) {
             $donnees['destinataire'] = $utilisateurRepository->find($destinataireId);
         }
-        $formulaire = $this->createForm(NouvelleConversationType::class, $donnees);
+        $formulaire = $this->createForm(NouvelleConversationType::class, $donnees, [
+            'destinataires' => $utilisateurRepository->trouverDestinatairesDisponibles($utilisateur),
+        ]);
         $formulaire->handleRequest($request);
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
-            $utilisateur = $this->utilisateur();
             $destinataire = $formulaire->get('destinataire')->getData();
             if (!$destinataire instanceof Utilisateur || $destinataire === $utilisateur) {
                 $this->addFlash('danger', 'Choisis un autre membre comme destinataire.');
+            } elseif ($utilisateur->interactionBloqueeAvec($destinataire)) {
+                $this->addFlash('danger', 'Impossible d’envoyer un message : une des deux personnes a bloqué l’autre.');
             } else {
                 $conversation = $repository->trouverEntre($utilisateur, $destinataire) ?? (new Conversation())->setMembreA($utilisateur)->setMembreB($destinataire);
                 $message = (new Message())->setConversation($conversation)->setAuteur($utilisateur)->setContenu((string) $formulaire->get('contenu')->getData());
@@ -85,9 +97,14 @@ final class MessagerieController extends AbstractController
         }
         $messageRepository->marquerCommeLus($conversation, $utilisateur);
 
+        $autreMembre = $conversation->autreMembre($utilisateur);
+        $conversationBloquee = $autreMembre instanceof Utilisateur && $utilisateur->interactionBloqueeAvec($autreMembre);
+
         $message = (new Message())->setConversation($conversation)->setAuteur($utilisateur);
-        $formulaire = $this->createForm(MessageType::class, $message);
-        $formulaire->handleRequest($request);
+        $formulaire = $this->createForm(MessageType::class, $message, ['disabled' => $conversationBloquee]);
+        if (!$conversationBloquee) {
+            $formulaire->handleRequest($request);
+        }
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $conversation->actualiser();
             $fichier = $formulaire->get('fichier')->getData();
@@ -103,13 +120,36 @@ final class MessagerieController extends AbstractController
         return $this->render('messagerie/index.html.twig', [
             'conversations' => $repository->trouverPour($utilisateur),
             'conversation' => $conversation,
-            'autreMembre' => $conversation->autreMembre($utilisateur),
+            'autreMembre' => $autreMembre,
+            'conversationBloquee' => $conversationBloquee,
             'formulaireMessage' => $formulaire,
             'recherche' => '',
             'archivees' => false,
-            'nonLus' => array_reduce($repository->trouverPour($utilisateur), static function (array $nombres, Conversation $item) use ($messageRepository, $utilisateur): array { $nombres[$item->getId()] = $messageRepository->compterNonLus($utilisateur, $item); return $nombres; }, []),
+            'nonLus' => $this->compterNonLusParConversation(
+                $repository->trouverPour($utilisateur),
+                $messageRepository,
+                $utilisateur,
+            ),
             'totalNonLus' => $messageRepository->compterNonLus($utilisateur),
         ]);
+    }
+
+    /**
+     * @param list<Conversation> $conversations
+     *
+     * @return array<int, int>
+     */
+    private function compterNonLusParConversation(
+        array $conversations,
+        MessageRepository $messageRepository,
+        Utilisateur $utilisateur,
+    ): array {
+        $nonLus = [];
+        foreach ($conversations as $conversation) {
+            $nonLus[$conversation->getId()] = $messageRepository->compterNonLus($utilisateur, $conversation);
+        }
+
+        return $nonLus;
     }
 
     #[Route('/{id}/archiver', name: 'app_messages_archiver', methods: ['POST'])]

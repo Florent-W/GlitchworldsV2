@@ -18,6 +18,7 @@ final class SecuriteControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Bon retour');
+        self::assertSelectorTextContains('label[for="connexion-identifiant"]', 'Pseudo');
         self::assertSelectorExists('input[name="_csrf_token"]');
         self::assertSelectorExists('meta[name="robots"][content="noindex,nofollow"]');
     }
@@ -221,6 +222,33 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.alert-warning', 'Compte legacy récupéré');
         self::assertSelectorExists('a[href="/mon-compte/modifier"]');
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->remove($entityManager->find(Utilisateur::class, $utilisateurId));
+        $entityManager->flush();
+    }
+
+    public function testUnMembrePeutSeConnecterAvecSonEmail(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $hasher = self::getContainer()->get(UserPasswordHasherInterface::class);
+        $email = sprintf('connexion-%s@glitchworlds.local', bin2hex(random_bytes(6)));
+        $utilisateur = (new Utilisateur())
+            ->setPseudo('ConnexionEmail'.bin2hex(random_bytes(4)))
+            ->setEmail($email);
+        $utilisateur->setPassword($hasher->hashPassword($utilisateur, 'mot-de-passe-test-2026'));
+        $entityManager->persist($utilisateur);
+        $entityManager->flush();
+        $utilisateurId = $utilisateur->getId();
+
+        $crawler = $client->request('GET', '/connexion');
+        $client->submit($crawler->selectButton('Se connecter')->form([
+            'identifiant' => $email,
+            'mot_de_passe' => 'mot-de-passe-test-2026',
+        ]));
+
+        self::assertResponseRedirects('/');
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $entityManager->remove($entityManager->find(Utilisateur::class, $utilisateurId));

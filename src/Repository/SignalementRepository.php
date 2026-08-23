@@ -14,7 +14,7 @@ final class SignalementRepository extends ServiceEntityRepository
     /** @return list<Signalement> */
     public function trouverPourModeration(?StatutSignalement $statut = null): array
     {
-        $requete = $this->createQueryBuilder('s')->addSelect('a', 'm', 'j', 'cj', 'ca', 'p')->leftJoin('s.signalePar', 'a')->leftJoin('s.traitePar', 'm')->leftJoin('s.jeu', 'j')->leftJoin('s.commentaireJeu', 'cj')->leftJoin('s.commentaireActualite', 'ca')->leftJoin('s.publication', 'p')->orderBy('s.signaleLe', 'DESC');
+        $requete = $this->createQueryBuilder('s')->addSelect('a', 'm', 'j', 'cj', 'ca', 'p', 'profil', 'avis', 'message')->leftJoin('s.signalePar', 'a')->leftJoin('s.traitePar', 'm')->leftJoin('s.jeu', 'j')->leftJoin('s.commentaireJeu', 'cj')->leftJoin('s.commentaireActualite', 'ca')->leftJoin('s.publication', 'p')->leftJoin('s.profil', 'profil')->leftJoin('s.avis', 'avis')->leftJoin('s.message', 'message')->orderBy('s.signaleLe', 'DESC');
         if ($statut) { $requete->andWhere('s.statut = :statut')->setParameter('statut', $statut); }
         return $requete->getQuery()->getResult();
     }

@@ -19,7 +19,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -65,7 +66,7 @@ final class SecuriteController extends AbstractController
         }
 
         return $this->render('securite/connexion.html.twig', [
-            'derniereAdresse' => $authenticationUtils->getLastUsername(),
+            'dernierIdentifiant' => $authenticationUtils->getLastUsername(),
             'erreur' => $authenticationUtils->getLastAuthenticationError(),
         ]);
     }
@@ -227,7 +228,15 @@ final class SecuriteController extends AbstractController
     }
 
     #[Route('/mot-de-passe-oublie', name: 'app_mot_de_passe_oublie')]
-    public function motDePasseOublie(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer, #[Autowire(service: 'limiter.password_reset')] RateLimiterFactory $passwordResetLimiter): Response
+    public function motDePasseOublie(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
+        #[Autowire('%env(MAILER_FROM)%')]
+        string $mailerFrom,
+        #[Autowire(service: 'limiter.password_reset')]
+        RateLimiterFactory $passwordResetLimiter,
+    ): Response
     {
         $formulaire = $this->createFormBuilder()
             ->add('email', EmailType::class, ['label' => 'Adresse e-mail', 'constraints' => [new Assert\NotBlank(), new Assert\Email()]])
@@ -247,11 +256,19 @@ final class SecuriteController extends AbstractController
                 $utilisateur->definirJetonReinitialisation(hash('sha256', $jeton), new \DateTimeImmutable('+1 hour'));
                 $entityManager->flush();
                 $lien = $this->generateUrl('app_reinitialiser_mot_de_passe', ['jeton' => $jeton], UrlGeneratorInterface::ABSOLUTE_URL);
-                $mailer->send((new Email())
-                    ->from('noreply@glitchworlds.local')
+                $siteUrl = $this->generateUrl('app_home', [], UrlGeneratorInterface::ABSOLUTE_URL);
+                $adresseExpediteur = new Address(Address::create($mailerFrom)->getAddress(), 'Glitchworlds');
+                $mailer->send((new TemplatedEmail())
+                    ->from($adresseExpediteur)
                     ->to($email)
                     ->subject('Réinitialisation de ton mot de passe Glitchworlds')
-                    ->text("Utilise ce lien dans l’heure qui suit :\n\n".$lien."\n\nSi tu n’es pas à l’origine de cette demande, ignore ce message."));
+                    ->htmlTemplate('emails/reinitialisation_mot_de_passe.html.twig')
+                    ->textTemplate('emails/reinitialisation_mot_de_passe.txt.twig')
+                    ->context([
+                        'pseudo' => $utilisateur->getPseudo(),
+                        'lien' => $lien,
+                        'site_url' => $siteUrl,
+                    ]));
             }
             $this->addFlash('success', 'Si un compte correspond à cette adresse, un lien vient d’être envoyé.');
             return $this->redirectToRoute('app_connexion');

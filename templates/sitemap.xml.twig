@@ -15,6 +15,26 @@
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
     </url>
+    <url>
+        <loc>{{ url('app_confidentialite') }}</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>{{ url('app_mentions_legales') }}</loc>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>{{ url('app_conditions_utilisation') }}</loc>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>{{ url('app_charte_moderation') }}</loc>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
     {% for jeu in jeux %}
         <url>
             <loc>{{ url('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}</loc>

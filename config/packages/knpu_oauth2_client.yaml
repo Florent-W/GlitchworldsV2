@@ -6,21 +6,3 @@ knpu_oauth2_client:
             client_secret: '%env(OAUTH_GOOGLE_SECRET)%'
             redirect_route: app_oauth_verification
             redirect_params: { provider: google }
-        oauth_github:
-            type: github
-            client_id: '%env(OAUTH_GITHUB_ID)%'
-            client_secret: '%env(OAUTH_GITHUB_SECRET)%'
-            redirect_route: app_oauth_verification
-            redirect_params: { provider: github }
-        oauth_discord:
-            type: generic
-            provider_class: League\OAuth2\Client\Provider\GenericProvider
-            provider_options:
-                urlAuthorize: 'https://discord.com/oauth2/authorize'
-                urlAccessToken: 'https://discord.com/api/oauth2/token'
-                urlResourceOwnerDetails: 'https://discord.com/api/users/@me'
-                scopes: ['identify', 'email']
-            client_id: '%env(OAUTH_DISCORD_ID)%'
-            client_secret: '%env(OAUTH_DISCORD_SECRET)%'
-            redirect_route: app_oauth_verification
-            redirect_params: { provider: discord }

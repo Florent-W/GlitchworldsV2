@@ -1,11 +1,13 @@
 {% set fichier = actualite.fichierVignetteListe %}
 {% if fichier %}
-    <img
-        class="{{ classes|default('card-img-top object-fit-cover') }}"
-        {% if hauteur is defined %}style="height: {{ hauteur }}px"{% endif %}
-        src="{{ asset('uploads/actualites/' ~ actualite.id ~ '/' ~ fichier) }}"
-        alt="{{ alt|default('Illustration de ' ~ actualite.titre) }}"
-        loading="{{ loading|default('lazy') }}"
-        {% if decoding is defined %}decoding="{{ decoding }}"{% endif %}
-    >
+    {% include '_image_responsive.html.twig' with {
+        fichier: fichier,
+        dossier: 'uploads/actualites/' ~ actualite.id,
+        classes: classes|default('card-img-top object-fit-cover'),
+        style: hauteur is defined ? 'height: ' ~ hauteur ~ 'px' : '',
+        alt: alt|default('Illustration de ' ~ actualite.titre),
+        loading: loading|default('lazy'),
+        decoding: decoding|default('async'),
+        sizes: sizes|default('(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw')
+    } only %}
 {% endif %}

@@ -19,9 +19,13 @@ final class InscriptionType extends AbstractType
         $builder
             ->add('pseudo', null, [
                 'label' => 'Nom d’utilisateur',
+                'help' => 'Choisis le pseudo avec lequel tu te connecteras.',
                 'constraints' => [new Assert\Length(min: 3, max: 50)],
             ])
-            ->add('email', EmailType::class, ['label' => 'Adresse e-mail'])
+            ->add('email', EmailType::class, [
+                'label' => 'Adresse e-mail',
+                'help' => 'Elle sert aussi à te connecter et à récupérer ton mot de passe.',
+            ])
             ->add('motDePasseClair', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'mapped' => false,

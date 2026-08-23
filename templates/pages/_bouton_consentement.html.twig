@@ -1,0 +1,12 @@
+{# Bouton CMP Google AdSense, visible uniquement lorsque l’API de révocation est prête. #}
+{% set classes = classes|default('btn btn-outline-primary d-inline-flex align-items-center gap-2') %}
+{% set label = label|default('Gérer mes choix publicitaires et cookies') %}
+{% set icon = icon|default('bi-cookie') %}
+<button type="button"
+        class="{{ classes }}"
+        data-controller="consentement-publicitaire"
+        data-action="consentement-publicitaire#ouvrir"
+        hidden>
+    <i class="bi {{ icon }}" aria-hidden="true"></i>
+    {{ label }}
+</button>

@@ -15,6 +15,26 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class JeuRepository extends ServiceEntityRepository
 {
+    /**
+     * Recharge rapidement une sélection mise en cache sans recalculer son classement.
+     *
+     * @param list<int> $identifiants
+     * @return list<Jeu>
+     */
+    public function trouverParIdentifiants(array $identifiants): array
+    {
+        if ([] === $identifiants) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('jeu')
+            ->leftJoin('jeu.categorie', 'categorie')->addSelect('categorie')
+            ->andWhere('jeu.id IN (:identifiants)')
+            ->setParameter('identifiants', $identifiants)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Jeu::class);

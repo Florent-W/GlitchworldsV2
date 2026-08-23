@@ -14,7 +14,7 @@ final class CommentaireActualiteRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry) { parent::__construct($registry, CommentaireActualite::class); }
 
     /** @return list<CommentaireActualite> */
-    public function trouverRecents(Actualite $actualite, int $limite = 20): array
+    public function trouverRecents(Actualite $actualite, int $limite = 10, int $decalage = 0): array
     {
         $identifiants = $this->createQueryBuilder('racine')
             ->select('racine.id')
@@ -22,6 +22,7 @@ final class CommentaireActualiteRepository extends ServiceEntityRepository
             ->andWhere('racine.parent IS NULL')
             ->setParameter('actualite', $actualite)
             ->orderBy('racine.dateCommentaire', 'DESC')
+            ->setFirstResult(max(0, $decalage))
             ->setMaxResults($limite)
             ->getQuery()->getSingleColumnResult();
 
@@ -39,6 +40,17 @@ final class CommentaireActualiteRepository extends ServiceEntityRepository
             ->orderBy('commentaire.dateCommentaire', 'DESC')
             ->addOrderBy('reponse.dateCommentaire', 'ASC')
             ->getQuery()->getResult();
+    }
+
+    public function compterRacinesPourActualite(Actualite $actualite): int
+    {
+        return (int) $this->createQueryBuilder('commentaire')
+            ->select('COUNT(commentaire.id)')
+            ->andWhere('commentaire.actualite = :actualite')
+            ->andWhere('commentaire.parent IS NULL')
+            ->setParameter('actualite', $actualite)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /** @return list<CommentaireActualite> */

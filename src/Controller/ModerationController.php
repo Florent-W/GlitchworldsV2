@@ -313,7 +313,7 @@ final class ModerationController extends AbstractController
         $moderateur = $this->getUser();
         if (!$moderateur instanceof Utilisateur) { throw $this->createAccessDeniedException(); }
         if ($decision === 'supprimer') {
-            $cible = $signalement->getCommentaireJeu() ?? $signalement->getCommentaireActualite() ?? $signalement->getPublication();
+            $cible = $signalement->getCommentaireJeu() ?? $signalement->getCommentaireActualite() ?? $signalement->getPublication() ?? $signalement->getAvis() ?? $signalement->getMessage();
             if ($cible) { $entityManager->remove($cible); }
         }
         $signalement->cloturer($decision === 'rejeter' ? StatutSignalement::Rejete : StatutSignalement::Traite, $moderateur);

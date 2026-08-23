@@ -24,4 +24,7 @@
 /Jeux/
 /Articles/
 /images/
-/public/
+!/public/
+/public/*
+!/public/favicon.png
+!/public/og-default.jpg
