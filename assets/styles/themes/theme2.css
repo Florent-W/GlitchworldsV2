@@ -1314,16 +1314,12 @@
 :root[data-theme="ps3"] #a-propos .gw-game-reading-section .gw-game-section__summary {
     align-items: center;
     min-height: 4rem;
-    background: rgba(5, 28, 66, .48);
+    background: transparent;
     transition: background-color .15s ease;
 }
 
 :root[data-theme="ps3"] #a-propos .gw-game-reading-section .gw-game-section__summary:is(:hover, :focus-visible) {
-    background: rgba(38, 137, 199, .3);
-}
-
-:root[data-theme="ps3"] #a-propos .gw-game-reading-section[open] .gw-game-section__summary {
-    border-bottom: 1px solid rgba(190, 226, 255, .34);
+    background: color-mix(in srgb, var(--gw-primary) 6%, transparent);
 }
 
 :root[data-theme="ps3"] #a-propos .gw-game-reading-section .gw-game-section__toggle {

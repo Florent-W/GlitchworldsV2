@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Page introuvable - Glitchworlds{% endblock %}
+{% block meta_description %}La page demandée n’existe pas ou a été déplacée.{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+    <main class="container py-5">
+        <section class="gw-panel p-4 p-lg-5 text-center mx-auto" style="max-width: 720px" aria-labelledby="erreur-title">
+            <i class="bi bi-compass text-primary display-3" aria-hidden="true"></i>
+            <p class="text-uppercase fw-semibold text-secondary mt-3 mb-2">Erreur 404</p>
+            <h1 id="erreur-title" class="h2">Cette page est introuvable</h1>
+            <p class="text-secondary mb-4">Elle a peut-être été déplacée, renommée ou supprimée.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a class="btn btn-primary" href="{{ path('app_home') }}"><i class="bi bi-house-door-fill me-2" aria-hidden="true"></i>Retour à l’accueil</a>
+                <a class="btn btn-outline-primary" href="{{ path('app_jeux') }}"><i class="bi bi-controller me-2" aria-hidden="true"></i>Explorer les jeux</a>
+            </div>
+        </section>
+    </main>
+{% endblock %}

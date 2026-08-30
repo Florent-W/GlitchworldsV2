@@ -2246,6 +2246,12 @@ body.gw-video-fullscreen .inlinePlayButtonMobile {
 .gw-game-section { position: relative; overflow: hidden; }
 .gw-game-section::before { content: ''; position: absolute; inset: 0 auto 0 0; width: .25rem; background: var(--gw-primary); }
 .gw-game-reading-section { border-bottom: 1px solid var(--gw-border); }
+.gw-game-reading-section__summary {
+  align-items: center;
+  min-height: 4rem;
+  border-radius: var(--gw-radius, .75rem);
+  background: transparent;
+}
 .gw-game-reading-section__body { padding: 1.25rem .75rem 1.75rem; }
 @media (max-width: 1199.98px) {
   .gw-game-sections--blocs .gw-game-section { grid-column: span 6; }

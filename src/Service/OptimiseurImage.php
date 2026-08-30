@@ -32,9 +32,9 @@ final class OptimiseurImage
             }
 
             foreach (self::LARGEURS as $largeur) {
-                $this->exporter($source, sprintf('%s%s%s.opt-%d.webp', $dossier, DIRECTORY_SEPARATOR, $base, $largeur), $largeur, 'webp', true);
+                $this->exporter($source, sprintf('%s%s%s.opt-%d.webp', $dossier, DIRECTORY_SEPARATOR, $base, $largeur), $largeur, 'webp');
                 if (function_exists('imageavif')) {
-                    $this->exporter($source, sprintf('%s%s%s.opt-%d.avif', $dossier, DIRECTORY_SEPARATOR, $base, $largeur), $largeur, 'avif', true);
+                    $this->exporter($source, sprintf('%s%s%s.opt-%d.avif', $dossier, DIRECTORY_SEPARATOR, $base, $largeur), $largeur, 'avif');
                 }
             }
 
@@ -46,11 +46,11 @@ final class OptimiseurImage
         }
     }
 
-    private function exporter(\GdImage $source, string $destination, int $largeurMaximale, string $format, bool $agrandir = false): void
+    private function exporter(\GdImage $source, string $destination, int $largeurMaximale, string $format): void
     {
         $largeurSource = imagesx($source);
         $hauteurSource = imagesy($source);
-        $largeur = $agrandir ? $largeurMaximale : min($largeurMaximale, $largeurSource);
+        $largeur = min($largeurMaximale, $largeurSource);
         $hauteur = max(1, (int) round($hauteurSource * ($largeur / $largeurSource)));
         $image = imagecreatetruecolor($largeur, $hauteur);
         imagealphablending($image, false);

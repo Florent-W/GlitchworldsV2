@@ -379,7 +379,7 @@
                 {% for section in toutesSections %}
                     {% set apercuSection = section.contenu|bbcode_texte %}
                     <details id="section-{{ section.type }}" class="gw-game-reading-section gw-game-section--{{ section.type }} mb-4" open>
-                        <summary class="gw-game-section__summary">
+                        <summary class="gw-game-section__summary gw-game-reading-section__summary">
                             <span class="gw-game-section__icon"><i class="bi bi-{{ iconesSections[section.type]|default('layout-text-window') }}" aria-hidden="true"></i></span>
                             <span class="gw-game-section__heading">
                                 <span class="gw-game-section__title">{{ section.type == 'captures' ? 'Images' : (section.titre ?: 'Présentation') }}</span>
