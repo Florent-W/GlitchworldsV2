@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur - Glitchworlds{% endblock %}
+{% block meta_description %}Une erreur empêche temporairement l’affichage de cette page.{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+    <main class="container py-5">
+        <section class="gw-panel p-4 p-lg-5 text-center mx-auto" style="max-width: 720px" aria-labelledby="erreur-title">
+            <i class="bi bi-exclamation-triangle text-warning display-3" aria-hidden="true"></i>
+            <p class="text-uppercase fw-semibold text-secondary mt-3 mb-2">Erreur {{ status_code|default(500) }}</p>
+            <h1 id="erreur-title" class="h2">Une erreur est survenue</h1>
+            <p class="text-secondary mb-4">Réessaie dans quelques instants. Si le problème persiste, tu peux contacter l’équipe.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a class="btn btn-primary" href="{{ path('app_home') }}"><i class="bi bi-house-door-fill me-2" aria-hidden="true"></i>Retour à l’accueil</a>
+                <a class="btn btn-outline-primary" href="mailto:contact@glitchworlds.com"><i class="bi bi-envelope-fill me-2" aria-hidden="true"></i>Signaler le problème</a>
+            </div>
+        </section>
+    </main>
+{% endblock %}
