@@ -1,0 +1,28 @@
+{# Affiche l'auteur d'une fiche (jeu / actualité), style legacy : photo + « Écrit par ».
+   Variables : auteur (?Utilisateur), auteurPseudo (?string) #}
+{% set pseudo = auteur ? auteur.pseudo : auteurPseudo|default(null) %}
+{% if pseudo %}
+    <aside class="gw-author-card" aria-label="Auteur de la fiche">
+        {% if auteur %}
+            <a class="gw-author-card__media" href="{{ path('app_profil', { id: auteur.id }) }}" aria-label="Profil de {{ auteur.pseudo }}">
+                {% if auteur.avatar starts with 'avatar.' %}
+                    <img src="{{ asset('uploads/utilisateurs/' ~ auteur.id ~ '/' ~ auteur.avatar) }}" alt="" loading="lazy">
+                {% else %}
+                    <span aria-hidden="true">{{ auteur.pseudo|first|upper }}</span>
+                {% endif %}
+            </a>
+            <div class="gw-author-card__meta">
+                <span class="gw-author-card__label">Écrit par</span>
+                <a class="gw-author-card__name" href="{{ path('app_profil', { id: auteur.id }) }}">{{ auteur.pseudo }}</a>
+            </div>
+        {% else %}
+            <div class="gw-author-card__media" aria-hidden="true">
+                <span>{{ pseudo|first|upper }}</span>
+            </div>
+            <div class="gw-author-card__meta">
+                <span class="gw-author-card__label">Écrit par</span>
+                <strong class="gw-author-card__name">{{ pseudo }}</strong>
+            </div>
+        {% endif %}
+    </aside>
+{% endif %}

@@ -1,0 +1,12 @@
+{# Tuile communauté (avatar + bulle). Variables : url, titre, visuel (html), aria_label #}
+<article class="gw-similar-card gw-home-communaute-tuile h-100" data-son-survol="survol-jeu">
+    <a class="gw-similar-card__visual gw-home-communaute-tuile__visual" href="{{ url }}" aria-label="{{ aria_label|default(titre) }}">
+        {{ visuel|raw }}
+    </a>
+    <div class="p-3">
+        <h3 class="h6 mb-0">{{ titre }}</h3>
+        {% if sous_titre is defined and sous_titre %}
+            <p class="small text-secondary mb-0 mt-1 gw-home-communaute-tuile__meta">{{ sous_titre }}</p>
+        {% endif %}
+    </div>
+</article>

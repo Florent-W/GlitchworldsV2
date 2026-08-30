@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ modification ? 'Modifier la fiche' : 'Proposer un jeu' }} - Glitchworlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+{% block body_attributes %} data-turbo="false"{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <i class="bi bi-file-earmark-plus-fill text-primary fs-1" aria-hidden="true"></i>
+        <div><h1 class="h2 mb-1">{{ modification ? 'Modifier la fiche' : 'Proposer un jeu' }}</h1><p class="text-secondary mb-0">{{ modification ? 'Mets à jour les informations affichées sur la fiche.' : 'Partage ton fangame avec la communauté Glitchworlds.' }}</p></div>
+    </div>
+
+    {{ form_start(formulaire) }}
+        <div class="row g-4">
+            <div class="col-xl-7">
+                {{ form_row(formulaire.nom) }}
+        {{ form_row(formulaire.developpeur) }}
+        {{ form_row(formulaire.description) }}
+        {% include '_editeur_bbcode.html.twig' with { champ: formulaire.contenu, templates: 'jeu', afficher_modeles_complets: not modification } only %}
+                {{ form_row(formulaire.dateSortie) }}
+                {{ form_row(formulaire.categorie) }}
+                {{ form_row(formulaire.jeuxAssocies) }}
+                {{ form_row(formulaire.videoBackground) }}
+                {{ form_row(formulaire.banniereFichier) }}
+                {% if modification and formulaire.vars.data.banniere starts with 'banniere.' %}
+                    <img class="img-fluid rounded-3 border mb-3" src="{{ asset('uploads/jeux/' ~ formulaire.vars.data.id ~ '/' ~ formulaire.vars.data.banniere) }}" alt="Bannière actuelle" loading="lazy">
+                {% endif %}
+                {{ form_row(formulaire.miniatureFichier) }}
+                {% if modification and formulaire.vars.data.miniature starts with 'miniature.' %}
+                    <img class="img-fluid rounded-3 border mb-3" src="{{ asset('uploads/jeux/' ~ formulaire.vars.data.id ~ '/' ~ formulaire.vars.data.miniature) }}" alt="Miniature actuelle" loading="lazy">
+                {% endif %}
+            </div>
+            <div class="col-xl-5">
+                <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.genres) }}</div>
+                <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.plateformes) }}</div>
+                <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.langues) }}</div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a class="btn btn-outline-secondary btn-lg" href="{{ path('app_jeux') }}">Annuler</a>
+            {{ form_widget(formulaire.envoyer) }}
+        </div>
+    {{ form_end(formulaire) }}
+</section>
+<script>
+(function (form) {
+    if (!form) return;
+    const avertir = () => { window.onbeforeunload = (e) => { e.preventDefault(); e.returnValue = ''; }; };
+    form.addEventListener('input', avertir);
+    form.addEventListener('change', avertir);
+    form.addEventListener('submit', () => { window.onbeforeunload = null; });
+})(document.querySelector('form[name="jeu_proposition"]'));
+</script>
+{% endblock %}

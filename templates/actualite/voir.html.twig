@@ -1,0 +1,137 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ actualite.titre }} - Glitchworlds{% endblock %}
+{% block meta_description %}{{ actualite.description }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block canonical %}{{ url('app_actualite_voir', { slug: actualite.slug, id: actualite.id }) }}{% endblock %}
+{% block og_image %}
+    {%- set imagePartage = actualite.banniere and not (actualite.banniere starts with 'legacy:')
+        ? actualite.banniere
+        : (actualite.miniature and not (actualite.miniature starts with 'legacy:') ? actualite.miniature : null) -%}
+    {{- imagePartage ? absolute_url(asset('uploads/actualites/' ~ actualite.id ~ '/' ~ imagePartage)) : parent() -}}
+{% endblock %}
+{% block og_image_alt %}Illustration de {{ actualite.titre }}{% endblock %}
+{% block structured_data %}<script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Article', headline: actualite.titre, description: actualite.description, image: block('og_image')|trim, url: url('app_actualite_voir', {slug: actualite.slug, id: actualite.id}), mainEntityOfPage: url('app_actualite_voir', {slug: actualite.slug, id: actualite.id}), datePublished: actualite.publieeLe|date('c'), author: { '@type': 'Person', name: actualite.auteur ? actualite.auteur.pseudo : 'Glitchworlds' } }|json_encode|raw }}</script>{% endblock %}
+
+{% block body %}
+<article class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 980px">
+    <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_actualites') }}">Actualités</a></li><li class="breadcrumb-item active" aria-current="page">{{ actualite.categorie.label }}</li></ol></nav>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+        <span class="badge text-bg-primary">{{ actualite.categorie.label }}</span>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a class="btn btn-warning" href="{{ path('app_administration_actualites_modifier', { id: actualite.id }) }}"><i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Modifier l’actualité</a>
+        {% endif %}
+    </div>
+    <h1 class="display-6">{{ actualite.titre }}</h1>
+    <p class="lead text-secondary">{{ actualite.description }}</p>
+    <p class="small text-secondary">Publié le {{ actualite.publieeLe|format_datetime('long', 'none', locale='fr') }}{% if actualite.auteur %} par {{ actualite.auteur.pseudo }}{% endif %}</p>
+    {% set imageArticle = actualite.banniere and not (actualite.banniere starts with 'legacy:') ? actualite.banniere : (actualite.miniature and not (actualite.miniature starts with 'legacy:') ? actualite.miniature : null) %}
+    {% if imageArticle %}
+        {% include '_image_responsive.html.twig' with {
+            fichier: imageArticle,
+            dossier: 'uploads/actualites/' ~ actualite.id,
+            classes: 'img-fluid rounded-4 w-100 mb-4',
+            alt: 'Illustration de ' ~ actualite.titre,
+            style: 'max-height: 520px; object-fit: cover',
+            loading: 'eager',
+            fetchpriority: true,
+            sizes: '(max-width: 980px) 100vw, 980px'
+        } only %}
+    {% endif %}
+    <hr>
+    <div class="gw-article-content">{{ actualite.contenu|bbcode }}</div>
+    {% include '_auteur_fiche.html.twig' with { auteur: actualite.auteur } only %}
+    {% if actualite.jeux is not empty %}
+        <hr>
+        <h2 class="h5">Jeux concernés</h2>
+        <div class="d-flex flex-wrap gap-2">{% for jeu in actualite.jeux %}<a class="gw-tag" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}"><i class="bi bi-controller me-1" aria-hidden="true"></i>{{ jeu.nom }}</a>{% endfor %}</div>
+    {% endif %}
+
+    {% include '_navigation_sequentielle.html.twig' with {
+        label: 'Naviguer entre les actualités',
+        precedent: actualitePrecedente,
+        suivant: actualiteSuivante,
+        route: 'app_actualite_voir',
+        type: 'actualite',
+        sens_precedent: 'Actualité précédente',
+        sens_suivant: 'Actualité suivante',
+        son_survol: 'survol-article'
+    } only %}
+</article>
+
+<section id="commentaires" class="gw-panel p-4 mt-4 mx-auto" style="max-width: 980px">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h4 mb-0"><i class="bi bi-chat-dots-fill text-primary me-2" aria-hidden="true"></i>Commentaires</h2>
+        <span class="gw-result-count">{{ totalCommentaires }}</span>
+    </div>
+    <div class="vstack gap-3 mb-4">
+        {% for commentaire in commentaires %}
+            <article id="commentaire-{{ commentaire.id }}" class="gw-comment">
+                <div class="gw-comment__avatar">{% if commentaire.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: commentaire.auteur.id}) }}" aria-label="Voir le profil de {{ commentaire.auteur.pseudo }}">{% if commentaire.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ commentaire.auteur.id ~ '/' ~ commentaire.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ commentaire.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}</div>
+                <div class="flex-grow-1">
+                    <header class="d-flex flex-wrap align-items-center gap-2">
+                        <strong>{% if commentaire.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: commentaire.auteur.id}) }}">{{ commentaire.auteur.pseudo }}</a>{% else %}Membre supprimé{% endif %}</strong>
+                        <time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">{{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time>
+                        {% if app.user %}<form class="ms-auto" method="post" action="{{ path('app_actualite_commentaire_aimer', { id: commentaire.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('aimer-commentaire-actualite-' ~ commentaire.id) }}"><button class="btn btn-sm {{ commentaire.aimePar.contains(app.user) ? 'btn-primary' : 'btn-outline-primary' }}" type="submit" aria-label="Aimer"><i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i> {{ commentaire.aimePar|length }}</button></form>{% else %}<span class="ms-auto small text-secondary"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> {{ commentaire.aimePar|length }}</span>{% endif %}
+                        {% if is_granted('COMMENTAIRE_ACTUALITE_MODIFIER', commentaire) %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_commentaire_modifier', { id: commentaire.id }) }}" aria-label="Modifier"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>{% endif %}
+                        {% if is_granted('COMMENTAIRE_ACTUALITE_SUPPRIMER', commentaire) %}<form method="post" action="{{ path('app_actualite_commentaire_supprimer', { id: commentaire.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-actualite-' ~ commentaire.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer"><i class="bi bi-trash-fill" aria-hidden="true"></i></button></form>{% endif %}{% if app.user and app.user != commentaire.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'commentaire-actualite', id: commentaire.id}) }}" aria-label="Signaler"><i class="bi bi-flag"></i></a>{% endif %}
+                    </header>
+                    <div class="gw-comment__content">{{ commentaire.contenu|bbcode_commentaire }}</div>
+
+                    {% if commentaire.reponses is not empty %}
+                        <div class="gw-comment-replies vstack gap-2">
+                            {% for reponse in commentaire.reponses %}
+                                <article class="gw-comment gw-comment--reply">
+                                    <div class="gw-comment__avatar">{% if reponse.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}" aria-label="Voir le profil de {{ reponse.auteur.pseudo }}">{% if reponse.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ reponse.auteur.id ~ '/' ~ reponse.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ reponse.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}</div>
+                                    <div class="flex-grow-1">
+                                        <header class="d-flex flex-wrap align-items-center gap-2"><strong>{% if reponse.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}">{{ reponse.auteur.pseudo }}</a>{% else %}Membre supprimé{% endif %}</strong><span class="badge rounded-pill text-bg-light">Réponse</span><time class="small text-secondary" datetime="{{ reponse.dateCommentaire|date('c') }}">{{ reponse.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time>{% if app.user %}<form class="ms-auto" method="post" action="{{ path('app_actualite_commentaire_aimer', { id: reponse.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('aimer-commentaire-actualite-' ~ reponse.id) }}"><button class="btn btn-sm {{ reponse.aimePar.contains(app.user) ? 'btn-primary' : 'btn-outline-primary' }}" type="submit" aria-label="Aimer la réponse"><i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i> {{ reponse.aimePar|length }}</button></form>{% else %}<span class="ms-auto small text-secondary"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> {{ reponse.aimePar|length }}</span>{% endif %}{% if is_granted('COMMENTAIRE_ACTUALITE_MODIFIER', reponse) %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_actualite_commentaire_modifier', { id: reponse.id }) }}" aria-label="Modifier la réponse"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>{% endif %}{% if is_granted('COMMENTAIRE_ACTUALITE_SUPPRIMER', reponse) %}<form method="post" action="{{ path('app_actualite_commentaire_supprimer', { id: reponse.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-actualite-' ~ reponse.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer la réponse"><i class="bi bi-trash-fill" aria-hidden="true"></i></button></form>{% endif %}{% if app.user and app.user != reponse.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'commentaire-actualite', id: reponse.id}) }}" aria-label="Signaler la réponse"><i class="bi bi-flag"></i></a>{% endif %}</header>
+                                        <div class="gw-comment__content">{{ reponse.contenu|bbcode_commentaire }}</div>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% if app.user %}
+                        <details class="gw-reply-form mt-2">
+                            <summary class="btn btn-sm btn-link px-0"><i class="bi bi-reply-fill me-1" aria-hidden="true"></i>Répondre</summary>
+                            <form class="mt-2" method="post" action="{{ path('app_actualite_commentaire_repondre', { id: commentaire.id }) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('repondre-commentaire-actualite-' ~ commentaire.id) }}">
+                                <label class="visually-hidden" for="reponse-actualite-{{ commentaire.id }}">Ta réponse</label>
+                                {% include '_editeur_commentaire.html.twig' with { id: 'reponse-actualite-' ~ commentaire.id } only %}
+                                <div class="d-flex justify-content-end mt-2"><button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-send-fill me-1" aria-hidden="true"></i>Publier la réponse</button></div>
+                            </form>
+                        </details>
+                    {% else %}
+                        <a class="btn btn-sm btn-link px-0 mt-1" href="{{ path('app_connexion') }}"><i class="bi bi-reply-fill me-1" aria-hidden="true"></i>Se connecter pour répondre</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <p class="text-secondary">Aucun commentaire pour le moment.</p>
+        {% endfor %}
+    </div>
+    {% if pagesCommentaires > 1 %}
+        <nav class="mb-4" aria-label="Pagination des commentaires">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item{{ pageCommentaires == 1 ? ' disabled' : '' }}">
+                    <a class="page-link" href="{{ path('app_actualite_voir', {slug: actualite.slug, id: actualite.id, commentaires_page: pageCommentaires - 1}) }}#commentaires">Précédents</a>
+                </li>
+                <li class="page-item disabled"><span class="page-link">{{ pageCommentaires }} / {{ pagesCommentaires }}</span></li>
+                <li class="page-item{{ pageCommentaires == pagesCommentaires ? ' disabled' : '' }}">
+                    <a class="page-link" href="{{ path('app_actualite_voir', {slug: actualite.slug, id: actualite.id, commentaires_page: pageCommentaires + 1}) }}#commentaires">Suivants</a>
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
+    <div class="border-top pt-4">
+        {{ form_start(formulaireCommentaire) }}
+            {% include '_editeur_commentaire.html.twig' with { champ: formulaireCommentaire.contenu } only %}
+            <div class="d-flex justify-content-between align-items-center gap-2">
+                <small class="{{ app.user ? 'gw-text-violet' : 'text-secondary' }}">{% if app.user %}Entre 3 et 1 000 caractères.{% else %}<a href="{{ path('app_connexion') }}">Connecte-toi</a> pour commenter.{% endif %}</small>
+                {{ form_widget(formulaireCommentaire.publier) }}
+            </div>
+        {{ form_end(formulaireCommentaire) }}
+    </div>
+</section>
+{% endblock %}

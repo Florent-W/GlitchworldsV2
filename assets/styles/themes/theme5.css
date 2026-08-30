@@ -1,0 +1,1268 @@
+/* Thème Nintendo 3DS : Aqua Blue, menu HOME, cadres dorés. */
+:root[data-theme="3ds"],
+:root[data-gw-theme="3ds"] {
+    --gw-primary: #00a2e8;
+    --gw-primary-rgb: 0, 162, 232;
+    --gw-primary-dark: #0088c4;
+    --gw-secondary: #e84c4c;
+    --gw-secondary-rgb: 232, 76, 76;
+    --gw-background: #e6f4fc;
+    --gw-background-accent: #d0ebfa;
+    --gw-surface: rgba(255, 255, 255, 0.97);
+    --gw-surface-solid: #ffffff;
+    --gw-text: #142838;
+    --gw-muted: #4f718a;
+    --gw-border: #b3d9ef;
+    --gw-radius-sm: 0.55rem;
+    --gw-radius-md: 0.9rem;
+    --gw-radius-lg: 1.15rem;
+    --gw-shadow: 0 6px 22px rgba(0, 100, 150, 0.14);
+    --gw-shadow-soft: 0 3px 12px rgba(0, 100, 150, 0.1);
+    --gw-glow: 0 0 0 3px rgba(0, 162, 232, 0.22);
+    --gw-3ds-icon-frame: linear-gradient(145deg, #fff8d0 0%, #f0c840 14%, #c8960c 32%, #ffe082 50%, #b8860b 68%, #8b6914 86%, #5c3d06 100%);
+    --gw-3ds-icon-inner: linear-gradient(180deg, #faf3e6 0%, #e6d9c4 100%);
+    --gw-3ds-icon-frame-width: 4px;
+}
+
+:root[data-theme="3ds"] body,
+:root[data-gw-theme="3ds"] body {
+    background-color: var(--gw-background);
+    background-image: linear-gradient(180deg, var(--gw-background) 0%, var(--gw-background-accent) 100%);
+    background-attachment: scroll;
+}
+
+:root[data-theme="3ds"] body::before,
+:root[data-gw-theme="3ds"] body::before {
+    display: none;
+    content: none;
+}
+
+:root[data-theme="3ds"] .gw-app,
+:root[data-gw-theme="3ds"] .gw-app { position: relative; z-index: 1; }
+
+/* 3DS : écran supérieur coloré, menu HOME et relief des tuiles. */
+:root[data-theme="3ds"] .gw-topbar,
+:root[data-theme="3ds"] .gw-rail,
+:root[data-theme="3ds"] .gw-panel,
+:root[data-theme="3ds"] .gw-community,
+:root[data-theme="3ds"] .gw-search-box,
+:root[data-theme="3ds"] .gw-filter-panel,
+:root[data-theme="3ds"] .gw-clock {
+    background: var(--gw-surface);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="3ds"] .gw-topbar {
+    padding: .55rem .85rem;
+    border: 4px solid #101014;
+    border-radius: .9rem;
+    background: linear-gradient(180deg, #fafcff, #e8f4fc);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .95), 0 6px 20px rgba(0, 100, 150, .12);
+}
+
+:root[data-theme="3ds"] .gw-rail__item {
+    position: relative;
+    overflow: visible;
+    border: var(--gw-3ds-icon-frame-width) solid transparent;
+    border-radius: .3rem;
+    background:
+        var(--gw-3ds-icon-inner) padding-box,
+        var(--gw-3ds-icon-frame) border-box;
+    box-shadow:
+        0 0 0 1px rgba(60, 40, 8, .72),
+        0 3px 10px rgba(0, 0, 0, .42),
+        inset 0 1px 0 rgba(255, 255, 255, .5);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+:root[data-theme="3ds"] .gw-rail__item::after {
+    position: absolute;
+    inset: 6px;
+    z-index: 0;
+    pointer-events: none;
+    content: "";
+    border: 1px solid rgba(184, 134, 11, .24);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
+}
+
+:root[data-theme="3ds"] .gw-rail__item i {
+    position: relative;
+    z-index: 2;
+    color: #0088c4;
+}
+
+:root[data-theme="3ds"] .gw-rail__item--bleu i {
+    color: #00a2e8;
+}
+
+:root[data-theme="3ds"] .gw-rail__item--jaune i {
+    color: #dba800;
+}
+
+:root[data-theme="3ds"] .gw-rail__item--gris i {
+    color: #707d88;
+}
+
+:root[data-theme="3ds"] .gw-rail__item--orange i {
+    color: #e67300;
+}
+
+:root[data-theme="3ds"] .gw-rail__item--vert i {
+    color: #22a022;
+}
+
+:root[data-theme="3ds"] .gw-rail__item.is-active {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow:
+        0 0 0 1px rgba(60, 40, 8, .72),
+        0 0 0 3px rgba(155, 213, 0, .42),
+        0 5px 14px rgba(0, 0, 0, .45),
+        inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+
+:root[data-theme="3ds"] .gw-rail__item.is-active::before {
+    position: absolute;
+    inset: 5px;
+    z-index: 4;
+    pointer-events: none;
+    content: "";
+    background:
+        linear-gradient(#9bd500, #9bd500) 0 0 / 13px 3px no-repeat,
+        linear-gradient(#9bd500, #9bd500) 0 0 / 3px 13px no-repeat,
+        linear-gradient(#9bd500, #9bd500) 100% 0 / 13px 3px no-repeat,
+        linear-gradient(#9bd500, #9bd500) 100% 0 / 3px 13px no-repeat,
+        linear-gradient(#9bd500, #9bd500) 0 100% / 13px 3px no-repeat,
+        linear-gradient(#9bd500, #9bd500) 0 100% / 3px 13px no-repeat,
+        linear-gradient(#9bd500, #9bd500) 100% 100% / 13px 3px no-repeat,
+        linear-gradient(#9bd500, #9bd500) 100% 100% / 3px 13px no-repeat;
+}
+
+:root[data-theme="3ds"] .gw-rail__item:hover:not(.is-active) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+        0 0 0 1px rgba(60, 40, 8, .72),
+        0 4px 12px rgba(212, 175, 55, .28),
+        0 6px 16px rgba(0, 0, 0, .38),
+        inset 0 1px 0 rgba(255, 255, 255, .55);
+}
+
+/* 3DS : menu HOME en haut — grille d'icônes centrée. */
+:root[data-theme="3ds"] {
+    --gw-rail-width: 100%;
+}
+
+:root[data-theme="3ds"] .gw-layout {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+}
+
+:root[data-theme="3ds"] .gw-rail {
+    position: static;
+    z-index: auto;
+    align-self: stretch;
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+    margin-bottom: .85rem;
+    padding: .85rem .9rem;
+    border: 4px solid #101014;
+    border-radius: 0 0 .95rem .95rem;
+    background: linear-gradient(180deg, #fff 0%, #edf7fd 100%);
+    box-shadow:
+        inset 0 1px rgba(255, 255, 255, .95),
+        0 8px 22px rgba(0, 100, 150, .12);
+    backdrop-filter: none;
+    overflow: visible;
+}
+
+:root[data-theme="3ds"] .gw-rail__viewport {
+    display: block;
+    overflow: visible;
+}
+
+:root[data-theme="3ds"] .gw-rail__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(5.15rem, 5.15rem));
+    justify-content: center;
+    gap: .75rem;
+    overflow: visible;
+    padding: 0;
+}
+
+:root[data-theme="3ds"] .gw-rail__list > li {
+    min-width: 0;
+}
+
+:root[data-theme="3ds"] .gw-rail__suite {
+    display: none !important;
+}
+
+:root[data-theme="3ds"] .gw-rail__item {
+    aspect-ratio: 1;
+    min-height: 0;
+    padding: .55rem .35rem;
+    overflow: visible;
+}
+
+:root[data-theme="3ds"] .gw-rail__item i {
+    font-size: clamp(1.55rem, 3.8vw, 1.95rem);
+}
+
+:root[data-theme="3ds"] .gw-rail__label {
+    position: absolute;
+    z-index: 6;
+    bottom: calc(100% + .42rem);
+    left: 50%;
+    display: block;
+    width: max-content;
+    max-width: min(10.5rem, 72vw);
+    margin: 0;
+    padding: .38rem .72rem;
+    border: 2px solid #b8860b;
+    border-radius: 999px;
+    color: #2a1848;
+    background: linear-gradient(180deg, #faf3e6 0%, #e6d9c4 100%);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .32);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(5px);
+    transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+    font-size: .68rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: .02em;
+    text-transform: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+:root[data-theme="3ds"] .gw-rail__label::before {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-top-color: #101014;
+    content: "";
+    transform: translateX(-50%);
+}
+
+:root[data-theme="3ds"] .gw-rail__label::after {
+    position: absolute;
+    top: calc(100% - 2px);
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 4px solid transparent;
+    border-top-color: #edf7fd;
+    content: "";
+    transform: translateX(-50%);
+}
+
+:root[data-theme="3ds"] .gw-rail__item:hover .gw-rail__label,
+:root[data-theme="3ds"] .gw-rail__item:focus-visible .gw-rail__label {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+:root[data-theme="3ds"] .gw-rail__item.is-active:hover .gw-rail__label,
+:root[data-theme="3ds"] .gw-rail__item.is-active:focus-visible .gw-rail__label {
+    color: #142838;
+}
+
+:root[data-theme="3ds"] .btn-primary,
+:root[data-theme="3ds"] .btn-gw {
+    border-color: #0088c4;
+    color: #fff;
+    background-color: #00a2e8;
+    background-image: linear-gradient(180deg, #5ecbf7 0%, #00a2e8 100%);
+    border-radius: .9rem;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .35), 0 3px 0 #007ab0;
+}
+
+:root[data-theme="3ds"] .btn-primary:hover,
+:root[data-theme="3ds"] .btn-gw:hover {
+    border-color: #007ab0;
+    color: #fff;
+    background-color: #12b0f2;
+    background-image: linear-gradient(180deg, #78d5fb 0%, #12b0f2 100%);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .4), 0 4px 0 #007ab0;
+}
+
+:root[data-theme="3ds"] .btn-primary:active,
+:root[data-theme="3ds"] .btn-primary.active,
+:root[data-theme="3ds"] .btn-gw:active,
+:root[data-theme="3ds"] .btn-gw.active {
+    border-color: #006a9a;
+    transform: translateY(2px);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .25), 0 1px 0 #007ab0;
+}
+
+:root[data-theme="3ds"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .table, .accordion-item),
+:root[data-theme="3ds"] :is(.gw-community__composer, .gw-community__post, .gw-community__side, .gw-similar-card, .gw-comment) {
+    color: var(--gw-text);
+    background-color: var(--gw-surface-solid);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="3ds"] :is(.card, .modal-content, .dropdown-menu, .gw-community__post, .gw-comment) {
+    border-radius: .9rem;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .8), 0 4px 16px rgba(0, 100, 150, .08);
+}
+
+:root[data-theme="3ds"] :is(.form-control, .form-select, .input-group-text) {
+    color: var(--gw-text);
+    background-color: #fff;
+    border-color: #b3d9ef;
+    border-radius: .75rem;
+}
+
+:root[data-theme="3ds"] :is(.form-control, .form-select):focus {
+    border-color: #00a2e8;
+    box-shadow: 0 0 0 .25rem rgba(0, 162, 232, .22);
+}
+
+:root[data-theme="3ds"] :is(.nav-pills .nav-link.active, .page-item.active .page-link) {
+    color: #fff;
+    background: linear-gradient(180deg, #5ecbf7, #00a2e8);
+    border-color: #0088c4;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .3), 0 3px 0 #007ab0;
+}
+
+:root[data-theme="3ds"] .gw-rail__badge {
+    background: #e84c4c;
+}
+
+/* --- 3DS en sombre : Cosmo Black, écrans rétroéclairés aqua --- */
+:root[data-theme="3ds"][data-bs-theme="dark"] {
+    --gw-primary: #33c4ff;
+    --gw-primary-rgb: 51, 196, 255;
+    --gw-primary-dark: #7adaff;
+    --gw-secondary: #ff6b6b;
+    --gw-secondary-rgb: 255, 107, 107;
+    --gw-background: #0c0e12;
+    --gw-background-accent: #141820;
+    --gw-surface: rgba(22, 26, 34, 0.96);
+    --gw-surface-solid: #1a1f28;
+    --gw-text: #e8f6ff;
+    --gw-muted: #8aa8bc;
+    --gw-border: rgba(51, 196, 255, 0.22);
+    --gw-shadow: 0 6px 24px rgba(0, 0, 0, 0.48);
+    --gw-shadow-soft: 0 3px 14px rgba(0, 0, 0, 0.35);
+    --gw-glow: 0 0 0 3px rgba(51, 196, 255, 0.26);
+    --gw-3ds-icon-inner: linear-gradient(180deg, #ebe0cc 0%, #d4c4a8 100%);
+    --bs-body-color: var(--gw-text);
+    --bs-body-bg: var(--gw-background);
+    --bs-secondary-color: var(--gw-muted);
+    --bs-tertiary-bg: #222832;
+    --bs-border-color: var(--gw-border);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] body {
+    background-color: var(--gw-background);
+    background-image: linear-gradient(180deg, var(--gw-background) 0%, var(--gw-background-accent) 100%);
+    background-attachment: scroll;
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] body::before {
+    display: none;
+    content: none;
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-topbar {
+    border-color: #040406;
+    background: linear-gradient(180deg, #222832, #161b24);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .06), 0 6px 22px rgba(0, 0, 0, .45);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .table, .accordion-item),
+:root[data-theme="3ds"][data-bs-theme="dark"] :is(.gw-community__composer, .gw-community__post, .gw-community__side, .gw-similar-card, .gw-comment) {
+    background-color: var(--gw-surface-solid);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] :is(.card, .modal-content, .dropdown-menu, .gw-community__post, .gw-comment) {
+    box-shadow: inset 0 1px rgba(255, 255, 255, .04), 0 4px 18px rgba(0, 0, 0, .38);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] :is(.form-control, .form-select, .input-group-text) {
+    background-color: rgba(10, 14, 20, .9);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__item--bleu i {
+    color: #5ecbf7;
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__item--jaune i {
+    color: #ffd54a;
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__item--gris i {
+    color: #b8c4ce;
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__item--orange i {
+    color: #ffb04d;
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__item--vert i {
+    color: #6ee77a;
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__item.is-active {
+    box-shadow:
+        0 0 0 1px rgba(60, 40, 8, .72),
+        0 0 0 3px rgba(155, 213, 0, .48),
+        0 5px 14px rgba(0, 0, 0, .5),
+        inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__item:hover:not(.is-active) {
+    box-shadow:
+        0 0 0 1px rgba(60, 40, 8, .72),
+        0 4px 12px rgba(212, 175, 55, .22),
+        0 6px 16px rgba(0, 0, 0, .42),
+        inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail {
+    border-color: #040406;
+    background: linear-gradient(180deg, #1a222c 0%, #121820 100%);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .05), 0 8px 22px rgba(0, 0, 0, .45);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__label {
+    color: #e8f6ff;
+    background: linear-gradient(180deg, #243040 0%, #1a222c 100%);
+    border-color: #080a0c;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .34);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-rail__label::after {
+    border-top-color: #1a222c;
+}
+
+/* Accueil thème 3DS : double écran + menu HOME en icônes. */
+:root[data-theme="3ds"] .gw-home-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+:root[data-theme="3ds"] .gw-3ds-screen { display: block; }
+
+:root[data-theme="3ds"] .gw-3ds-screen--top {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow: hidden;
+    border: 4px solid #101014;
+    border-bottom: 0;
+    border-radius: .95rem .95rem 0 0;
+    background: transparent;
+}
+
+:root[data-theme="3ds"] .gw-3ds-screen--top > .gw-game-hero--home,
+:root[data-theme="3ds"] .gw-3ds-screen--top > #actualites-en-avant {
+    margin-bottom: 0 !important;
+}
+
+:root[data-theme="3ds"] .gw-3ds-screen--top #actualites-en-avant {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+:root[data-theme="3ds"] .gw-3ds-screen--top:not(:has(#actualites-en-avant)) .gw-game-hero--home {
+    margin-bottom: 0 !important;
+    border-radius: 0;
+    min-height: clamp(220px, 36vw, 360px);
+}
+
+:root[data-theme="3ds"] .gw-3ds-charniere {
+    display: block;
+    flex: none;
+    height: 4px;
+    margin: 0;
+    border-inline: 4px solid #101014;
+    background: linear-gradient(180deg, #08080a 0%, #2a2a32 50%, #08080a 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+:root[data-theme="3ds"] .gw-3ds-screen--bottom {
+    padding: clamp(.85rem, 2vw, 1.15rem);
+    border: 4px solid #101014;
+    border-top: 0;
+    border-radius: 0 0 .95rem .95rem;
+    background: linear-gradient(180deg, #fff 0%, #edf7fd 100%);
+    box-shadow: 0 10px 28px rgba(0, 100, 150, .14);
+}
+
+:root[data-theme="3ds"] .gw-home-disposition .btn-group .btn {
+    border-color: #c5e2f4;
+    color: #1a5270;
+    background: rgba(255, 255, 255, .88);
+}
+
+:root[data-theme="3ds"] .gw-home-disposition .btn-group .btn.active {
+    border-color: #00A2E8;
+    color: #fff;
+    background: #00A2E8;
+}
+
+:root[data-theme="3ds"] .gw-home-disposition {
+    margin-bottom: .75rem !important;
+}
+
+:root[data-theme="3ds"] .gw-3ds-screen--bottom > .gw-home-menu,
+:root[data-theme="3ds"] .gw-3ds-screen--bottom > .gw-home-menu--communaute {
+    margin-bottom: 1rem !important;
+    padding: 0 !important;
+    padding-top: 0 !important;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+}
+
+:root[data-theme="3ds"] .gw-home-menu__entete h2 {
+    font-size: clamp(.95rem, 2.2vw, 1.1rem);
+}
+
+:root[data-theme="3ds"] .gw-home-menu__entete h2 .bi {
+    display: none;
+}
+
+:root[data-theme="3ds"] .gw-home-menu__lien {
+    flex: 0 0 auto;
+    font-size: .78rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-collection.row {
+    --bs-gutter-x: 0;
+    --bs-gutter-y: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+    gap: .85rem;
+    margin: 0;
+    overflow: visible;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-collection.row > .col {
+    flex: none;
+    width: auto;
+    max-width: none;
+    padding: 0;
+    overflow: visible;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    aspect-ratio: 1;
+    height: auto;
+    padding: .45rem;
+    border: var(--gw-3ds-icon-frame-width) solid transparent;
+    border-radius: .3rem;
+    text-align: center;
+    background:
+        var(--gw-3ds-icon-inner) padding-box,
+        var(--gw-3ds-icon-frame) border-box;
+    box-shadow:
+        0 0 0 1px rgba(60, 40, 8, .72),
+        0 3px 10px rgba(0, 0, 0, .42),
+        inset 0 1px 0 rgba(255, 255, 255, .5);
+    overflow: visible;
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card:hover,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card:focus-within,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:hover,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:focus-within {
+    z-index: 1065;
+    transform: translateY(-4px) scale(1.03);
+    box-shadow:
+        0 0 0 1px rgba(60, 40, 8, .72),
+        0 0 0 3px rgba(155, 213, 0, .35),
+        0 8px 20px rgba(0, 0, 0, .45),
+        inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card:focus-within,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:focus-within {
+    outline: 2px solid #9bd500;
+    outline-offset: 2px;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card__visual {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: auto;
+    margin-inline: 0;
+    border-radius: .65rem;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35);
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card__visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card__visual .bi {
+    font-size: clamp(2rem, 42%, 3rem);
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card > .p-3,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-body {
+    position: static;
+    height: 0;
+    overflow: visible;
+    padding: 0 !important;
+    pointer-events: none;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title {
+    position: absolute;
+    z-index: 4;
+    bottom: calc(100% + .45rem);
+    left: 50%;
+    display: block;
+    width: max-content;
+    max-width: min(220px, 90vw);
+    margin: 0;
+    padding: .42rem .78rem;
+    border: 2px solid #b8860b;
+    border-radius: 999px;
+    color: #2a1848;
+    background: linear-gradient(180deg, #faf3e6 0%, #e6d9c4 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .32);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(6px) scale(.94);
+    transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+    font-size: .78rem;
+    font-weight: 700;
+    line-height: 1.25;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: ellipsis;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3 a,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title a {
+    display: -webkit-box;
+    overflow: hidden;
+    color: inherit;
+    pointer-events: none;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3::before,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title::before {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 7px solid transparent;
+    border-top-color: #b8860b;
+    content: "";
+    transform: translateX(-50%);
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3::after,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title::after {
+    position: absolute;
+    top: calc(100% - 2px);
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 5px solid transparent;
+    border-top-color: #e6d9c4;
+    content: "";
+    transform: translateX(-50%);
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card:hover h3,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card:focus-within h3,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:hover .card-title,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:focus-within .card-title {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-note-badge,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-categorie-badge {
+    top: .35rem;
+    right: .35rem;
+    transform: scale(.88);
+    transform-origin: top right;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-categorie-badge__label {
+    max-width: 4.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card .d-flex.flex-wrap,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card .gw-tag,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card .small.text-secondary {
+    display: none !important;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card {
+    overflow: visible !important;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-body {
+    flex: 0 0 0 !important;
+    min-height: 0 !important;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .stretched-link::after {
+    display: none !important;
+    content: none !important;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-img-top,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .gw-article-card__img {
+    flex: 1;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0;
+    max-width: none !important;
+    max-height: none !important;
+    margin-inline: 0;
+    border-radius: .65rem;
+    object-fit: cover;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:not(:has(.card-img-top)) .card-body {
+    position: static;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:not(:has(.card-img-top)) .card-title {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    max-width: 100%;
+    white-space: normal;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    font-size: .72rem;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:not(:has(.card-img-top)) .card-title::before,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:not(:has(.card-img-top)) .card-title::after {
+    content: none;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .badge,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-text,
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .small.text-secondary {
+    display: none !important;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title a {
+    position: static;
+}
+
+:root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title a::after {
+    content: none;
+}
+
+:root[data-theme="3ds"] .gw-home-menu--communaute .row {
+    --bs-gutter-x: .75rem;
+    --bs-gutter-y: .75rem;
+}
+
+:root[data-theme="3ds"] .gw-home-menu--communaute .gw-activity__item,
+:root[data-theme="3ds"] .gw-home-menu--communaute .gw-members__item {
+    padding: .65rem .75rem;
+    border: 1px solid #c5e2f4;
+    border-radius: .75rem;
+    background: rgba(255, 255, 255, .82);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-3ds-screen--bottom {
+    background: linear-gradient(180deg, #1a222c 0%, #121820 100%);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-home-shell.gw-disposition--grille .gw-similar-card,
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-home-shell.gw-disposition--grille .gw-article-card {
+    box-shadow:
+        0 0 0 1px rgba(60, 40, 8, .72),
+        0 3px 10px rgba(0, 0, 0, .5),
+        inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3,
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title {
+    color: #e8f6ff;
+    background: linear-gradient(180deg, #243040 0%, #1a222c 100%);
+    border-color: #080a0c;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .38);
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3::after,
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title::after {
+    border-top-color: #1a222c;
+}
+
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-home-menu--communaute .gw-activity__item,
+:root[data-theme="3ds"][data-bs-theme="dark"] .gw-home-menu--communaute .gw-members__item {
+    border-color: rgba(51, 196, 255, .16);
+    background: rgba(22, 28, 38, .88);
+}
+
+@media (min-width: 768px) {
+    :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-collection.row {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 575.98px) {
+    :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-collection.row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .65rem;
+    }
+
+    :root[data-theme="3ds"] .gw-home-menu__lien {
+        display: none;
+    }
+}
+
+:root[data-reduced-motion="true"] :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3,
+:root[data-reduced-motion="true"] :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title {
+    transition: none;
+    animation: none !important;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card h3,
+    :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card .card-title {
+        transition: none;
+        animation: none !important;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card:hover h3,
+    :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-similar-card:focus-within h3,
+    :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:hover .card-title,
+    :root[data-theme="3ds"] .gw-home-shell.gw-disposition--grille .gw-article-card:focus-within .card-title {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.gw-quick-info {
+    padding: 1.25rem;
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-lg);
+    background: var(--gw-surface);
+    box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(18px);
+}
+
+.gw-quick-info__item {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    padding: 1rem 0;
+    border-top: 1px solid var(--gw-border);
+}
+
+.gw-quick-info__item > .bi {
+    color: var(--gw-primary);
+    font-size: 1.35rem;
+}
+
+.gw-quick-info__item span,
+.gw-quick-info__item strong {
+    display: block;
+}
+
+.gw-rating {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: baseline;
+    gap: 0.3rem;
+    padding: 1rem;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--gw-radius-md);
+    color: #b45309;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.gw-rating > .bi {
+    font-size: 1.35rem;
+}
+
+.gw-rating strong {
+    font-size: 1.75rem;
+}
+
+.gw-rating small {
+    grid-column: 2 / -1;
+    color: var(--gw-muted);
+}
+
+.gw-quick-info__item span {
+    color: var(--gw-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.gw-quick-info__item strong {
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+}
+
+.jeu-contenu {
+    overflow-wrap: anywhere;
+}
+
+.jeu-contenu img,
+.jeu-contenu video,
+.gw-article-content img,
+.gw-article-content video {
+    max-width: 100%;
+    height: auto;
+}
+
+.gw-bbcode-video {
+    width: min(960px, 100%);
+    max-width: 100%;
+    margin-block: 1rem;
+    border-radius: var(--gw-radius-md);
+    overflow: hidden;
+    background: #000;
+    box-shadow: var(--gw-shadow-soft);
+}
+
+.jeu-contenu .text-center .gw-bbcode-video,
+.gw-article-content .text-center .gw-bbcode-video,
+.gw-bbcode-preview .text-center .gw-bbcode-video {
+    margin-inline: auto;
+}
+
+.jeu-contenu .text-end .gw-bbcode-video,
+.gw-article-content .text-end .gw-bbcode-video,
+.gw-bbcode-preview .text-end .gw-bbcode-video {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.jeu-contenu .text-start .gw-bbcode-video,
+.gw-article-content .text-start .gw-bbcode-video,
+.gw-bbcode-preview .text-start .gw-bbcode-video {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.gw-bbcode-video iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.jeu-contenu > iframe,
+.gw-article-content > iframe {
+    display: block;
+    width: min(960px, 100%);
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    margin-block: 1rem;
+    border: 0;
+    border-radius: var(--gw-radius-md);
+    box-shadow: var(--gw-shadow-soft);
+}
+
+.jeu-contenu .text-center > iframe,
+.gw-article-content .text-center > iframe {
+    margin-inline: auto;
+}
+
+.jeu-contenu .text-end > iframe,
+.gw-article-content .text-end > iframe {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.gw-similar-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-md);
+    background: var(--gw-surface-solid);
+    box-shadow: var(--gw-shadow-soft);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.gw-similar-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--gw-shadow);
+}
+
+.gw-similar-card__visual {
+    display: grid;
+    min-height: 115px;
+    place-items: center;
+    overflow: hidden;
+    color: #fff;
+    font-size: 2rem;
+    text-decoration: none;
+    background:
+        radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.28), transparent 30%),
+        linear-gradient(135deg, var(--gw-primary-dark), var(--gw-secondary));
+}
+.gw-similar-card__visual img {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.gw-similar-card__visual { position: relative; }
+.gw-game-card__visual { position: relative; overflow: hidden; }
+
+@media (min-width: 768px) {
+    .gw-disposition--double .gw-collection.row > .col {
+        flex: 0 0 50%;
+        max-width: 50%;
+        width: 50%;
+    }
+}
+
+.gw-disposition--double {
+    --gw-double-thumb-w: clamp(104px, 15vw, 136px);
+    --gw-double-thumb-h: clamp(136px, 22vw, 172px);
+}
+
+.gw-disposition--double .gw-similar-card,
+.gw-disposition--double .gw-game-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gw-disposition--double .gw-similar-card:hover,
+.gw-disposition--double .gw-game-card:hover {
+    transform: none;
+}
+
+.gw-disposition--double .gw-similar-card__visual,
+.gw-disposition--double .gw-game-card__visual {
+    flex: 0 0 var(--gw-double-thumb-w);
+    width: var(--gw-double-thumb-w);
+    min-height: 0;
+    height: auto;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0;
+    border-radius: var(--gw-radius-md) 0 0 var(--gw-radius-md);
+}
+
+.gw-disposition--double .gw-similar-card__visual:has(img),
+.gw-disposition--double .gw-game-card__visual:has(img) {
+    background: transparent;
+}
+
+.gw-disposition--double .gw-similar-card__visual:not(:has(img)),
+.gw-disposition--double .gw-game-card__visual:not(:has(img)) {
+    min-height: var(--gw-double-thumb-h);
+}
+
+.gw-disposition--double .gw-similar-card__visual img,
+.gw-disposition--double .gw-game-card__visual img {
+    display: block;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100%;
+    max-height: var(--gw-double-thumb-h);
+    object-fit: contain !important;
+    object-position: center;
+}
+
+.gw-disposition--double .gw-similar-card > .p-3,
+.gw-disposition--double .gw-game-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.75rem 0.75rem 0.75rem 0;
+}
+
+.gw-disposition--double .gw-game-card__title {
+    font-size: 0.925rem;
+}
+
+.gw-disposition--double .gw-game-card__developer,
+.gw-disposition--double .gw-game-card__author,
+.gw-disposition--double .gw-game-card__description {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.gw-disposition--double .gw-article-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gw-disposition--double .gw-article-card .card-img-top {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: var(--gw-double-thumb-w);
+    height: auto !important;
+    max-height: var(--gw-double-thumb-h);
+    min-height: 0;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 0;
+    align-self: center;
+}
+
+.gw-disposition--double .gw-article-card .card-body {
+    flex: 1;
+    min-width: 0;
+    padding: 0.75rem 0.75rem 0.75rem 0;
+}
+
+.gw-disposition--liste .gw-collection--jeux .col,
+.gw-disposition--liste .gw-collection--actualites .col {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+.gw-disposition--liste .gw-similar-card,
+.gw-disposition--liste .gw-game-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.gw-disposition--liste .gw-similar-card:hover,
+.gw-disposition--liste .gw-game-card:hover {
+    transform: none;
+}
+
+.gw-disposition--liste .gw-similar-card__visual {
+    flex: 0 0 clamp(112px, 22vw, 168px);
+    width: clamp(112px, 22vw, 168px);
+    min-height: 112px;
+}
+
+.gw-disposition--liste .gw-game-card__visual {
+    flex: 0 0 clamp(120px, 22vw, 200px);
+    width: clamp(120px, 22vw, 200px);
+    min-height: 120px;
+}
+
+.gw-disposition--liste .gw-similar-card > .p-3,
+.gw-disposition--liste .gw-game-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.gw-disposition--liste .gw-article-card {
+    flex-direction: row;
+}
+
+.gw-disposition--liste .gw-article-card .card-img-top {
+    flex: 0 0 clamp(120px, 24vw, 220px);
+    width: clamp(120px, 24vw, 220px);
+    height: auto;
+    min-height: 120px;
+    max-height: none;
+    border-radius: 0;
+}
+
+.gw-disposition--liste .gw-article-card .card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.gw-note-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--gw-radius-pill);
+    background: rgba(7, 16, 31, 0.72);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    backdrop-filter: blur(4px);
+}
+.gw-note-badge i { color: #f5b91f; }
+
+/* Personnalisation du thème 5. */
+:root[data-theme-style="theme5"] {
+    --gw-primary: #00a2e8;
+    --gw-primary-rgb: 0, 162, 232;
+    --gw-primary-dark: #0079ad;
+    --gw-secondary: #f5c400;
+    --gw-secondary-rgb: 245, 196, 0;
+    --gw-background: #e6f4fc;
+    --gw-background-accent: #d0ebfa;
+    --gw-surface: rgba(255, 255, 255, .97);
+    --gw-surface-solid: #fff;
+    --gw-text: #142838;
+    --gw-muted: #5d7280;
+    --gw-border: #9fc8dc;
+    --gw-radius-md: .9rem;
+    --gw-radius-lg: 1rem;
+}

@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier un commentaire - {{ formulaire.vars.data.actualite.titre }} - Glitchworlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 mx-auto" style="max-width: 760px">
+    <h1 class="h2">Modifier un commentaire</h1>
+    {{ form_start(formulaire) }}
+        {% include '_editeur_commentaire.html.twig' with { champ: formulaire.contenu } only %}
+        <div class="d-flex flex-wrap gap-2">
+            {{ form_widget(formulaire.publier) }}
+            <a class="btn btn-outline-secondary" href="{{ app.request.query.get('retour') == 'moderation' ? path('app_moderation_commentaires') : path('app_actualite_voir', { slug: formulaire.vars.data.actualite.slug, id: formulaire.vars.data.actualite.id }) ~ '#commentaires' }}">Annuler</a>
+        </div>
+    {{ form_end(formulaire) }}
+</section>
+{% endblock %}

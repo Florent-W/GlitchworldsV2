@@ -1,0 +1,21 @@
+<nav class="gw-admin-nav gw-panel p-2" aria-label="Navigation de la modération">
+    {% set route = app.request.attributes.get('_route') %}
+    {% set liens = [
+        {route: 'app_moderation_jeux', prefixe: 'app_moderation_jeu', icon: 'controller', label: 'Jeux', badge: jeux_en_attente_moderation|default(0)},
+        {route: 'app_moderation_actualites', prefixe: 'app_moderation_actualite', icon: 'newspaper', label: 'Actualités', badge: actualites_en_attente_moderation|default(0)},
+        {route: 'app_moderation_commentaires', prefixe: 'app_moderation_commentaires', icon: 'chat-dots-fill', label: 'Commentaires', badge: 0},
+        {route: 'app_moderation_signalements', prefixe: 'app_moderation_signalement', icon: 'flag-fill', label: 'Signalements', badge: signalements_en_attente_moderation|default(0)}
+    ] %}
+    {% for lien in liens %}
+        <a class="gw-admin-nav__link{{ route starts with lien.prefixe ? ' is-active' : '' }}" href="{{ path(lien.route) }}">
+            <i class="bi bi-{{ lien.icon }}" aria-hidden="true"></i><span>{{ lien.label }}</span>
+            {% if lien.badge > 0 %}<span class="badge text-bg-warning ms-auto">{{ lien.badge }}</span>{% endif %}
+        </a>
+    {% endfor %}
+    {% if is_granted('ROLE_ADMIN') %}
+        <hr class="my-2">
+        <a class="gw-admin-nav__link" href="{{ path('app_administration_tableau_de_bord') }}"><i class="bi bi-speedometer2"></i><span>Administration</span></a>
+    {% endif %}
+    <hr class="my-2">
+    <a class="gw-admin-nav__link" href="{{ path('app_home') }}"><i class="bi bi-arrow-left-circle"></i><span>Retour au site</span></a>
+</nav>

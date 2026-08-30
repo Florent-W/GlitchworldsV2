@@ -1,0 +1,10 @@
+knpu_oauth2_client:
+    http_client: app.oauth_http_client
+
+services:
+    app.oauth_http_client:
+        class: GuzzleHttp\Client
+        arguments:
+            -
+                verify: '%kernel.project_dir%/config/certs/cacert.pem'
+                timeout: 30

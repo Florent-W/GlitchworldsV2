@@ -1,0 +1,30 @@
+{# Carte de jeu compacte réutilisable (home, jeux similaires...).
+   Variables : jeu (Jeu), afficher_auteur (bool, défaut true), note ({moyenne, total} ou null) #}
+{% set afficher_auteur = afficher_auteur ?? true %}
+{% set note = note ?? null %}
+<article class="gw-similar-card h-100" data-son-survol="survol-jeu">
+    <a class="gw-similar-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" aria-label="Voir {{ jeu.nom }}">
+        {% if jeu.miniature starts with 'miniature.' %}
+            <img class="w-100 h-100 object-fit-cover" src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Jaquette de {{ jeu.nom }}" loading="lazy" decoding="async">
+        {% else %}
+            <i class="bi bi-controller" aria-hidden="true"></i>
+        {% endif %}
+        {% include 'jeu/_note_badge.html.twig' with { note: note } only %}
+    </a>
+    <div class="p-3">
+        <h3 class="h6 mb-1"><a class="stretched-link text-decoration-none text-body" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            {% if jeu.categorie %}<span class="gw-tag">{{ jeu.categorie.nom }}</span>{% endif %}
+            {% if jeu.dateSortie %}<span class="small text-secondary"><i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ jeu.dateSortie|date('Y') }}</span>{% endif %}
+        </div>
+        {% if afficher_auteur and jeu.pseudoAuteurFiche %}
+            <p class="small text-secondary mb-0 mt-1"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ jeu.pseudoAuteurFiche }}</p>
+        {% endif %}
+        {% if nombreCommentaires is defined %}
+            <div class="gw-home-card-meta mt-2">
+                <time datetime="{{ jeu.creeLe|date('c') }}"><i class="bi bi-calendar3" aria-hidden="true"></i>{{ jeu.creeLe|date('d/m/Y') }}</time>
+                <span><i class="bi bi-chat-fill" aria-hidden="true"></i>{{ nombreCommentaires }}</span>
+            </div>
+        {% endif %}
+    </div>
+</article>

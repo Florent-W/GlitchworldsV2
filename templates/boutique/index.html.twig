@@ -1,0 +1,134 @@
+{% extends 'base.html.twig' %}
+{% block title %}Récompenses - Glitchworlds{% endblock %}
+{% block meta_description %}Utilise tes points Glitchworlds pour débloquer des badges et des titres de profil.{% endblock %}
+{% block body %}
+<section class="gw-shop">
+    <header class="gw-page-heading mb-3"><div><span class="gw-eyebrow"><i class="bi bi-gift-fill"></i> Personnalisation</span><h1 class="display-5 fw-bold mb-1">Récompenses</h1><p class="text-secondary mb-0">Utilise les points gagnés dans la communauté pour débloquer des éléments cosmétiques.</p></div>{% if app.user %}<div class="gw-shop__balance"><i class="bi bi-star-fill"></i><span><strong>{{ app.user.points|number_format(0, ',', ' ') }}</strong> points disponibles</span></div>{% else %}<a class="btn btn-primary" href="{{ path('app_connexion') }}">Se connecter pour débloquer</a>{% endif %}</header>
+    <p class="small text-secondary mb-4"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>Les points sont virtuels, gratuits et sans valeur monétaire. Aucun paiement en argent réel n’est proposé.</p>
+    {% set groupes = {
+        titre: {label: 'Titres de profil', icon: 'person-badge-fill', description: 'Affiche un titre distinctif à côté de ton pseudo.'},
+        badge: {label: 'Badges de profil', icon: 'patch-check-fill', description: 'Collectionne des badges visibles sur ton profil.'},
+        effet: {label: 'Effets de profil', icon: 'magic', description: 'Anime et personnalise l’en-tête de ton profil.'},
+        cadre: {label: 'Cadres d’avatar', icon: 'person-square', description: 'Ajoute un contour spécial autour de ton avatar.'},
+        vitrine: {label: 'Vitrine de créateur', icon: 'stars', description: 'Présente une fiche créée dans un encadrement spécial.'}
+    } %}
+    {% if articles is empty %}
+        <div class="gw-panel p-5 text-center"><i class="bi bi-gift display-4 text-secondary"></i><h2 class="h4 mt-3">Aucune récompense disponible</h2><p class="text-secondary mb-0">De nouvelles personnalisations seront bientôt proposées.</p></div>
+    {% else %}
+    {% for type, groupe in groupes %}
+        {% set recompenses = articles|filter(article => article.type.value == type) %}
+        {% if recompenses is not empty %}
+            <section class="gw-rewards-group mb-5" aria-labelledby="recompenses-{{ type }}">
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <span class="gw-rewards-group__icon"><i class="bi bi-{{ groupe.icon }}" aria-hidden="true"></i></span>
+                    <div><h2 class="h3 mb-1" id="recompenses-{{ type }}">{{ groupe.label }}</h2><p class="text-secondary mb-0">{{ groupe.description }}</p></div>
+                </div>
+                <div class="row g-4">
+        {% for article in recompenses %}
+            {% set palier = article.prix < 200 ? 'commun' : (article.prix < 400 ? 'rare' : (article.prix < 600 ? 'epique' : (article.prix < 800 ? 'mythique' : 'legendaire'))) %}
+            {% set ficheApercu = article.type.value == 'vitrine' and app.user ? (app.user.ficheMiseEnAvant ?: fichesCreees|first) : null %}
+            <div class="col-md-6 col-xl-4">
+                <article class="gw-shop-card gw-panel gw-reward-tier--{{ palier }} h-100">
+                    <div class="gw-shop-card__visual{{ article.type.value == 'effet' ? ' gw-shop-card__visual--' ~ article.slug : '' }}">
+                        {% if article.type.value == 'vitrine' %}
+                            <div class="gw-profile-showcase gw-shop-card__showcase-preview">
+                                <div class="gw-profile-showcase__label"><i class="bi bi-stars" aria-hidden="true"></i> Vitrine de créateur</div>
+                                <div class="gw-profile-showcase__card">
+                                    {% if ficheApercu and ficheApercu.miniature starts with 'miniature.' %}
+                                        <img src="{{ asset('uploads/jeux/' ~ ficheApercu.id ~ '/' ~ ficheApercu.miniature) }}" alt="" loading="lazy">
+                                    {% else %}
+                                        <span class="gw-profile-showcase__fallback"><i class="bi bi-controller"></i></span>
+                                    {% endif %}
+                                    <span><small>Fiche mise en avant</small><strong>{{ ficheApercu ? ficheApercu.nom : 'Ma création' }}</strong><em>{{ ficheApercu ? (ficheApercu.description ?: 'Découvrir cette création') : 'Un jeu créé par le membre' }}</em></span>
+                                    <i class="bi bi-arrow-right-circle-fill" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        {% elseif article.type.value == 'titre' %}
+                            <div class="gw-shop-card__identity-preview">
+                                <strong>{{ app.user ? app.user.pseudo : 'Glitchworlds' }}</strong>
+                                <span class="badge rounded-pill text-bg-{{ article.couleur }}-subtle text-{{ article.couleur }}-emphasis"><i class="bi bi-{{ article.icone }} me-1"></i>{{ article.nom }}</span>
+                            </div>
+                        {% elseif article.type.value == 'cadre' %}
+                            <div class="gw-shop-card__frame-preview gw-profile--{{ article.slug }}">
+                                <div class="gw-profile__avatar">
+                                    {% if app.user and app.user.avatar starts with 'avatar.' %}
+                                        <img src="{{ asset('uploads/utilisateurs/' ~ app.user.id ~ '/' ~ app.user.avatar) }}" alt="Aperçu du {{ article.nom }}">
+                                    {% else %}
+                                        <span>{{ app.user ? app.user.pseudo|first|upper : 'G' }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% elseif article.type.value == 'badge' %}
+                            <span class="badge rounded-pill text-bg-{{ article.couleur }}-subtle text-{{ article.couleur }}-emphasis gw-shop-card__badge-preview"><i class="bi bi-{{ article.icone }} me-2"></i>{{ article.nom }}</span>
+                        {% else %}
+                            <i class="bi bi-{{ article.icone }}"></i>
+                        {% endif %}
+                    </div>
+                    <div class="p-4 d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between gap-2 mb-2">
+                            <span class="badge gw-shop-card__type">{{ article.type.label }}</span>
+                            {% if article.stock is not null %}<small class="text-secondary">{{ article.stock }} restant{{ article.stock > 1 ? 's' : '' }}</small>{% endif %}
+                        </div>
+                        <h3 class="h4">{{ article.nom }}</h3>
+                        <p class="text-secondary flex-grow-1">{{ article.description }}</p>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <strong class="gw-shop-card__price fs-5"><i class="bi bi-star-fill me-1"></i>{{ article.prix }} pts</strong>
+                            {% if article.id in articlesPossedes %}
+                                {% if article.type.value == 'vitrine' and app.user %}
+                                    {% if fichesCreees is not empty %}
+                                        <form class="w-100 mt-2" method="post" action="{{ path('app_boutique_vitrine_selectionner') }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('selectionner-vitrine') }}">
+                                            <label class="form-label small fw-semibold" for="vitrine-jeu-{{ article.id }}">Fiches à présenter ({{ min(quantitesArticles[article.id], 3) }} maximum)</label>
+                                            <select class="form-select form-select-sm mb-2" id="vitrine-jeu-{{ article.id }}" name="jeux[]" multiple size="{{ min(4, fichesCreees|length) }}">
+                                                {% for fiche in fichesCreees %}<option value="{{ fiche.id }}" {{ fiche in app.user.fichesMisesEnAvant or (app.user.fichesMisesEnAvant is empty and app.user.ficheMiseEnAvant == fiche) ? 'selected' }}>{{ fiche.nom }}</option>{% endfor %}
+                                            </select>
+                                            <button class="btn btn-primary btn-sm w-100"><i class="bi bi-stars me-1" aria-hidden="true"></i>Mettre en avant</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="small text-secondary">Crée une fiche approuvée pour utiliser ta vitrine.</span>
+                                    {% endif %}
+                                    <form class="w-100" method="post" action="{{ path('app_boutique_acheter', {id: article.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('acheter-article-' ~ article.id) }}">
+                                        <button class="btn btn-outline-primary btn-sm w-100" {{ not article.disponible or app.user.points < article.prix or quantitesArticles[article.id] >= 3 ? 'disabled' }}><i class="bi bi-plus-circle me-1" aria-hidden="true"></i>{{ quantitesArticles[article.id] >= 3 ? 'Maximum de 3 vitrines atteint' : (app.user.points >= article.prix ? 'Acheter un emplacement supplémentaire' : 'Points insuffisants') }}</button>
+                                    </form>
+                                {% elseif article.type.value in ['titre', 'effet', 'cadre'] and app.user %}
+                                    {% set articleEquipe = (article.type.value == 'titre' and app.user.titreEquipe == article) or (article.type.value == 'effet' and app.user.effetProfilEquipe == article) or (article.type.value == 'cadre' and app.user.cadreAvatarEquipe == article) %}
+                                    {% if articleEquipe %}
+                                        <form method="post" action="{{ path('app_boutique_desequiper', {id: article.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('desequiper-article-' ~ article.id) }}">
+                                            <button class="btn btn-outline-danger"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Déséquiper</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{{ path('app_boutique_equiper', {id: article.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('equiper-article-' ~ article.id) }}">
+                                            <button class="btn btn-outline-primary"><i class="bi bi-person-badge me-1" aria-hidden="true"></i>Équiper</button>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge text-bg-success"><i class="bi bi-check-lg me-1"></i>Possédé</span>
+                                {% endif %}
+                            {% elseif app.user %}
+                                <form method="post" action="{{ path('app_boutique_acheter', {id: article.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('acheter-article-' ~ article.id) }}">
+                                    <button class="btn btn-primary" {{ not article.disponible or app.user.points < article.prix ? 'disabled' }}>
+                                        <i class="bi bi-gift-fill me-1" aria-hidden="true"></i>{{ article.disponible ? (app.user.points >= article.prix ? 'Débloquer' : 'Points insuffisants') : 'Indisponible' }}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <a class="btn btn-outline-primary" href="{{ path('app_connexion') }}">
+                                    <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Se connecter pour débloquer
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+            </div>
+        {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% if app.user and achats is not empty %}<section class="gw-panel p-4 mt-5"><h2 class="h4 mb-3"><i class="bi bi-collection-fill text-primary me-2"></i>Ma collection</h2><div class="d-flex flex-wrap gap-2">{% for achat in achats %}<span class="badge rounded-pill text-bg-{{ achat.article.couleur }}-subtle text-{{ achat.article.couleur }}-emphasis p-2"><i class="bi bi-{{ achat.article.icone }} me-1"></i>{{ achat.article.nom }}</span>{% endfor %}</div></section>{% endif %}
+</section>
+{% endblock %}

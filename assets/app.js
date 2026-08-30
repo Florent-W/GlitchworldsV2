@@ -1,10 +1,16 @@
 import './stimulus_bootstrap.js';
-/*
- * Welcome to your app's main JavaScript file!
- *
- * This file will be included onto the page via the importmap() Twig function,
- * which should already be in your base.html.twig.
- */
+import './controllers/csrf_protection_controller.js';
+import './jeu/youtube_background.js';
+import './jeu/lightgallery.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.min.css';
+import 'bootstrap';
 import './styles/app.css';
-
-console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+import './styles/themes/glitchworlds.css';
+import './styles/themes/theme1.css';
+import './styles/themes/theme2.css';
+import './styles/themes/legacy.css';
+import './styles/themes/theme3.css';
+import './styles/themes/theme4.css';
+import './styles/themes/theme5.css';
+import './styles/accessibility.css';

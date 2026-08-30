@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes favoris - Glitchworlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4">
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h2 mb-1"><i class="bi bi-heart-fill text-danger me-2" aria-hidden="true"></i>Mes favoris</h1>
+            <p class="text-secondary mb-0">{{ total }} jeu{{ total > 1 ? 'x' : '' }} enregistré{{ total > 1 ? 's' : '' }}</p>
+        </div>
+        <a class="btn btn-primary" href="{{ path('app_jeux') }}">Découvrir des jeux</a>
+    </div>
+
+    {% if jeux is empty %}
+        <div class="text-center py-5">
+            <i class="bi bi-heart fs-1 text-secondary" aria-hidden="true"></i>
+            <p class="mt-3">Tu n’as pas encore ajouté de jeu à tes favoris.</p>
+        </div>
+    {% else %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+            {% for jeu in jeux %}
+                <div class="col">
+                    <article class="gw-game-card h-100" data-son-survol="survol-jeu">
+                        <a class="gw-game-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" aria-label="Voir {{ jeu.nom }}">
+                            {% if jeu.miniature starts with 'miniature.' %}
+                                <img class="w-100 h-100 object-fit-cover" src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Miniature de {{ jeu.nom }}" loading="lazy">
+                            {% else %}
+                                <i class="bi bi-controller" aria-hidden="true"></i>
+                                <span>Voir la fiche</span>
+                            {% endif %}
+                            {% include 'jeu/_note_badge.html.twig' with { note: notesJeux[jeu.id]|default(null) } only %}
+                        </a>
+                        <div class="gw-game-card__body">
+                            <h2 class="gw-game-card__title"><a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h2>
+                            {% if jeu.pseudoAuteurFiche %}<p class="gw-game-card__author">Par {{ jeu.pseudoAuteurFiche }}</p>{% endif %}
+                            <div class="gw-game-card__tags">
+                                {% if jeu.categorie %}<span class="gw-tag">{{ jeu.categorie.nom }}</span>{% endif %}
+                                {% for genre in jeu.genres|slice(0, 2) %}<span class="gw-tag">{{ genre.nom }}</span>{% endfor %}
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if pages > 1 %}
+            <nav class="mt-4" aria-label="Pagination des favoris">
+                <ul class="pagination justify-content-center mb-0">
+                    {% for numero in 1..pages %}
+                        <li class="page-item{{ numero == page ? ' active' : '' }}">
+                            <a class="page-link" href="{{ path('app_favoris', { page: numero }) }}" {{ numero == page ? 'aria-current="page"' : '' }}>{{ numero }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% endif %}
+</section>
+{% endblock %}

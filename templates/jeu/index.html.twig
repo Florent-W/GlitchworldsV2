@@ -1,0 +1,258 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {%- if recherche is not empty -%}{{ recherche ~ ' - ' }}{%- endif -%}
+    {%- if categorie is not empty -%}
+        {%- for item in categories -%}
+            {%- if item.slug == categorie -%}{{ item.nom ~ ' - ' }}{%- endif -%}
+        {%- endfor -%}
+    {%- endif -%}
+    {%- if plateforme is not empty -%}
+        {%- for item in plateformes -%}
+            {%- if item.slug == plateforme -%}{{ item.nom ~ ' - ' }}{%- endif -%}
+        {%- endfor -%}
+    {%- endif -%}
+    {%- if genre is not empty -%}
+        {%- for item in genres -%}
+            {%- if item.slug == genre -%}{{ item.nom ~ ' - ' }}{%- endif -%}
+        {%- endfor -%}
+    {%- endif -%}
+    Jeux{% if page > 1 %} (page {{ page }}){% endif %} - Glitchworlds
+{%- endblock %}
+
+{% block meta_description %}Découvre les fangames, rom hacks et jeux référencés par la communauté Glitchworlds.{% endblock %}
+
+{% block canonical %}{{ url('app_jeux', page > 1 ? { page: page } : {}) }}{% endblock %}
+
+{% block robots_meta %}
+    {%- if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty or langue is not empty or annee is not null or mesFavoris -%}
+        noindex,follow
+    {%- else -%}
+        index,follow
+    {%- endif -%}
+{% endblock %}
+
+{% block body %}
+    {% set filtres = {
+        recherche: recherche ?: null,
+        categorie: categorie ?: null,
+        plateforme: plateforme ?: null,
+        genre: genre ?: null,
+        langue: langue ?: null,
+        annee: annee,
+        mes_favoris: mesFavoris ? 1 : null,
+        tri: tri.value != 'recent' ? tri.value : null
+    } %}
+
+    <header class="gw-page-heading mb-4">
+        <div>
+            <p class="gw-eyebrow mb-1">Catalogue communautaire</p>
+            <h1 class="h2 mb-1">Jeux</h1>
+            <p class="text-secondary mb-0">Découvre des fangames, rom hacks et jeux officiels.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if app.user %}<a class="btn btn-primary" href="{{ path('app_jeu_proposer') }}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Proposer un jeu</a>{% endif %}
+            <span class="gw-result-count">{{ total }} résultat{{ total > 1 ? 's' : '' }}</span>
+        </div>
+    </header>
+
+    <form method="get" action="{{ path('app_jeux') }}" role="search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion', {type: 'jeu'}) }}" data-recherche-autocomplete-target="formulaire">
+        <div class="row g-4 align-items-start">
+            <div class="col-xl-9 gw-games-search__content">
+                <div class="gw-search-box mb-4">
+                    <label class="visually-hidden" for="jeux-recherche">Rechercher un jeu</label>
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input
+                        id="jeux-recherche"
+                        class="form-control"
+                        type="search"
+                        name="recherche"
+                        value="{{ recherche }}"
+                        placeholder="Rechercher un fangame, un univers..."
+                        autocomplete="off"
+                        aria-autocomplete="list"
+                        aria-controls="jeux-recherche-resultats"
+                        aria-expanded="false"
+                        data-recherche-autocomplete-target="champ"
+                        data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#rechercher"
+                    >
+                    <button type="submit" class="btn btn-gw">Rechercher</button>
+                    <div id="jeux-recherche-resultats" class="gw-autocomplete d-none" role="listbox" data-recherche-autocomplete-target="resultats"></div>
+                </div>
+
+                {% if jeux is empty %}
+                    <div class="gw-panel p-5 text-center">
+                        <i class="bi bi-search fs-1 text-primary" aria-hidden="true"></i>
+                        <h2 class="h4 mt-3">Aucun jeu trouvé</h2>
+                        <p class="text-secondary">Essaie de modifier ta recherche ou d'effacer les filtres.</p>
+                        <a class="btn btn-outline-primary" href="{{ path('app_jeux') }}">Effacer les filtres</a>
+                    </div>
+                {% else %}
+                    <div class="gw-disposition gw-disposition--grille" data-controller="disposition" data-disposition-mode="grille">
+                        <div class="d-flex justify-content-end mb-3">
+                            {% include '_disposition_boutons.html.twig' with { label: 'Disposition des jeux' } only %}
+                        </div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 row-cols-xxl-4 g-3 gw-collection gw-collection--jeux">
+                        {% for jeu in jeux %}
+                            <div class="col">
+                            <article class="gw-game-card h-100">
+                                <a class="gw-game-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" aria-label="Voir {{ jeu.nom }}">
+                                    {% if jeu.miniature starts with 'miniature.' %}
+                                        <img class="w-100 h-100 object-fit-cover" src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Miniature de {{ jeu.nom }}" loading="lazy">
+                                    {% else %}
+                                        <i class="bi bi-controller" aria-hidden="true"></i>
+                                        <span>Voir la fiche</span>
+                                    {% endif %}
+                                    {% include 'jeu/_note_badge.html.twig' with { note: notesJeux[jeu.id]|default(null) } only %}
+                                </a>
+
+                                <div class="gw-game-card__body">
+                                    <h2 class="gw-game-card__title">
+                                        <a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a>
+                                    </h2>
+
+                                    {% if jeu.developpeur %}
+                                        <p class="gw-game-card__author">Développé par {{ jeu.developpeur }}</p>
+                                    {% elseif jeu.pseudoAuteurFiche %}
+                                        <p class="gw-game-card__author">Par {{ jeu.pseudoAuteurFiche }}</p>
+                                    {% endif %}
+
+                                    <div class="gw-game-card__tags">
+                                        {% if jeu.categorie %}
+                                            <a href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}" class="gw-tag">
+                                                {{ jeu.categorie.nom }}
+                                            </a>
+                                        {% endif %}
+                                        {% for item in jeu.genres|slice(0, 2) %}
+                                            <a href="{{ path('app_jeux', { genre: item.slug }) }}" class="gw-tag">{{ item.nom }}</a>
+                                        {% endfor %}
+                                        {% for item in jeu.plateformes|slice(0, 1) %}
+                                            <a href="{{ path('app_jeux', { plateforme: item.slug }) }}" class="gw-tag gw-tag--plateforme">{{ item.nom }}</a>
+                                        {% endfor %}
+                                        {% set restant = jeu.genres|length + jeu.plateformes|length - 3 %}
+                                        {% if restant > 0 %}
+                                            <span class="gw-tag">+{{ restant }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if jeu.description is not empty %}
+                                        <p class="gw-game-card__description">{{ jeu.description|slice(0, 110) }}</p>
+                                    {% elseif jeu.contenu is not empty %}
+                                        <p class="gw-game-card__description">{{ jeu.contenu|bbcode_texte|slice(0, 110) }}</p>
+                                    {% endif %}
+                                </div>
+                            </article>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if pages > 1 %}
+                        <nav class="mt-4" aria-label="Pagination des jeux">
+                            <ul class="pagination gw-pagination justify-content-center mb-0">
+                                <li class="page-item{{ page <= 1 ? ' disabled' : '' }}">
+                                    <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: page - 1 })) }}" aria-label="Page précédente" {% if page <= 1 %}tabindex="-1" aria-disabled="true"{% endif %}><i class="bi bi-chevron-left" aria-hidden="true"></i><span class="gw-pagination__label">Précédent</span></a>
+                                </li>
+                                {% for p in 1..pages %}
+                                    <li class="page-item gw-pagination__page{{ p < page - 1 or p > page + 1 ? ' gw-pagination__page--mobile-hidden' : '' }}{{ p == page ? ' active' : '' }}">
+                                        <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: p })) }}" {% if p == page %}aria-current="page"{% endif %}>{{ p }}</a>
+                                    </li>
+                                {% endfor %}
+                                <li class="page-item disabled gw-pagination__mobile-status" aria-current="page">
+                                    <span class="page-link">{{ page }} / {{ pages }}</span>
+                                </li>
+                                <li class="page-item{{ page >= pages ? ' disabled' : '' }}">
+                                    <a class="page-link" href="{{ path('app_jeux', filtres|merge({ page: page + 1 })) }}" aria-label="Page suivante" {% if page >= pages %}tabindex="-1" aria-disabled="true"{% endif %}><span class="gw-pagination__label">Suivant</span><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <p class="gw-pagination__desktop-status text-center text-secondary small mt-2 mb-0">Page {{ page }} / {{ pages }}</p>
+                    {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <aside class="col-xl-3 gw-games-search__filters">
+            <div class="gw-filter-panel" aria-labelledby="filtres-title">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 id="filtres-title" class="h5 mb-0">Filtres avancés</h2>
+                    <i class="bi bi-sliders" aria-hidden="true"></i>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="jeux-categorie">Catégorie</label>
+                    <select id="jeux-categorie" class="form-select" name="categorie">
+                        <option value="">Toutes les catégories</option>
+                        {% for item in categories %}
+                            <option value="{{ item.slug }}" {{ categorie == item.slug ? 'selected' : '' }}>{{ item.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="jeux-plateforme">Plateforme</label>
+                    <select id="jeux-plateforme" class="form-select" name="plateforme">
+                        <option value="">Toutes les plateformes</option>
+                        {% for item in plateformes %}
+                            <option value="{{ item.slug }}" {{ plateforme == item.slug ? 'selected' : '' }}>{{ item.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="jeux-genre">Genre</label>
+                    <select id="jeux-genre" class="form-select" name="genre">
+                        <option value="">Tous les genres</option>
+                        {% for item in genres %}
+                            <option value="{{ item.slug }}" {{ genre == item.slug ? 'selected' : '' }}>{{ item.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="jeux-langue">Langue</label>
+                    <select id="jeux-langue" class="form-select" name="langue">
+                        <option value="">Toutes les langues</option>
+                        {% for item in langues %}
+                            <option value="{{ item.slug }}" {{ langue == item.slug ? 'selected' : '' }}>{{ item.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="jeux-annee">Année de sortie</label>
+                    <select id="jeux-annee" class="form-select" name="annee">
+                        <option value="">Toutes les années</option>
+                        {% for item in annees %}
+                            <option value="{{ item }}" {{ annee == item ? 'selected' : '' }}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if app.user %}
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="1" id="jeux-mes-favoris" name="mes_favoris" {{ mesFavoris ? 'checked' : '' }}>
+                        <label class="form-check-label" for="jeux-mes-favoris">Mes favoris uniquement</label>
+                    </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="form-label" for="jeux-tri">Trier par</label>
+                    <select id="jeux-tri" class="form-select" name="tri">
+                        {% for option in tris %}
+                            <option value="{{ option.value }}" {{ tri == option ? 'selected' : '' }}>{{ option.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-gw w-100">Appliquer les filtres</button>
+                {% if recherche is not empty or categorie is not empty or plateforme is not empty or genre is not empty or langue is not empty or annee is not null or mesFavoris or tri.value != 'recent' %}
+                    <a class="btn btn-link w-100 mt-2" href="{{ path('app_jeux') }}">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        Effacer les filtres
+                    </a>
+                {% endif %}
+            </div>
+            </aside>
+        </div>
+    </form>
+{% endblock %}

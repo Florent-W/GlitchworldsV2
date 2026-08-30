@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Finaliser mon inscription - Glitchworlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width: 680px">
+    <span class="gw-eyebrow">Une dernière étape</span>
+    <h1 class="h2 mt-2">Finaliser mon inscription</h1>
+    <p class="text-secondary">Ton adresse Google est vérifiée. Choisis maintenant le pseudo qui sera visible sur Glitchworlds.</p>
+
+    {% for erreur in erreurs %}<div class="alert alert-danger">{{ erreur }}</div>{% endfor %}
+
+    <form method="post" action="{{ path('app_oauth_finaliser') }}" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label" for="oauth-email">Adresse e-mail</label>
+            <input class="form-control" id="oauth-email" type="email" value="{{ utilisateur.email }}" disabled>
+            <div class="form-text">Cette adresse a été vérifiée par Google.</div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label" for="oauth-pseudo">Pseudo</label>
+            <input class="form-control form-control-lg" id="oauth-pseudo" name="pseudo" type="text" value="{{ app.request.request.get('pseudo') ?: pseudoSuggere }}" minlength="3" maxlength="50" pattern="\S+" title="Le pseudo ne doit contenir aucun espace" autocomplete="nickname" required autofocus>
+        </div>
+        <div class="mb-4">
+            <label class="form-label" for="oauth-avatar">Avatar <span class="text-secondary">(facultatif)</span></label>
+            <input class="form-control" id="oauth-avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
+            <div class="form-text">Choisis une image JPG, PNG ou WebP de 2 Mo maximum. La photo de ton compte Google n’est pas utilisée.</div>
+        </div>
+        <div class="form-check mb-4">
+            <input class="form-check-input" id="oauth-conditions" name="conditions" type="checkbox" value="1" required{{ app.request.request.getBoolean('conditions') ? ' checked' : '' }}>
+            <label class="form-check-label" for="oauth-conditions">J’accepte les <a href="{{ path('app_conditions_utilisation') }}" target="_blank" rel="noopener">conditions d’utilisation</a> et j’ai pris connaissance de la <a href="{{ path('app_confidentialite') }}" target="_blank" rel="noopener">politique de confidentialité</a>.</label>
+        </div>
+        <input type="hidden" name="_token" value="{{ csrf_token('finaliser-oauth-' ~ utilisateur.id) }}">
+        <button class="btn btn-primary btn-lg w-100" type="submit">Créer mon compte</button>
+    </form>
+</section>
+{% endblock %}

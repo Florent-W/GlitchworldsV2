@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ma progression - Glitchworlds{% endblock %}
+
+{% block body %}
+<section class="gw-page-panel p-3 p-lg-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div><h1 class="h2 mb-1">Ma progression</h1><p class="text-body-secondary mb-0">Historique de tes gains et dépenses.</p></div>
+        <div class="d-flex gap-2"><span class="badge text-bg-primary fs-6">Niveau {{ app.user.niveau }}</span><span class="badge text-bg-warning fs-6"><i class="bi bi-star-fill me-1"></i>{{ app.user.points }} points</span></div>
+    </div>
+    <div class="progress mb-4" role="progressbar" aria-label="Progression vers le prochain niveau" aria-valuenow="{{ app.user.progressionNiveau }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ app.user.progressionNiveau }}%">{{ app.user.progressionNiveau }} %</div></div>
+    <div class="table-responsive">
+        <table class="table align-middle"><thead><tr><th>Date</th><th>Action</th><th>XP</th><th>Points</th></tr></thead><tbody>
+        {% for mouvement in mouvements %}<tr><td><time datetime="{{ mouvement.creeLe|date('c') }}">{{ mouvement.creeLe|date('d/m/Y H:i') }}</time></td><td>{{ mouvement.libelle }}</td><td class="{{ mouvement.experience > 0 ? 'text-success' : '' }}">{{ mouvement.experience > 0 ? '+' : '' }}{{ mouvement.experience }}</td><td class="{{ mouvement.points < 0 ? 'text-danger' : (mouvement.points > 0 ? 'text-success' : '') }}">{{ mouvement.points > 0 ? '+' : '' }}{{ mouvement.points }}</td></tr>
+        {% else %}<tr><td colspan="4" class="text-center text-body-secondary py-5">Tes prochains gains apparaîtront ici.</td></tr>{% endfor %}
+        </tbody></table>
+    </div>
+</section>
+{% endblock %}

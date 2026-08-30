@@ -1,0 +1,30 @@
+{% set current_route = app.request.attributes.get('_route') %}
+{% set nav_items = [
+    { label: 'Accueil',    icon: 'bi-house-door-fill', route: 'app_home' },
+    { label: 'Explorer',   icon: 'bi-search',          route: null },
+    { label: 'Favoris',    icon: 'bi-heart-fill',      route: null },
+    { label: 'Communauté', icon: 'bi-people-fill',     route: null },
+    { label: 'Paramètres', icon: 'bi-gear-fill',       route: 'app_parametres' },
+    { label: 'Récompenses', icon: 'bi-gift-fill',       route: 'app_boutique', badge: 'New' },
+] %}
+
+<nav class="gw-rail" aria-label="Navigation principale">
+    <ul class="gw-rail__list">
+        {% for item in nav_items %}
+            {% set is_active = item.route is not null and item.route == current_route %}
+            <li>
+                <a
+                    class="gw-rail__link{{ is_active ? ' is-active' : '' }}"
+                    href="{{ item.route ? path(item.route) : '#' }}"
+                    {{ is_active ? 'aria-current="page"' : '' }}
+                >
+                    <i class="bi {{ item.icon }} gw-rail__icon" aria-hidden="true"></i>
+                    <span class="gw-rail__label">{{ item.label }}</span>
+                    {% if item.badge is defined %}
+                        <span class="gw-rail__badge">{{ item.badge }}</span>
+                    {% endif %}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</nav>

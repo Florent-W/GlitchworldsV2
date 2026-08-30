@@ -19,5 +19,17 @@ services:
     App\:
         resource: '../src/'
 
+    App\Service\ImageProfilUploader:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\JeuGalerieUploader:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\ImagePublicationUploader:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

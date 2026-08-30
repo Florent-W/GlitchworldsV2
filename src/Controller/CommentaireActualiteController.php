@@ -1,0 +1,127 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\CommentaireActualite;
+use App\Entity\Utilisateur;
+use App\Form\CommentaireActualiteType;
+use App\Security\CommentaireActualiteVoter;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\ProgressionUtilisateur;
+use App\Service\GestionSucces;
+use App\Service\JournalModeration;
+
+final class CommentaireActualiteController extends AbstractController
+{
+    use AnnonceSuccesTrait;
+    #[Route('/actualite/commentaire/{id}/repondre', name: 'app_actualite_commentaire_repondre', methods: ['POST'])]
+    public function repondre(
+        CommentaireActualite $commentaire,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator,
+        ProgressionUtilisateur $progression,
+        GestionSucces $gestionSucces,
+    ): Response {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Connecte-toi pour répondre.');
+        }
+
+        $parent = $commentaire->getParent() ?? $commentaire;
+        if (!$this->isCsrfTokenValid('repondre-commentaire-actualite-'.$parent->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $reponse = (new CommentaireActualite())
+            ->setActualite($parent->getActualite())
+            ->setAuteur($utilisateur)
+            ->setParent($parent)
+            ->setContenu($request->request->getString('contenu'));
+        $erreurs = $validator->validate($reponse);
+
+        if ($erreurs->count() > 0) {
+            $this->addFlash('danger', $erreurs[0]->getMessage());
+        } else {
+            $entityManager->persist($reponse);
+            $recompenseAccordee = $progression->recompenseCommentaire($utilisateur, 'reponse-actualite:'.$parent->getId().':'.hash('sha256', mb_strtolower(trim($reponse->getContenu()))));
+            $entityManager->flush();
+            $this->addFlash('success', 'Ta réponse a été publiée.'.($recompenseAccordee ? ' +10 XP et +5 points.' : ''));
+            $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
+        }
+
+        return $this->redirigerVersActualite($parent, '#commentaire-'.$parent->getId());
+    }
+
+    #[Route('/actualite/commentaire/{id}/modifier', name: 'app_actualite_commentaire_modifier')]
+    public function modifier(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager, JournalModeration $journal): Response
+    {
+        $this->denyAccessUnlessGranted(CommentaireActualiteVoter::MODIFIER, $commentaire);
+        $formulaire = $this->createForm(CommentaireActualiteType::class, $commentaire, ['bouton_libelle' => 'Enregistrer']);
+        $formulaire->handleRequest($request);
+
+        if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            if ($this->isGranted('ROLE_MODERATEUR')) { $moderateur = $this->getUser(); $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, 'modification', 'commentaire_actualite', $commentaire->getId(), 'Modification du commentaire #'.$commentaire->getId()); }
+            $entityManager->flush();
+            $this->addFlash('success', 'Ton commentaire a été modifié.');
+
+            if ('moderation' === $request->query->getString('retour')) {
+                return $this->redirectToRoute('app_moderation_commentaires');
+            }
+
+            return $this->redirigerVersActualite($commentaire);
+        }
+
+        return $this->render('actualite/commentaire_modifier.html.twig', ['formulaire' => $formulaire]);
+    }
+
+    #[Route('/actualite/commentaire/{id}/supprimer', name: 'app_actualite_commentaire_supprimer', methods: ['POST'])]
+    public function supprimer(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager, JournalModeration $journal): Response
+    {
+        $this->denyAccessUnlessGranted(CommentaireActualiteVoter::SUPPRIMER, $commentaire);
+        if (!$this->isCsrfTokenValid('supprimer-commentaire-actualite-'.$commentaire->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $actualite = $commentaire->getActualite();
+        if ($this->isGranted('ROLE_MODERATEUR')) { $moderateur = $this->getUser(); $journal->ajouter($moderateur instanceof Utilisateur ? $moderateur : null, 'suppression', 'commentaire_actualite', $commentaire->getId(), 'Suppression du commentaire #'.$commentaire->getId()); }
+        $entityManager->remove($commentaire);
+        $entityManager->flush();
+        $this->addFlash('success', 'Le commentaire a été supprimé.');
+
+        if ('moderation' === $request->request->getString('_retour')) {
+            return $this->redirectToRoute('app_moderation_commentaires');
+        }
+
+        return $this->redirect($this->generateUrl('app_actualite_voir', ['slug' => $actualite?->getSlug(), 'id' => $actualite?->getId()]).'#commentaires');
+    }
+
+    #[Route('/actualite/commentaire/{id}/aimer', name: 'app_actualite_commentaire_aimer', methods: ['POST'])]
+    public function aimer(CommentaireActualite $commentaire, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Connecte-toi pour aimer un commentaire.');
+        }
+        if (!$this->isCsrfTokenValid('aimer-commentaire-actualite-'.$commentaire->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $commentaire->estAimePar($utilisateur) ? $commentaire->retirerAime($utilisateur) : $commentaire->ajouterAime($utilisateur);
+        $entityManager->flush();
+
+        return $this->redirigerVersActualite($commentaire);
+    }
+
+    private function redirigerVersActualite(CommentaireActualite $commentaire, string $ancre = '#commentaires'): Response
+    {
+        $actualite = $commentaire->getActualite();
+
+        return $this->redirect($this->generateUrl('app_actualite_voir', ['slug' => $actualite?->getSlug(), 'id' => $actualite?->getId()]).$ancre);
+    }
+}

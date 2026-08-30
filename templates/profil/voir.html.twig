@@ -1,0 +1,306 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil de {{ membre.pseudo }} - Glitchworlds{% endblock %}
+{% block meta_description %}Découvre le profil, les jeux favoris et les publications de {{ membre.pseudo }} sur Glitchworlds.{% endblock %}
+
+{% block body %}
+<div class="gw-profile{% if membre.effetProfilEquipe %} gw-profile--{{ membre.effetProfilEquipe.slug }}{% endif %}{% if membre.cadreAvatarEquipe %} gw-profile--{{ membre.cadreAvatarEquipe.slug }}{% endif %}">
+    <header class="gw-profile__hero gw-panel overflow-hidden">
+        {% if app.user == membre %}
+            <div class="gw-profile__banner gw-profile__banner--editable" data-controller="avatar-profil"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}>
+                <form method="post" action="{{ path('app_compte_banniere') }}" enctype="multipart/form-data" data-avatar-profil-target="form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('banniere-profil') }}">
+                    <input type="file" name="banniere" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-avatar-profil-target="input" data-action="change->avatar-profil#envoyer">
+                    <button type="button" class="gw-profile__banner-btn" data-action="avatar-profil#ouvrir" aria-label="Changer la bannière du profil" title="Changer la bannière">
+                        <span class="gw-profile__banner-overlay" aria-hidden="true"><i class="bi bi-image-fill"></i><span>Modifier la bannière</span></span>
+                    </button>
+                </form>
+            </div>
+        {% else %}
+        {% if app.user == membre %}
+            <div class="gw-profile__banner gw-profile__banner--editable" data-controller="avatar-profil"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}>
+                <form method="post" action="{{ path('app_compte_banniere') }}" enctype="multipart/form-data" data-avatar-profil-target="form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('banniere-profil') }}">
+                    <input type="file" name="banniere" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-avatar-profil-target="input" data-action="change->avatar-profil#envoyer">
+                    <button type="button" class="gw-profile__banner-btn" data-action="avatar-profil#ouvrir" aria-label="Changer la bannière du profil" title="Changer la bannière">
+                        <span class="gw-profile__banner-overlay" aria-hidden="true"><i class="bi bi-image-fill"></i><span>Modifier la bannière</span></span>
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="gw-profile__banner"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}></div>
+        {% endif %}
+        {% endif %}
+        <div class="gw-profile__identity px-3 px-lg-4 pb-4">
+            {% if app.user == membre %}
+                <div class="gw-profile__avatar gw-profile__avatar--editable" data-controller="avatar-profil">
+                    <form method="post" action="{{ path('app_compte_avatar') }}" enctype="multipart/form-data" data-avatar-profil-target="form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('avatar-profil') }}">
+                        <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-avatar-profil-target="input" data-action="change->avatar-profil#envoyer">
+                        <button type="button" class="gw-profile__avatar-btn" data-action="avatar-profil#ouvrir" aria-label="Changer la photo de profil" title="Changer la photo de profil">
+                            {% if membre.avatar starts with 'avatar.' %}
+                                <img src="{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.avatar) }}" alt="Avatar de {{ membre.pseudo }}">
+                            {% else %}
+                                <span>{{ membre.pseudo|first|upper }}</span>
+                            {% endif %}
+                            <span class="gw-profile__avatar-overlay" aria-hidden="true"><i class="bi bi-camera-fill"></i><span>Modifier</span></span>
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="gw-profile__avatar">
+                    {% if membre.avatar starts with 'avatar.' %}
+                        <img src="{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.avatar) }}" alt="Avatar de {{ membre.pseudo }}">
+                    {% else %}
+                        <span>{{ membre.pseudo|first|upper }}</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div class="flex-grow-1 pt-3">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <h1 class="h2 mb-0">{{ membre.pseudo }}</h1>
+                    {% if 'ROLE_ADMIN' in membre.roles %}<span class="badge text-bg-primary">Administrateur</span>{% elseif 'ROLE_MODERATEUR' in membre.roles %}<span class="badge text-bg-info">Modérateur</span>{% endif %}
+                    <span class="badge rounded-pill text-bg-primary"><i class="bi bi-stars me-1"></i>Niveau {{ membre.niveau }}</span>
+                    {% if membre.titreEquipe %}<span class="badge rounded-pill text-bg-{{ membre.titreEquipe.couleur }}-subtle text-{{ membre.titreEquipe.couleur }}-emphasis"><i class="bi bi-{{ membre.titreEquipe.icone }} me-1"></i>{{ membre.titreEquipe.nom }}</span>{% endif %}
+                    {% if membre.effetProfilEquipe %}<span class="badge rounded-pill text-bg-{{ membre.effetProfilEquipe.couleur }}-subtle text-{{ membre.effetProfilEquipe.couleur }}-emphasis"><i class="bi bi-{{ membre.effetProfilEquipe.icone }} me-1"></i>Effet : {{ membre.effetProfilEquipe.nom }}</span>{% endif %}
+                    {% if membre.cadreAvatarEquipe %}<span class="badge rounded-pill text-bg-{{ membre.cadreAvatarEquipe.couleur }}-subtle text-{{ membre.cadreAvatarEquipe.couleur }}-emphasis"><i class="bi bi-{{ membre.cadreAvatarEquipe.icone }} me-1"></i>{{ membre.cadreAvatarEquipe.nom }}</span>{% endif %}
+                </div>
+                <p class="text-secondary mb-1"><i class="bi bi-calendar3 me-1"></i>Membre depuis {{ membre.inscritLe|format_datetime('none', 'none', 'MMMM y', locale='fr') }}</p>
+                {% if membre.biographie %}<p class="mb-0 gw-profile__bio">{{ membre.biographie|nl2br }}</p>{% endif %}
+            </div>
+            <div class="gw-profile__numbers d-flex gap-4 text-center pt-3">
+                <div><strong>{{ publications|length }}</strong><span>Publications</span></div>
+                <div><strong>{{ membre.abonnes|length }}</strong><span>Abonnés</span></div>
+                <div><strong>{{ membre.abonnements|length }}</strong><span>Abonnements</span></div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 pt-3">
+                {% if app.user == membre %}
+                    <a class="btn btn-primary" href="{{ path('app_compte_modifier') }}"><i class="bi bi-pencil-fill me-2"></i>Modifier le profil</a>
+                    <a class="btn btn-outline-secondary" href="{{ path('app_compte') }}"><i class="bi bi-gear-fill me-2"></i>Mon compte</a>
+                    <a class="btn btn-outline-danger" href="{{ path('app_deconnexion') }}" data-turbo="false"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Se déconnecter</a>
+                {% elseif app.user %}
+                    {% if not app.user.interactionBloqueeAvec(membre) %}
+                        <form method="post" action="{{ path('app_profil_suivre', {id: membre.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('suivre-' ~ membre.id) }}">
+                            <button class="btn {{ app.user.suit(membre) ? 'btn-outline-primary' : 'btn-primary' }}" title="{{ app.user.suit(membre) ? 'Tu reçois une notification à chaque publication de ce membre.' : 'Reçois une notification à chaque publication de ce membre et retrouve son activité dans ton fil Abonnements.' }}"><i class="bi bi-person-{{ app.user.suit(membre) ? 'dash' : 'plus' }}-fill me-2"></i>{{ app.user.suit(membre) ? 'Ne plus suivre' : 'Suivre' }}</button>
+                        </form>
+                        {% if app.user.suit(membre) %}
+                            <a class="btn btn-outline-secondary" href="{{ path('app_communaute', {section: 'abonnements'}) }}"><i class="bi bi-person-check-fill me-2"></i>Mon fil d’abonnements</a>
+                        {% endif %}
+                        <a class="btn btn-outline-primary" href="{{ path('app_messages_nouveau', {destinataire: membre.id}) }}"><i class="bi bi-envelope-fill me-2"></i>Message</a>
+                    {% elseif not app.user.aBloque(membre) %}
+                        <span class="btn btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-slash-circle me-2"></i>Interactions indisponibles</span>
+                    {% endif %}
+                    <form method="post" action="{{ path('app_profil_bloquer', {id: membre.id}) }}" onsubmit="return confirm('{{ app.user.aBloque(membre) ? 'Débloquer ce membre ?' : 'Bloquer ce membre ? Vous ne pourrez plus échanger de messages.' }}');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('bloquer-' ~ membre.id) }}">
+                        <button class="btn btn-outline-{{ app.user.aBloque(membre) ? 'secondary' : 'danger' }}" type="submit"><i class="bi bi-{{ app.user.aBloque(membre) ? 'unlock-fill' : 'person-x-fill' }} me-2"></i>{{ app.user.aBloque(membre) ? 'Débloquer' : 'Bloquer' }}</button>
+                    </form>
+                    <a class="btn btn-outline-danger" href="{{ path('app_signaler', {type: 'profil', id: membre.id}) }}"><i class="bi bi-flag-fill me-2"></i>Signaler</a>
+                {% else %}
+                    <a class="btn btn-primary" href="{{ path('app_connexion') }}">Se connecter pour suivre</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    {% set fichesVitrine = membre.fichesMisesEnAvant is not empty ? membre.fichesMisesEnAvant : (membre.ficheMiseEnAvant ? [membre.ficheMiseEnAvant] : []) %}
+    {% for ficheVitrine in fichesVitrine %}
+        <section class="gw-profile-showcase mt-4" aria-labelledby="fiche-vitrine-title-{{ ficheVitrine.id }}">
+            <div class="gw-profile-showcase__label"><i class="bi bi-stars" aria-hidden="true"></i> Vitrine de créateur</div>
+            <a class="gw-profile-showcase__card" href="{{ path('app_jeu_show', {slug: ficheVitrine.slug, id: ficheVitrine.id}) }}">
+                {% if ficheVitrine.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ ficheVitrine.id ~ '/' ~ ficheVitrine.miniature) }}" alt="" loading="lazy">{% else %}<span class="gw-profile-showcase__fallback"><i class="bi bi-controller"></i></span>{% endif %}
+                <span><small>Fiche mise en avant</small><strong id="fiche-vitrine-title-{{ ficheVitrine.id }}">{{ ficheVitrine.nom }}</strong><em>{{ ficheVitrine.description ?: 'Découvrir cette création' }}</em></span>
+                <i class="bi bi-arrow-right-circle-fill" aria-hidden="true"></i>
+            </a>
+        </section>
+    {% endfor %}
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-8">
+            <nav class="nav nav-pills gw-panel p-2 mb-3" aria-label="Sections du profil">
+                {% for cle, libelle in {apropos: 'À propos', activite: 'Activité', jeux: 'Jeux', actualites: 'Actualités', listes: 'Listes', favoris: 'Favoris', succes: 'Succès'} %}
+                    <a class="nav-link {{ section == cle ? 'active' }}" href="{{ path('app_profil', {id: membre.id, section: cle}) }}">{{ libelle }}</a>
+                {% endfor %}
+            </nav>
+
+            <section class="gw-panel p-4">
+                {% if section == 'apropos' %}
+                    <h2 class="h5">À propos de {{ membre.pseudo }}</h2>
+                    {% if app.user == membre and formulaireBiographie %}
+                        {{ form_start(formulaireBiographie, { action: path('app_profil_biographie', {id: membre.id}) }) }}
+                            {{ form_row(formulaireBiographie.biographie) }}
+                            <div class="d-flex justify-content-end">{{ form_widget(formulaireBiographie.enregistrer) }}</div>
+                        {{ form_end(formulaireBiographie) }}
+                    {% else %}
+                        <p class="text-secondary">{{ membre.biographie ?: 'Ce membre n’a pas encore rédigé sa présentation.' }}</p>
+                    {% endif %}
+                    <div class="d-flex flex-wrap gap-4">
+                        {% if membre.localisation %}<span><i class="bi bi-geo-alt-fill text-primary me-2"></i>{{ membre.localisation }}</span>{% endif %}
+                        {% if membre.dateNaissance %}<span><i class="bi bi-cake2-fill text-primary me-2"></i>Né(e) le {{ membre.dateNaissance|format_date('long', locale='fr') }}</span>{% endif %}
+                    </div>
+                    <hr>
+                    <h2 class="h5">Jeux préférés</h2>
+                    {{ _self.jeux(membre.jeuxFavoris|slice(0, 5), notesJeux) }}
+                {% elseif section == 'activite' %}
+                    <h2 class="h5">Publications récentes</h2>
+                    {% for publication in publications %}
+                        <article class="border-bottom py-3">
+                            <p class="mb-2">{{ publication.contenu|nl2br }}</p>
+                            <small class="text-secondary">{{ publication.publieeLe|format_datetime('medium', 'short', locale='fr') }} · <i class="bi bi-heart-fill text-danger"></i> {{ publication.aimePar|length }}</small>
+                        </article>
+                    {% else %}<p class="text-secondary mb-0">Aucune publication pour le moment.</p>{% endfor %}
+                {% elseif section == 'jeux' %}
+                    <h2 class="h5">Jeux publiés{% if nombreJeuxPublies > 0 %} <span class="badge text-bg-secondary">{{ nombreJeuxPublies }}</span>{% endif %}</h2>
+                    {{ _self.jeux(jeux, notesJeux) }}
+                    {% if jeuxPagination.pages > 1 %}
+                        <nav class="mt-4" aria-label="Pagination des jeux publiés">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% for numero in 1..jeuxPagination.pages %}
+                                    <li class="page-item{{ numero == jeuxPagination.page ? ' active' : '' }}">
+                                        <a class="page-link" href="{{ path('app_profil', { id: membre.id, section: 'jeux', page: numero }) }}" {{ numero == jeuxPagination.page ? 'aria-current="page"' : '' }}>{{ numero }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% elseif section == 'actualites' %}
+                    <h2 class="h5">Actualités{% if nombreActualitesPubliees > 0 %} <span class="badge text-bg-secondary">{{ nombreActualitesPubliees }}</span>{% endif %}</h2>
+                    {{ _self.actualites(actualitesPubliees) }}
+                    {% if actualitesPagination.pages > 1 %}
+                        <nav class="mt-4" aria-label="Pagination des actualités">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% for numero in 1..actualitesPagination.pages %}
+                                    <li class="page-item{{ numero == actualitesPagination.page ? ' active' : '' }}">
+                                        <a class="page-link" href="{{ path('app_profil', { id: membre.id, section: 'actualites', page: numero }) }}" {{ numero == actualitesPagination.page ? 'aria-current="page"' : '' }}>{{ numero }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% elseif section == 'listes' %}
+                    <h2 class="h5">Listes de jeux{% if listes is not empty %} <span class="badge text-bg-secondary">{{ listes|length }}</span>{% endif %}</h2>
+                    {% if app.user == membre %}
+                        <p class="text-secondary small">Gère tes listes depuis <a href="{{ path('app_mes_jeux', {_fragment: 'listes'}) }}">Mes jeux</a>.</p>
+                    {% endif %}
+                    {% if listes is empty %}
+                        <p class="text-secondary mb-0">Aucune liste pour le moment.</p>
+                    {% else %}
+                        <div class="vstack gap-4">
+                            {% for liste in listes %}
+                                {% set jeuxVisibles = liste.jeux|filter(jeu => jeu.statut.value == 'approuve') %}
+                                <article class="border rounded-4 p-3 p-md-4">
+                                    <header class="mb-3">
+                                        <h3 class="h6 mb-1">{{ liste.nom }}</h3>
+                                        {% if liste.description %}<p class="text-secondary small mb-0">{{ liste.description }}</p>{% endif %}
+                                        <p class="small text-secondary mb-0 mt-1">{{ jeuxVisibles|length }} jeu{{ jeuxVisibles|length > 1 ? 'x' : '' }}</p>
+                                    </header>
+                                    {% if jeuxVisibles is empty %}
+                                        <p class="text-secondary small mb-0">Cette liste ne contient pas encore de jeu visible.</p>
+                                    {% else %}
+                                        {{ _self.jeux(jeuxVisibles, notesJeux) }}
+                                    {% endif %}
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% elseif section == 'succes' %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0">Succès</h2>
+                        <span class="badge text-bg-warning">{{ succesAcquis|length }}/{{ succes|length }}</span>
+                    </div>
+                    {{ include('_succes_groupes.html.twig', { succes: succes, codesAcquis: codesAcquis, colonnes: 'col-md-6' }) }}
+                {% else %}
+                    <h2 class="h5">Jeux favoris</h2>
+                    {{ _self.jeux(membre.jeuxFavoris, notesJeux) }}
+                {% endif %}
+            </section>
+        </div>
+        <aside class="col-lg-4">
+            <section class="gw-panel p-4 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h6 text-uppercase mb-0">Progression</h2><strong class="text-warning"><i class="bi bi-star-fill me-1"></i>{{ membre.points|number_format(0, ',', ' ') }} pts</strong></div>
+                <div class="d-flex justify-content-between small mb-2"><span>Niveau {{ membre.niveau }}</span><span class="text-secondary">{{ membre.experienceNiveau }} / {{ membre.experienceNiveauSuivant }} XP</span></div>
+                <div class="progress" role="progressbar" aria-label="Progression vers le niveau {{ membre.niveau + 1 }}" aria-valuenow="{{ membre.progressionNiveau }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ membre.progressionNiveau }}%"></div></div>
+            </section>
+            {% if succesAcquis is not empty %}
+                <section class="gw-panel p-4 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 text-uppercase mb-0">Succès récents</h2>
+                        <a class="small" href="{{ path('app_profil', {id: membre.id, section: 'succes'}) }}">Tout voir</a>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for deblocage in succesAcquis|slice(0, 6) %}
+                            {% set item = deblocage.succes %}
+                            {% if item %}
+                                <span class="gw-achievement gw-reward-tier--{{ item.palier }}" title="{{ item.nom }} - {{ item.description }}"><i class="bi bi-{{ item.icone }}"></i></span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+            {% set badgesBoutique = achatsBoutique|filter(achat => achat.article.type.value == 'badge') %}
+            {% if badgesBoutique is not empty %}<section class="gw-panel p-4 mb-3"><h2 class="h6 text-uppercase">Badges</h2><div class="d-flex flex-wrap gap-2">{% for achat in badgesBoutique %}<span class="badge rounded-pill text-bg-{{ achat.article.couleur }}-subtle text-{{ achat.article.couleur }}-emphasis p-2" title="{{ achat.article.description }}"><i class="bi bi-{{ achat.article.icone }} me-1"></i>{{ achat.article.nom }}</span>{% endfor %}</div></section>{% endif %}
+            <section class="gw-panel p-4 mb-3">
+                <h2 class="h6 text-uppercase">Statut</h2>
+                <p class="mb-0">{{ membre.statutProfil ?: 'Aucun statut renseigné.' }}</p>
+            </section>
+            <section class="gw-panel p-4">
+                <h2 class="h6 text-uppercase">Aperçu de l’activité</h2>
+                <div class="d-grid gap-3">
+                    <div><i class="bi bi-controller text-primary me-2"></i><strong>{{ nombreJeuxPublies }}</strong> jeu{{ nombreJeuxPublies > 1 ? 'x' : '' }} publié{{ nombreJeuxPublies > 1 ? 's' }}</div>
+                    <div><i class="bi bi-newspaper text-primary me-2"></i><strong>{{ nombreActualitesPubliees }}</strong> actualité{{ nombreActualitesPubliees > 1 ? 's' : '' }}</div>
+                    <div><i class="bi bi-heart-fill text-danger me-2"></i><strong>{{ membre.jeuxFavoris|length }}</strong> favori{{ membre.jeuxFavoris|length > 1 ? 's' : '' }}</div>
+                    <div><i class="bi bi-list-ul text-primary me-2"></i><strong>{{ listes|length }}</strong> liste{{ listes|length > 1 ? 's' : '' }}</div>
+                    <div><i class="bi bi-chat-square-text-fill text-primary me-2"></i><strong>{{ publications|length }}</strong> publication{{ publications|length > 1 ? 's' : '' }}</div>
+                    <div><i class="bi bi-trophy-fill text-warning me-2"></i><strong>{{ succesAcquis|length }}</strong> succès</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% macro jeux(jeux, notes) %}
+    {% if jeux is empty %}
+        <p class="text-secondary mb-0">Aucun jeu à afficher.</p>
+    {% else %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+            {% for jeu in jeux %}
+                <div class="col">
+                    <article class="gw-game-card h-100" data-son-survol="survol-jeu">
+                        <a class="gw-game-card__visual" href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}" aria-label="Voir {{ jeu.nom }}">
+                            {% if jeu.miniature starts with 'miniature.' %}
+                                <img class="w-100 h-100 object-fit-cover" src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="Miniature de {{ jeu.nom }}" loading="lazy" decoding="async">
+                            {% else %}
+                                <i class="bi bi-controller" aria-hidden="true"></i>
+                                <span>Voir la fiche</span>
+                            {% endif %}
+                            {% include 'jeu/_note_badge.html.twig' with { note: notes[jeu.id]|default(null) } only %}
+                        </a>
+                        <div class="gw-game-card__body">
+                            <h3 class="gw-game-card__title"><a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a></h3>
+                            {% if jeu.dateSortie %}<p class="gw-game-card__developer mb-2"><i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ jeu.dateSortie|date('Y') }}</p>{% endif %}
+                            <div class="gw-game-card__tags">
+                                {% if jeu.categorie %}<span class="gw-tag">{{ jeu.categorie.nom }}</span>{% endif %}
+                                {% for genre in jeu.genres|slice(0, 2) %}<span class="gw-tag">{{ genre.nom }}</span>{% endfor %}
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro actualites(actualites) %}
+    {% if actualites is empty %}
+        <p class="text-secondary mb-0">Aucune actualité publiée pour le moment.</p>
+    {% else %}
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+            {% for actualite in actualites %}
+                <div class="col">
+                    {% include 'actualite/_carte.html.twig' with { actualite: actualite, hauteurImage: 160 } only %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}

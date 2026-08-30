@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conditions d’utilisation - Glitchworlds{% endblock %}
+{% block meta_description %}Règles d’accès, d’inscription et d’usage du service Glitchworlds.{% endblock %}
+
+{% block body %}
+<div class="gw-legal-page">
+    <header class="gw-panel p-4 p-lg-5 mb-4">
+        <span class="gw-eyebrow">Cadre du service</span>
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 mt-2">
+            <span class="gw-legal-page__icon" aria-hidden="true"><i class="bi bi-file-earmark-text-fill"></i></span>
+            <div>
+                <h1 class="display-6 mb-2">Conditions d’utilisation</h1>
+                <p class="lead text-secondary mb-1">Les règles qui encadrent l’accès à Glitchworlds, la création d’un compte et l’usage des fonctionnalités.</p>
+                <p class="small text-secondary mb-0">Dernière mise à jour : 23 août 2026</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="row g-4">
+        <aside class="col-lg-4 col-xl-3">
+            {% set sommaire %}
+                <a href="#objet">Objet</a>
+                <a href="#acces">Accès au service</a>
+                <a href="#compte">Compte membre</a>
+                <a href="#contenus">Contenus publiés</a>
+                <a href="#usage">Usage autorisé</a>
+                <a href="#moderation">Modération et sanctions</a>
+                <a href="#responsabilite">Responsabilité</a>
+                <a href="#donnees">Données personnelles</a>
+                <a href="#evolution">Évolution des conditions</a>
+            {% endset %}
+            {{ include('pages/_nav_legale.html.twig', { page_active: 'conditions', sommaire: sommaire }) }}
+        </aside>
+
+        <div class="col-lg-8 col-xl-9">
+            <div class="gw-panel p-4 p-lg-5 gw-legal-page__content">
+                <section id="objet">
+                    <h2><i class="bi bi-controller" aria-hidden="true"></i> Objet</h2>
+                    <p>Glitchworlds est une plateforme communautaire dédiée aux jeux vidéo : fiches, actualités, notes, commentaires, publications, messagerie et outils associés.</p>
+                    <p class="mb-0">En accédant au site ou en créant un compte, tu acceptes les présentes conditions d’utilisation ainsi que la <a href="{{ path('app_charte_moderation') }}">charte de contribution et de modération</a>.</p>
+                </section>
+
+                <section id="acces">
+                    <h2><i class="bi bi-door-open-fill" aria-hidden="true"></i> Accès au service</h2>
+                    <p>La consultation de nombreuses pages est possible sans compte. Certaines fonctionnalités (publication, messagerie, paramètres avancés, abonnements) nécessitent une inscription et une connexion.</p>
+                    <p>Glitchworlds peut limiter, suspendre ou interrompre l’accès au service pour maintenance, sécurité ou mise en conformité, sans indemnité, dans la mesure permise par la loi.</p>
+                    <p class="mb-0">Tu t’engages à utiliser le site conformément aux lois applicables et à ne pas tenter de contourner les mesures de sécurité mises en place.</p>
+                </section>
+
+                <section id="compte">
+                    <h2><i class="bi bi-person-circle" aria-hidden="true"></i> Compte membre</h2>
+                    <p>Lors de l’inscription, tu fournis des informations exactes et les maintiens à jour dans la mesure du possible. Tu es responsable de la confidentialité de tes identifiants et de toute activité réalisée depuis ton compte.</p>
+                    <p>Tu peux supprimer ton compte depuis les <a href="{{ path('app_parametres') }}">paramètres</a>. La suppression entraîne l’effacement ou l’anonymisation des données associées, conformément à la <a href="{{ path('app_confidentialite') }}">politique de confidentialité</a>, sous réserve des nécessités légales ou de modération.</p>
+                    <p class="mb-0">Glitchworlds se réserve le droit de refuser, suspendre ou clore un compte en cas de violation manifeste des présentes conditions ou de la charte communautaire.</p>
+                </section>
+
+                <section id="contenus">
+                    <h2><i class="bi bi-images" aria-hidden="true"></i> Contenus publiés</h2>
+                    <p>En publiant un contenu sur Glitchworlds (texte, image, capture, fiche, commentaire, message), tu déclares disposer des droits nécessaires pour le diffuser et tu accordes à Glitchworlds une licence non exclusive, gratuite et mondiale permettant d’héberger, reproduire, adapter techniquement et afficher ce contenu dans le cadre du service.</p>
+                    <p>Cette licence prend fin lorsque le contenu est supprimé, sous réserve des copies techniques temporaires ou des sauvegardes nécessaires au fonctionnement du site.</p>
+                    <p class="mb-0">Tu restes propriétaire de tes créations originales. Les marques, jeux et œuvres de tiers ne t’appartiennent pas et ne doivent être utilisés que dans le respect de leurs ayants droit.</p>
+                </section>
+
+                <section id="usage">
+                    <h2><i class="bi bi-slash-circle-fill" aria-hidden="true"></i> Usage autorisé</h2>
+                    <p>Il est notamment interdit de :</p>
+                    <ul>
+                        <li>publier du spam, de la publicité non sollicitée ou des contenus trompeurs ;</li>
+                        <li>harceler, insulter ou menacer d’autres membres ;</li>
+                        <li>diffuser un contenu illégal, diffamatoire, haineux ou dangereux ;</li>
+                        <li>porter atteinte aux droits d’auteur, à la vie privée ou à l’image d’autrui ;</li>
+                        <li>usurper l’identité d’une autre personne ou d’un membre de l’équipe ;</li>
+                        <li>collecter des données ou tenter d’accéder à des comptes sans autorisation ;</li>
+                        <li>perturber volontairement le service, par exemple via des requêtes automatisées abusives.</li>
+                    </ul>
+                    <p class="mb-0">La liste détaillée des comportements attendus et des motifs de signalement figure dans la <a href="{{ path('app_charte_moderation') }}">charte de contribution</a>.</p>
+                </section>
+
+                <section id="moderation">
+                    <h2><i class="bi bi-shield-fill-check" aria-hidden="true"></i> Modération et sanctions</h2>
+                    <p>Glitchworlds peut examiner, modifier, masquer ou supprimer tout contenu, ainsi que suspendre ou supprimer un compte, lorsqu’un manquement aux présentes conditions est constaté ou signalé.</p>
+                    <p>Les décisions de modération peuvent être prises sans préavis en cas d’urgence manifeste (contenu illégal, faille de sécurité, harcèlement grave). Dans les autres cas, une décision proportionnée est recherchée.</p>
+                    <p class="mb-0">Tu peux contester une décision ou signaler un abus en écrivant à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a> ou via les outils de signalement du site.</p>
+                </section>
+
+                <section id="responsabilite">
+                    <h2><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Responsabilité</h2>
+                    <p>Glitchworlds est fourni « en l’état ». L’éditeur ne garantit pas l’absence d’erreur, d’interruption ou de perte de données, dans les limites autorisées par la loi.</p>
+                    <p>Les contenus publiés par les membres relèvent de leur seule responsabilité. Glitchworlds n’est pas partie aux échanges privés entre utilisateurs, même s’il met à disposition des outils pour les faciliter.</p>
+                    <p class="mb-0">Aucune stipulation des présentes conditions ne vise à exclure ou limiter une responsabilité qui ne pourrait l’être légalement.</p>
+                </section>
+
+                <section id="donnees">
+                    <h2><i class="bi bi-shield-lock-fill" aria-hidden="true"></i> Données personnelles</h2>
+                    <p>Le traitement de tes données personnelles est décrit dans la <a href="{{ path('app_confidentialite') }}">politique de confidentialité</a>, qui fait partie intégrante du cadre contractuel du service.</p>
+                    <p class="mb-0">Tu peux à tout moment gérer tes préférences publicitaires et cookies via le lien permanent disponible en bas de page ou depuis tes paramètres.</p>
+                    <div class="mt-3">
+                        {{ include('pages/_bouton_consentement.html.twig', { classes: 'btn btn-primary d-inline-flex align-items-center gap-2', label: 'Modifier mes choix publicitaires et cookies', icon: 'bi-sliders' }) }}
+                    </div>
+                </section>
+
+                <section id="evolution">
+                    <h2><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Évolution des conditions</h2>
+                    <p>Glitchworlds peut adapter les présentes conditions lorsque le service évolue ou que la réglementation l’exige. La date de dernière mise à jour figure en haut de page.</p>
+                    <p class="mb-0">L’usage continu du site après modification vaut acceptation des nouvelles conditions, sous réserve des droits dont tu disposes en tant que consommateur le cas échéant.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

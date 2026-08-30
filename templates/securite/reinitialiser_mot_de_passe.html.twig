@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau mot de passe - Glitchworlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+{% block body %}
+<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width: 620px">
+    <h1 class="h2">Choisir un nouveau mot de passe</h1>
+    {{ form_start(formulaire) }}
+        {{ form_row(formulaire.motDePasse.first) }}
+        {{ form_row(formulaire.motDePasse.second) }}
+        {{ form_widget(formulaire.enregistrer) }}
+    {{ form_end(formulaire) }}
+</section>
+{% endblock %}

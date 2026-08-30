@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ modification ? 'Modifier l’actualité' : 'Proposer une actualité' }} - Glitchworlds{% endblock %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+{% block body_attributes %} data-turbo="false"{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 920px">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <i class="bi bi-newspaper text-primary fs-1" aria-hidden="true"></i>
+        <div>
+            <h1 class="h2 mb-1">{{ modification ? 'Modifier l’actualité' : 'Proposer une actualité' }}</h1>
+            <p class="text-secondary mb-0">{{ modification ? 'Mets à jour le contenu avant validation.' : 'Partage une news, un glitch, un mod ou un tutoriel avec la communauté. Tu peux enregistrer un brouillon et l’envoyer plus tard.' }}</p>
+        </div>
+    </div>
+
+    {{ form_start(formulaire) }}
+        {{ form_row(formulaire.titre) }}
+        {{ form_row(formulaire.description) }}
+        {% include '_editeur_bbcode.html.twig' with { champ: formulaire.contenu, templates: 'actualite' } only %}
+        {{ form_row(formulaire.banniereFichier) }}
+        {% if modification and formulaire.vars.data.banniere and not (formulaire.vars.data.banniere starts with 'legacy:') %}
+            <img class="img-fluid rounded-3 border mb-3" src="{{ asset('uploads/actualites/' ~ formulaire.vars.data.id ~ '/' ~ formulaire.vars.data.banniere) }}" alt="Bannière actuelle" loading="lazy">
+        {% endif %}
+        {{ form_row(formulaire.miniatureFichier) }}
+        {% if modification and formulaire.vars.data.miniature and not (formulaire.vars.data.miniature starts with 'legacy:') %}
+            <img class="img-fluid rounded-3 border mb-3" src="{{ asset('uploads/actualites/' ~ formulaire.vars.data.id ~ '/' ~ formulaire.vars.data.miniature) }}" alt="Miniature actuelle" loading="lazy">
+        {% endif %}
+        {{ form_row(formulaire.jeux) }}
+        {{ form_row(formulaire.categorie) }}
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a class="btn btn-outline-secondary btn-lg" href="{{ path('app_compte') }}">Annuler</a>
+            {% if formulaire.brouillon is defined %}{{ form_widget(formulaire.brouillon) }}{% endif %}
+            {{ form_widget(formulaire.envoyer) }}
+        </div>
+    {{ form_end(formulaire) }}
+</section>
+<script>
+(function (form) {
+    if (!form) return;
+    const avertir = () => { window.onbeforeunload = (e) => { e.preventDefault(); e.returnValue = ''; }; };
+    form.addEventListener('input', avertir);
+    form.addEventListener('change', avertir);
+    form.addEventListener('submit', () => { window.onbeforeunload = null; });
+})(document.querySelector('form[name="actualite_proposition"]'));
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% if jeu.miniature starts with 'miniature.' %}
+    <div class="gw-game-cover-wrap{% if variante|default('contenu') == 'hero' %} gw-game-cover-wrap--hero{% endif %}{% if classes|default('') %} {{ classes }}{% endif %}">
+        <span class="gw-game-cover">
+            {% include '_image_responsive.html.twig' with {
+                fichier: jeu.miniature,
+                dossier: 'uploads/jeux/' ~ jeu.id,
+                classes: 'gw-game-cover__img',
+                alt: 'Miniature de ' ~ jeu.nom,
+                loading: loading|default('lazy'),
+                fetchpriority: fetchpriority|default(false),
+                sizes: variante|default('contenu') == 'hero' ? '(max-width: 768px) 70vw, 320px' : '(max-width: 576px) 100vw, (max-width: 1200px) 50vw, 25vw'
+            } only %}
+        </span>
+    </div>
+{% endif %}

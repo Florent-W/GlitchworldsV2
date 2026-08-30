@@ -1,0 +1,50 @@
+{# Groupes de succès, calqués sur les titres de catégories des récompenses. #}
+{% set groupes = {
+    collection: {label: 'Collection', icon: 'collection-play-fill', description: 'Bibliothèque, listes et favoris.'},
+    communaute: {label: 'Communauté', icon: 'people-fill', description: 'Notes, commentaires, publications, suivis et messages.'},
+    creation: {label: 'Création', icon: 'joystick', description: 'Jeux proposés et actualités publiées.'},
+    profil: {label: 'Profil', icon: 'person-badge-fill', description: 'Photo, bannière et présentation publique.'},
+    progression: {label: 'Progression', icon: 'stars', description: 'Les paliers de niveau sur Glitchworlds.'},
+    boutique: {label: 'Récompense', icon: 'gift-fill', description: 'Tes premiers échanges de points.'}
+} %}
+{% set colonnes = colonnes|default('col-md-6 col-xl-4') %}
+
+{% if succes is empty %}
+    <p class="text-secondary mb-0">Aucun succès n’est encore défini.</p>
+{% else %}
+    {% for categorie, groupe in groupes %}
+        {% set items = succes|filter(item => item.categorie == categorie) %}
+        {% if items is not empty %}
+            <section class="gw-rewards-group mb-4" aria-labelledby="succes-{{ categorie }}">
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <span class="gw-rewards-group__icon"><i class="bi bi-{{ groupe.icon }}" aria-hidden="true"></i></span>
+                    <div>
+                        <h2 class="h3 mb-1" id="succes-{{ categorie }}">{{ groupe.label }}</h2>
+                        <p class="text-secondary mb-0">{{ groupe.description }}</p>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    {% for item in items %}
+                        {% set acquis = item.code in codesAcquis %}
+                        <div class="{{ colonnes }}">
+                            <article class="gw-panel p-4 h-100 gw-reward-tier--{{ item.palier }} {{ not acquis ? 'opacity-50' }}">
+                                <div class="d-flex gap-3">
+                                    <span class="gw-achievement"><i class="bi bi-{{ acquis ? item.icone : 'lock-fill' }}"></i></span>
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <h3 class="h5 mb-0">{{ item.nom }}</h3>
+                                            <span class="badge gw-shop-card__type">{{ item.palierLabel }}</span>
+                                            {% if acquis %}<span class="badge text-bg-success">Débloqué</span>{% endif %}
+                                        </div>
+                                        <p class="text-secondary my-2">{{ item.description }}</p>
+                                        <strong class="gw-shop-card__price">+{{ item.points }} points</strong>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    {% endfor %}
+{% endif %}

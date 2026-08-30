@@ -1,0 +1,831 @@
+:root[data-theme="legacy"],
+:root[data-gw-theme="legacy"] {
+    --gw-primary: #0f59e9;
+    --gw-primary-rgb: 15, 89, 233;
+    --gw-primary-dark: #0a3fa9;
+    --gw-secondary: #1dd2b1;
+    --gw-secondary-rgb: 29, 210, 177;
+    --gw-background: #e7ebf2;
+    --gw-background-accent: #b7c3da;
+    --gw-surface: rgba(255, 255, 255, .9);
+    --gw-surface-solid: #fff;
+    --gw-text: #212529;
+    --gw-muted: #6c757d;
+    --gw-border: rgba(0, 0, 0, .42);
+    --gw-radius-sm: .25rem;
+    --gw-radius-md: .45rem;
+    --gw-radius-lg: .8rem;
+    --gw-shadow: 0 0 0 .22rem rgba(0, 0, 0, .78), 0 12px 28px rgba(0, 0, 0, .2);
+    --gw-shadow-soft: 0 3px 10px rgba(0, 0, 0, .2);
+}
+
+:root[data-theme="legacy"] body,
+:root[data-gw-theme="legacy"] body {
+    background-image:
+        linear-gradient(180deg, rgba(20, 55, 112, .18), rgba(42, 27, 161, .34) 48%, rgba(255, 119, 55, .34)),
+        linear-gradient(145deg, #294b85 0%, #34305e 52%, #e78358 82%, #f4bc78 100%);
+}
+
+:root[data-theme="legacy"] .gw-topbar,
+:root[data-gw-theme="legacy"] .gw-topbar {
+    margin: -1rem calc(-1 * clamp(.75rem, 2vw, 1.5rem)) 0;
+    padding: .85rem clamp(.75rem, 2vw, 1.5rem);
+    color: #fff;
+    background: #343a40;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+}
+
+:root[data-theme="legacy"] .gw-logo__name,
+:root[data-theme="legacy"] .gw-logo__tagline,
+:root[data-gw-theme="legacy"] .gw-logo__name,
+:root[data-gw-theme="legacy"] .gw-logo__tagline { color: #fff; }
+:root[data-theme="legacy"] .gw-rail__item.is-active,
+:root[data-gw-theme="legacy"] .gw-rail__item.is-active { color: #fff; background: #0f59e9; }
+
+/* --- Legacy en sombre : l'ancien site à la nuit tombée --- */
+:root[data-theme="legacy"][data-bs-theme="dark"] {
+    --gw-primary: #5b8cff;
+    --gw-primary-rgb: 91, 140, 255;
+    --gw-primary-dark: #93b2ff;
+    --gw-secondary: #2ee0bd;
+    --gw-secondary-rgb: 46, 224, 189;
+    --gw-background: #14161c;
+    --gw-background-accent: #1d212a;
+    --gw-surface: rgba(33, 37, 45, .92);
+    --gw-surface-solid: #23272f;
+    --gw-text: #e9ecef;
+    --gw-muted: #a8b1ba;
+    --gw-border: rgba(0, 0, 0, .62);
+    --gw-shadow: 0 0 0 .22rem rgba(0, 0, 0, .9), 0 12px 28px rgba(0, 0, 0, .5);
+    --gw-shadow-soft: 0 3px 10px rgba(0, 0, 0, .45);
+    --bs-body-color: var(--gw-text);
+    --bs-body-bg: var(--gw-background);
+    --bs-secondary-color: var(--gw-muted);
+    --bs-tertiary-bg: #2a2f38;
+    --bs-border-color: var(--gw-border);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] body {
+    background-image:
+        linear-gradient(180deg, rgba(6, 14, 30, .55), rgba(14, 9, 46, .6) 48%, rgba(70, 30, 12, .5)),
+        linear-gradient(145deg, #142542 0%, #1b1832 52%, #5c3324 82%, #6b4a2c 100%);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.card, .modal-content, .dropdown-menu, .list-group-item, .accordion-item) {
+    color: var(--gw-text);
+    background-color: var(--gw-surface-solid);
+    border-color: var(--gw-border);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.form-control, .form-select, .input-group-text) {
+    color: var(--gw-text);
+    background-color: #1b1f26;
+    border-color: var(--gw-border);
+}
+
+/* DS sombre : contraste de la barre de raccourcis inférieure. */
+:root[data-theme="legacy"] {
+    --gw-primary: #0d6efd;
+    --gw-primary-rgb: 13, 110, 253;
+    --gw-primary-dark: #0a58ca;
+    --gw-secondary: #6c757d;
+    --gw-secondary-rgb: 108, 117, 125;
+    --gw-background: #ffffff;
+    --gw-background-accent: #f5f5f5;
+    --gw-surface: #ffffff;
+    --gw-surface-solid: #ffffff;
+    --gw-text: #212529;
+    --gw-muted: #6c757d;
+    --gw-border: #dee2e6;
+    --gw-radius-sm: .15rem;
+    --gw-radius-md: .2rem;
+    --gw-radius-lg: .25rem;
+    --gw-shadow: 0 .2rem .5rem rgba(0, 0, 0, .14);
+    --gw-shadow-soft: 0 .125rem .25rem rgba(0, 0, 0, .075);
+    --gw-rail-width: 100%;
+}
+
+:root[data-theme="legacy"] body,
+:root[data-theme="legacy"][data-bs-theme="dark"] body {
+    color: #212529;
+    background:
+        linear-gradient(180deg, rgba(20, 55, 112, .18), rgba(42, 27, 161, .34) 48%, rgba(255, 119, 55, .34)),
+        linear-gradient(145deg, #294b85 0%, #34305e 52%, #e78358 82%, #f4bc78 100%);
+    background-attachment: fixed;
+}
+
+:root[data-theme="legacy"] body::before {
+    display: none;
+    content: none;
+}
+
+:root[data-theme="legacy"] .gw-app {
+    gap: 0;
+    max-width: none;
+    padding: 0;
+}
+
+:root[data-theme="legacy"] .gw-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+    margin: 0;
+    padding: .55rem .75rem;
+    border: 0;
+    border-radius: 0;
+    color: #fff;
+    background: #343a40;
+    box-shadow: none;
+    grid-template-columns: auto minmax(0, 1fr) minmax(180px, 230px) auto;
+    column-gap: .7rem;
+}
+
+:root[data-theme="legacy"] .gw-logo {
+    grid-column: 1;
+    /* Léger retrait à gauche, comme la marque de la navbar d'origine. */
+    margin-left: .5rem;
+    margin-right: 1rem;
+    padding-block: .3125rem;
+    white-space: nowrap;
+}
+
+:root[data-theme="legacy"] .gw-topbar > .gw-rail {
+    grid-column: 2;
+    min-width: 0;
+}
+
+:root[data-theme="legacy"] .gw-topbar > .gw-search {
+    grid-column: 3;
+}
+
+:root[data-theme="legacy"] .gw-topbar > .gw-actions {
+    grid-column: 4;
+    justify-self: end;
+}
+
+:root[data-theme="legacy"] .gw-topbar > .gw-actions > :not(.gw-icon-btn--avatar) {
+    display: none;
+}
+
+:root[data-theme="legacy"] .gw-logo__name {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+:root[data-theme="legacy"] .gw-logo__accent {
+    color: inherit;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    text-transform: lowercase;
+}
+
+:root[data-theme="legacy"] .gw-logo__tagline {
+    display: none;
+}
+
+:root[data-theme="legacy"] :is(.gw-actions, .gw-search__input, .gw-icon-btn, .gw-level-chip) {
+    border-color: rgba(255, 255, 255, .18);
+    border-radius: .2rem;
+    color: #fff;
+    background: rgba(255, 255, 255, .08);
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+:root[data-theme="legacy"] .gw-search__input::placeholder {
+    color: #6c757d;
+}
+
+:root[data-theme="legacy"] .gw-search__input {
+    border-color: #ced4da;
+    color: #212529;
+    background: #fff;
+}
+
+:root[data-theme="legacy"] .gw-search__icon {
+    color: #495057;
+}
+
+:root[data-theme="legacy"] .gw-icon-btn {
+    color: rgba(255, 255, 255, .82);
+}
+
+:root[data-theme="legacy"] .gw-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+:root[data-theme="legacy"] .gw-rail {
+    position: static;
+    z-index: auto;
+    width: 100%;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+:root[data-theme="legacy"] .gw-rail__viewport {
+    position: relative;
+    display: block;
+    max-height: none;
+    overflow: visible;
+}
+
+:root[data-theme="legacy"] .gw-dsi-selection {
+    display: none !important;
+}
+
+/* Le défilement porte sur la liste et non sur le cadre : les flèches peuvent
+   ainsi rester posées sur les bords pendant que les entrées glissent dessous. */
+:root[data-theme="legacy"] .gw-rail__list {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    max-height: none;
+    padding: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+:root[data-theme="legacy"] .gw-rail__list::-webkit-scrollbar {
+    display: none;
+}
+
+/* Le menu de la barre du haut déborde dès que la fenêtre se resserre : sans
+   repère, rien n'indique qu'il reste des entrées à droite. */
+:root[data-theme="legacy"] .gw-rail__suite {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    bottom: 0;
+    display: grid;
+    width: 2rem;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    cursor: pointer;
+    color: #fff;
+}
+
+:root[data-theme="legacy"] .gw-rail__suite--haut {
+    left: 0;
+    right: auto;
+    background: linear-gradient(to right, #343a40 62%, rgba(52, 58, 64, 0));
+}
+
+:root[data-theme="legacy"] .gw-rail__suite--bas {
+    right: 0;
+    left: auto;
+    background: linear-gradient(to left, #343a40 62%, rgba(52, 58, 64, 0));
+}
+
+/* Les chevrons du rail vertical resservent ici, pivotés d'un quart de tour. */
+:root[data-theme="legacy"] .gw-rail__suite i {
+    transform: rotate(-90deg);
+}
+
+:root[data-theme="legacy"] .gw-rail__suite:hover {
+    color: #adb5bd;
+}
+
+:root[data-theme="legacy"] .gw-rail__suite[hidden] {
+    display: none;
+}
+
+:root[data-theme="legacy"] .gw-rail__list > li {
+    flex: 0 0 auto;
+}
+
+:root[data-theme="legacy"] .gw-rail__item {
+    min-height: 44px;
+    flex-direction: row;
+    gap: .32rem;
+    padding: .65rem .62rem;
+    border: 0;
+    border-radius: 0;
+    color: rgba(255, 255, 255, .92);
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+}
+
+:root[data-theme="legacy"] .gw-rail__item i {
+    display: inline-block;
+    color: inherit;
+    font-size: .86rem;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-home i {
+    color: #fff;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-jeux i {
+    color: #51cf66;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-actualites-glitchs i {
+    color: #dba800;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-actualites i {
+    color: #4dabf7;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-mes-jeux i {
+    color: #20c997;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-communaute i {
+    color: #b197fc;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-classement i {
+    color: #f59f00;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-messages i {
+    color: #22b8cf;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-notifications i {
+    color: #ff6b6b;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-parametres i {
+    color: #adb5bd;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-boutique i {
+    color: #ff922b;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-moderation-accueil i {
+    color: #5c7cfa;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-administration-tableau-de-bord i {
+    color: #e599f7;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-deconnexion i {
+    color: #e03131;
+}
+
+:root[data-theme="legacy"] .gw-rail__item--route-app-connexion i {
+    color: #74c0fc;
+}
+
+:root[data-theme="legacy"] .gw-rail__item.is-active i {
+    color: #fff;
+}
+
+:root[data-theme="legacy"] .gw-rail__label {
+    color: inherit;
+    font-size: .82rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+:root[data-theme="legacy"] .gw-rail__item:is(:hover, :focus-visible) {
+    color: #fff;
+    background: rgba(255, 255, 255, .08);
+    transform: none;
+}
+
+:root[data-theme="legacy"] .gw-rail__item.is-active {
+    color: #fff;
+    border: 0;
+    background: #0d6efd;
+    box-shadow: none;
+}
+
+:root[data-theme="legacy"] .gw-main {
+    width: min(1200px, calc(100% - 2rem));
+    margin-inline: auto;
+    /* Aucune réserve en haut : la bannière pleine largeur se colle sous la
+       barre de navigation comme sur l'ancien site. Les pages internes gardent
+       leur respiration via la marge de .gw-main--interne. */
+    padding-block: 0 2rem;
+}
+
+:root[data-theme="legacy"] .gw-main--interne {
+    margin-block: 1.5rem 2rem;
+    padding: 1.5rem;
+    border: 2px solid #111;
+    border-radius: .6rem;
+    color: #212529;
+    background: #fff;
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+}
+
+:root[data-theme="legacy"] .gw-home-shell {
+    gap: 0;
+}
+
+:root[data-theme="legacy"] .gw-3ds-screen--top {
+    margin-inline: calc((100vw - min(1200px, calc(100vw - 2rem))) / -2);
+}
+
+:root[data-theme="legacy"] .gw-3ds-screen--top > #actualites-en-avant {
+    display: none;
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home {
+    min-height: clamp(390px, 44vw, 520px);
+    margin: 0 !important;
+    padding: clamp(2rem, 5vw, 4.5rem);
+    align-items: end;
+    border: 0;
+    border-radius: 0;
+    background:
+        linear-gradient(180deg, rgba(3, 15, 30, .05) 15%, rgba(3, 16, 36, .35) 58%, rgba(2, 12, 30, .88) 100%),
+        linear-gradient(180deg, rgba(20, 55, 112, .18), rgba(42, 27, 161, .34) 48%, rgba(255, 119, 55, .34)),
+        linear-gradient(145deg, #294b85 0%, #34305e 52%, #e78358 82%, #f4bc78 100%);
+    box-shadow: inset 0 -5px #10366d;
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home .gw-game-hero__content {
+    max-width: 900px;
+    margin-inline: auto;
+    text-align: center;
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home .gw-game-hero__category,
+:root[data-theme="legacy"] .gw-game-hero--home .gw-game-hero__icon,
+:root[data-theme="legacy"] .gw-game-hero--home .gw-game-hero__stats {
+    display: none;
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home h1 {
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 600;
+    text-shadow: 0 2px 4px #000;
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home .gw-game-hero__lead {
+    max-width: 850px;
+    margin-inline: auto;
+    font-size: 1rem;
+    text-shadow: 0 2px 4px #000;
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home .d-flex {
+    justify-content: center;
+}
+
+:root[data-theme="legacy"] .gw-3ds-screen--bottom {
+    padding-top: 2rem;
+}
+
+:root[data-theme="legacy"] .gw-home-disposition .btn {
+    border-color: #adb5bd;
+    color: #212529;
+    background: #fff;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+:root[data-theme="legacy"] .gw-home-disposition .btn:is(:hover, :focus-visible) {
+    border-color: #fff;
+    color: #0b5ed7;
+    background: #f1f5f9;
+}
+
+:root[data-theme="legacy"] .gw-home-disposition :is(.btn.active, .btn-primary) {
+    border-color: #0a58ca;
+    color: #fff;
+    background: #0d6efd;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
+}
+
+:root[data-theme="legacy"] :is(.gw-panel, .gw-page-panel, .card, .gw-similar-card, .gw-article-card, .gw-community__composer, .gw-community__post, .gw-community__side, .gw-comment) {
+    color: #212529;
+    border: 1px solid #dee2e6;
+    border-radius: .2rem;
+    background: #fff;
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+    backdrop-filter: none;
+}
+
+:root[data-theme="legacy"] .gw-collection--actualites > .col:nth-child(odd) :is(.gw-similar-card, .gw-article-card) {
+    background: #f5f5f5;
+}
+
+:root[data-theme="legacy"] .gw-collection--actualites > .col:nth-child(even) :is(.gw-similar-card, .gw-article-card) {
+    background: #fff;
+}
+
+:root[data-theme="legacy"] .gw-collection--jeux > .col:nth-child(odd) .gw-similar-card {
+    background: #f5f5f5;
+}
+
+:root[data-theme="legacy"] .gw-collection--jeux > .col:nth-child(even) .gw-similar-card {
+    background: #fff;
+}
+
+:root[data-theme="legacy"] :is(.gw-collection--jeux, .gw-collection--actualites) > .col :is(.gw-similar-card, .gw-article-card) {
+    border: 2px solid #111 !important;
+    border-radius: .6rem !important;
+    transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+:root[data-theme="legacy"] .gw-collection--jeux > .col .gw-game-card {
+    border: 2px solid #111;
+    border-radius: .6rem;
+}
+
+:root[data-theme="legacy"] .gw-collection--jeux > .col .gw-game-card:is(:hover, :focus-within) {
+    border-color: #9ec5fe;
+}
+
+:root[data-theme="legacy"] :is(.gw-collection--jeux, .gw-collection--actualites) > .col :is(.gw-similar-card, .gw-article-card):is(:hover, :focus-within) {
+    border-color: #9ec5fe;
+    background: #e7f1ff;
+    box-shadow: 0 .125rem .3rem rgba(13, 110, 253, .18);
+}
+
+:root[data-theme="legacy"] .gw-game-hero {
+    border-radius: .2rem;
+    box-shadow: 0 .2rem .5rem rgba(0, 0, 0, .18);
+}
+
+:root[data-theme="legacy"] .gw-3ds-screen,
+:root[data-theme="legacy"] .gw-3ds-screen--bottom {
+    display: block;
+}
+
+:root[data-theme="legacy"] .gw-3ds-charniere {
+    display: none;
+}
+
+:root[data-theme="legacy"] .gw-home-menu__entete {
+    margin: -1.5rem -1.5rem 1rem !important;
+    padding: .7rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    color: #fff;
+    background: #343a40;
+}
+
+@media (min-width: 768px) {
+    :root[data-theme="legacy"] .gw-topbar {
+        min-height: 56px;
+    }
+
+    :root[data-theme="legacy"] .gw-topbar > .gw-search {
+        justify-self: end;
+        width: min(260px, 24vw);
+        margin-right: .5rem;
+    }
+
+    :root[data-theme="legacy"] .gw-topbar > .gw-rail {
+        position: static;
+        z-index: auto;
+        width: 100%;
+        padding: 0;
+        /* Le dernier lien du menu tomberait sinon juste contre le champ de
+           recherche, qui le suit dans la barre. */
+        margin-right: .75rem;
+        background: transparent;
+    }
+
+    :root[data-theme="legacy"] .gw-rail__item {
+        min-height: 56px;
+    }
+}
+
+:root[data-theme="legacy"] .gw-home-menu__entete h2,
+:root[data-theme="legacy"] .gw-home-menu__entete h2 .bi,
+:root[data-theme="legacy"] .gw-home-menu__lien {
+    color: #fff !important;
+}
+
+:root[data-theme="legacy"] .gw-home-menu__entete h2 {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+:root[data-theme="legacy"] :is(.btn, .form-control, .form-select, .input-group-text, .dropdown-menu, .modal-content) {
+    border-radius: .2rem;
+}
+
+/* Bas de page de l'ancien site : bandeau bleu nuit surmontant une bande plus
+   sombre pour le copyright. Les deux teintes sont reprises telles quelles. */
+:root[data-theme="legacy"] .gw-bottombar {
+    padding: 1.25rem clamp(.75rem, 2vw, 1.5rem) 0;
+    border-radius: 0;
+    color: #ced4da;
+    background: #1c2a48;
+    box-shadow: none;
+}
+
+/* L'horloge garde la surface du thème : sans couleur propre elle hériterait
+   du texte clair du bandeau et deviendrait illisible en mode clair. */
+:root[data-theme="legacy"] .gw-clock {
+    color: var(--gw-text);
+}
+
+:root[data-theme="legacy"] .gw-bottombar > .gw-legal-footer {
+    display: none;
+}
+
+:root[data-theme="legacy"] .gw-bottombar__copyright {
+    display: block;
+    grid-column: 1 / -1;
+    /* La grille passe en colonne centrée sous 992px : sans étirement, la bande
+       se réduirait à la largeur du texte. */
+    justify-self: stretch;
+    /* La bande file jusqu'aux bords malgré la gouttière du bandeau. */
+    margin: 0 calc(-1 * clamp(.75rem, 2vw, 1.5rem));
+    padding: .75rem 1rem;
+    color: #9aa4b2;
+    background: #16223a;
+    font-size: .9rem;
+    text-align: center;
+}
+
+:root[data-theme="legacy"] .gw-bottombar__copyright a {
+    color: #fff;
+    text-decoration: none;
+}
+
+:root[data-theme="legacy"] .gw-bottombar__copyright .gw-legal-footer__consent {
+    color: #fff;
+    text-decoration: none;
+}
+
+:root[data-theme="legacy"] .gw-bottombar__copyright :is(a, .gw-legal-footer__consent):is(:hover, :focus-visible) {
+    text-decoration: underline;
+}
+
+@media (max-width: 767.98px) {
+    :root[data-theme="legacy"] .gw-topbar {
+        grid-template-columns: 1fr auto;
+        padding-inline: .75rem;
+    }
+
+    :root[data-theme="legacy"] .gw-topbar > .gw-search {
+        grid-column: 1 / -1;
+        grid-row: 3;
+    }
+
+    :root[data-theme="legacy"] .gw-topbar > .gw-rail {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        padding-inline: 0;
+    }
+
+    :root[data-theme="legacy"] .gw-topbar > .gw-actions {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    :root[data-theme="legacy"] .gw-rail__list {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    :root[data-theme="legacy"] .gw-rail__label {
+        display: none;
+    }
+}
+
+/* Mode sombre du thème Glitchworlds Legacy. */
+:root[data-theme="legacy"][data-bs-theme="dark"] {
+    --gw-background: #171a1f;
+    --gw-background-accent: #20252b;
+    --gw-surface: #24292f;
+    --gw-surface-solid: #24292f;
+    --gw-text: #f1f3f5;
+    --gw-muted: #adb5bd;
+    --gw-border: #495057;
+    --bs-body-color: #f1f3f5;
+    --bs-secondary-color: #adb5bd;
+    --bs-border-color: #495057;
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] body {
+    color: #f1f3f5;
+    background:
+        linear-gradient(180deg, rgba(4, 13, 31, .45), rgba(20, 15, 67, .58) 52%, rgba(91, 37, 27, .42)),
+        linear-gradient(145deg, #152542 0%, #201d38 55%, #5b342d 84%, #725035 100%);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.gw-panel, .gw-page-panel, .card, .gw-similar-card, .gw-article-card, .gw-community__composer, .gw-community__post, .gw-community__side, .gw-comment) {
+    color: #f1f3f5;
+    border-color: #495057;
+    background: #24292f;
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .28);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.text-body, .card-title, .gw-similar-card h3) {
+    color: #f1f3f5 !important;
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.text-secondary, .text-muted) {
+    color: #adb5bd !important;
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.gw-collection--jeux, .gw-collection--actualites) > .col:nth-child(odd) :is(.gw-similar-card, .gw-article-card) {
+    background: #24292f;
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.gw-collection--jeux, .gw-collection--actualites) > .col:nth-child(even) :is(.gw-similar-card, .gw-article-card) {
+    background: #2b3036;
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.gw-collection--jeux, .gw-collection--actualites) > .col :is(.gw-similar-card, .gw-article-card):is(:hover, :focus-within) {
+    border-color: #4d8dca;
+    background: #193b60;
+    box-shadow: 0 .15rem .4rem rgba(0, 0, 0, .35);
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] .gw-search__input {
+    border-color: #5c636a;
+    color: #f8f9fa;
+    background: #2b3036;
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] .gw-search__input::placeholder,
+:root[data-theme="legacy"][data-bs-theme="dark"] .gw-search__icon {
+    color: #adb5bd;
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] :is(.gw-autocomplete, .dropdown-menu, .modal-content, .form-control, .form-select, .input-group-text) {
+    color: #f1f3f5;
+    border-color: #495057;
+    background-color: #24292f;
+}
+
+:root[data-theme="legacy"][data-bs-theme="dark"] .gw-main--interne {
+    color: #f1f3f5;
+    border-color: #000;
+    background: #20252b;
+    box-shadow: 0 .15rem .45rem rgba(0, 0, 0, .32);
+}
+
+/* Personnalisation du thème Glitchworlds Legacy. */
+:root[data-theme="legacy"] {
+    --gw-theme-stylesheet: "legacy";
+    --gw-primary: #0f59e9;
+    --gw-primary-rgb: 15, 89, 233;
+    --gw-primary-dark: #0a3fa9;
+    --gw-secondary: #1dd2b1;
+    --gw-secondary-rgb: 29, 210, 177;
+    --gw-background: #e7ebf2;
+    --gw-background-accent: #b7c3da;
+    --gw-surface: rgba(255, 255, 255, .9);
+    --gw-surface-solid: #fff;
+    --gw-text: #212529;
+    --gw-muted: #6c757d;
+    --gw-border: rgba(0, 0, 0, .42);
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home {
+    min-height: clamp(410px, 42vw, 520px);
+    border-top: 4px solid #080b0d;
+    background-image:
+        linear-gradient(90deg, rgba(2, 16, 39, .72) 0%, rgba(2, 16, 39, .34) 34%, rgba(2, 16, 39, .05) 68%, rgba(2, 16, 39, .18) 100%),
+        url('../../images/legacy-banner.jpg');
+    background-position: center, center;
+    background-size: cover, cover;
+    box-shadow: inset 0 -5px #061b38;
+}
+
+@media (max-width: 767.98px) {
+    :root[data-theme="legacy"] .gw-game-hero--home {
+        min-height: 390px;
+        background-position: center, 52% center;
+    }
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home::after {
+    background:
+        linear-gradient(180deg, rgba(0, 20, 42, .06), transparent 54%, rgba(2, 16, 39, .32)),
+        radial-gradient(ellipse at center, transparent 58%, rgba(0, 13, 35, .22) 100%);
+    mask-image: none;
+}
+
+:root[data-theme="legacy"] .gw-game-hero--home :is(h1, .gw-game-hero__lead) {
+    text-shadow: 0 2px 5px #00131f, 0 0 18px rgba(0, 32, 64, .72);
+}
+
+/* La galerie plein écran doit recouvrir la navbar sticky du thème Legacy. */
+:root[data-theme="legacy"] .lg-backdrop {
+    z-index: 1200;
+}
+
+:root[data-theme="legacy"] .lg-outer {
+    z-index: 1210;
+}
+
+/* Mode sombre : :root[data-theme="legacy"][data-bs-theme="dark"] */

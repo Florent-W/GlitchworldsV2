@@ -1,0 +1,644 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ jeu.nom }} - Glitchworlds{% endblock %}
+
+{% block meta_description %}
+    {%- if jeu.description is not empty -%}
+        {{ jeu.description }}
+    {%- elseif jeu.contenu is not empty -%}
+        {{ jeu.contenu|bbcode_texte|slice(0, 160) }}
+    {%- else -%}
+        Découvre {{ jeu.nom }} sur Glitchworlds.
+    {%- endif -%}
+{% endblock %}
+
+{% block canonical %}{{ url('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+    {%- set imagePartage = jeu.banniere starts with 'banniere.' ? jeu.banniere : (jeu.miniature starts with 'miniature.' ? jeu.miniature : null) -%}
+    {{- imagePartage ? absolute_url(asset('uploads/jeux/' ~ jeu.id ~ '/' ~ imagePartage)) : parent() -}}
+{% endblock %}
+{% block og_image_alt %}Illustration de {{ jeu.nom }}{% endblock %}
+
+{% block structured_data %}
+    {% set descriptionStructuree = jeu.description is not empty
+        ? jeu.description
+        : jeu.contenu|bbcode_texte|slice(0, 160) %}
+    {% set schema = {
+        '@context': 'https://schema.org',
+        '@type': 'VideoGame',
+        name: jeu.nom,
+        url: url('app_jeu_show', { slug: jeu.slug, id: jeu.id }),
+        image: block('og_image')|trim,
+        description: descriptionStructuree,
+        genre: jeu.genres|map(item => item.nom),
+        gamePlatform: jeu.plateformes|map(item => item.nom),
+        inLanguage: jeu.langues|map(item => item.nom)
+    } %}
+    {% if jeu.dateSortie %}
+        {% set schema = schema|merge({ datePublished: jeu.dateSortie|date('Y-m-d') }) %}
+    {% endif %}
+    {% if auteurFiche %}
+        {% set schema = schema|merge({ author: { '@type': 'Person', name: auteurFiche.pseudo } }) %}
+    {% elseif jeu.pseudoAuteurFiche %}
+        {% set schema = schema|merge({ author: { '@type': 'Person', name: jeu.pseudoAuteurFiche } }) %}
+    {% endif %}
+    {% if resumeAvis.moyenne is not null %}
+        {% set schema = schema|merge({ aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: resumeAvis.moyenne,
+            ratingCount: resumeAvis.total,
+            bestRating: 5,
+            worstRating: 1
+        } }) %}
+    {% endif %}
+    <script type="application/ld+json">{{ schema|json_encode|raw }}</script>
+{% endblock %}
+
+{% set backgroundVideoAutorise = jeu.videoBackground
+    and (app.user is null or (app.user.videoBackgroundActive and not app.user.reductionAnimations))
+%}
+
+{% block body_attributes %}{% if backgroundVideoAutorise %} class="gw-has-video-background"{% endif %}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {% if backgroundVideoAutorise %}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.mb.YTPlayer/3.3.9/css/jquery.mb.YTPlayer.min.css" integrity="sha512-+HWFHCZZfMe4XQRKS0bOzQ1r4+G2eknhMqP+FhFIkcmWPJlB4uFaIagSIRCKDOZI3IHc0t7z4+N/g2hIaO/JIw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    {% endif %}
+{% endblock %}
+
+{% block video_background %}
+    {% if backgroundVideoAutorise %}
+        <div
+            id="bgndVideo"
+            class="player"
+            data-gw-sound="{{ app.user and app.user.videoBackgroundSoundActive ? '1' : '0' }}"
+            data-property="{videoURL:'{{ jeu.videoBackground|e('js') }}',containment:'body',autoPlay:true,useOnMobile:false,mute:{% if app.user and app.user.videoBackgroundSoundActive %}false{% else %}true{% endif %},opacity:0.8,startAt:30,showControls:false,showAnnotations:false,goFullScreenOnPlay:false,realFullscreen:false,stopMovieOnBlur:false,remember_last_time:true,addRaster:true,optimizeDisplay:true,showYTLogo:false,ratio:'auto'}"
+        ></div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+<article class="gw-game-page{{ backgroundVideoAutorise ? ' gw-page-over-video' : '' }}">
+    <nav class="gw-game-breadcrumb mb-3" aria-label="Fil d'Ariane">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_jeux') }}">Jeux</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ jeu.nom }}</li>
+        </ol>
+    </nav>
+
+    {% set toutesSections = jeu.contenu|sections_jeu %}
+    {% set sectionTelechargement = toutesSections|filter(section => section.type == 'telechargement')|first %}
+    {% set presentationCourte = jeu.description %}
+    {% if presentationCourte is empty and toutesSections is not empty %}
+        {% set presentationCourte = (toutesSections|first).contenu|bbcode_texte %}
+    {% elseif presentationCourte is empty and jeu.contenu is not empty %}
+        {% set presentationCourte = jeu.contenu|bbcode_texte %}
+    {% endif %}
+
+    {% if modePresentation == 'complete' %}
+    <div class="row g-4 align-items-stretch">
+        <div class="col-xl-9">
+            <header class="gw-game-hero h-100"{% if jeu.banniere starts with 'banniere.' %} style="background-image: linear-gradient(90deg, rgba(7, 25, 52, .96), rgba(7, 25, 52, .45)), url('{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.banniere) }}'); background-size: cover; background-position: center;"{% endif %}>
+                <div class="gw-game-hero__content">
+                    {% if jeu.categorie %}<a class="gw-game-hero__category" href="{{ path('app_jeux', {categorie: jeu.categorie.slug}) }}">{{ jeu.categorie.nom }}</a>{% endif %}
+                    <h1>{{ jeu.nom }}</h1>
+                    {% if jeu.description is not empty %}<p class="gw-game-hero__lead">{{ jeu.description }}</p>{% endif %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for item in jeu.genres %}<a class="gw-game-hero__tag" href="{{ path('app_jeux', {genre: item.slug}) }}">{{ item.nom }}</a>{% endfor %}
+                        {% for item in jeu.plateformes %}<a class="gw-game-hero__tag" href="{{ path('app_jeux', {plateforme: item.slug}) }}">{{ item.nom }}</a>{% endfor %}
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <a class="btn btn-light btn-lg" href="#a-propos"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>Plus d’infos</a>
+                        {% if app.user %}
+                            <form method="post" action="{{ path('app_mes_jeux_ajouter', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('bibliotheque-' ~ jeu.id) }}"><input type="hidden" name="statut" value="a_jouer"><button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-collection-play-fill me-2" aria-hidden="true"></i>Ajouter à Mes jeux</button></form>
+                            {% set estFavori = app.user.aPourFavori(jeu) %}
+                            <form method="post" action="{{ path('app_jeu_favori', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('favori-jeu-' ~ jeu.id) }}"><button class="btn {{ estFavori ? 'btn-light' : 'btn-outline-light' }} btn-lg" type="submit"><i class="bi bi-heart{{ estFavori ? '-fill' : '' }} me-2" aria-hidden="true"></i>{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}</button></form>
+                        {% else %}
+                            <a class="btn btn-outline-light btn-lg" href="{{ path('app_connexion') }}"><i class="bi bi-heart me-2" aria-hidden="true"></i>Ajouter aux favoris</a>
+                        {% endif %}
+                        {% if is_granted('PROPOSITION_JEU_MODIFIER', jeu) %}
+                            <a class="btn btn-warning btn-lg" href="{{ path('app_jeu_proposition_modifier', {id: jeu.id}) }}"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Modifier la fiche</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% include 'jeu/_jaquette.html.twig' with {variante: 'hero', loading: 'eager', fetchpriority: true} %}
+            </header>
+        </div>
+        <aside class="col-xl-3">
+            <section class="gw-quick-info h-100" aria-labelledby="infos-jeu-title-complet">
+                <h2 id="infos-jeu-title-complet" class="h5 mb-3">Infos du jeu</h2>
+                {% if jeu.dateSortie %}<div class="gw-quick-info__item"><i class="bi bi-calendar-event" aria-hidden="true"></i><div><span>Date de sortie</span><strong>{{ jeu.dateSortie|format_datetime('none', 'none', 'd MMMM y', locale='fr') }}</strong></div></div>{% endif %}
+                {% if jeu.plateformes is not empty %}<div class="gw-quick-info__item"><i class="bi bi-display" aria-hidden="true"></i><div><span>Plateformes</span><strong>{{ jeu.plateformes|map(item => item.nom)|join(', ') }}</strong></div></div>{% endif %}
+                {% if jeu.langues is not empty %}<div class="gw-quick-info__item"><i class="bi bi-translate" aria-hidden="true"></i><div><span>Langues</span><strong>{{ jeu.langues|map(item => item.nom)|join(', ') }}</strong></div></div>{% endif %}
+                {% if jeu.categorie %}<div class="gw-quick-info__item"><i class="bi bi-tag-fill" aria-hidden="true"></i><div><span>Catégorie</span><strong>{{ jeu.categorie.nom }}</strong></div></div>{% endif %}
+                {% if jeu.developpeur %}<div class="gw-quick-info__item"><i class="bi bi-building" aria-hidden="true"></i><div><span>Développeur</span><strong>{{ jeu.developpeur }}</strong></div></div>{% endif %}
+            </section>
+        </aside>
+    </div>
+    {% if jeu.galerie is not empty %}
+        <section class="gw-panel p-3 p-md-4 mt-4" aria-labelledby="galerie-complete-title">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-3"><div class="d-flex align-items-center gap-2"><i class="bi bi-images text-primary fs-4" aria-hidden="true"></i><h2 id="galerie-complete-title" class="h4 mb-0">Galerie</h2></div><span class="text-secondary small">{{ jeu.galerie|length }} image{{ jeu.galerie|length > 1 ? 's' : '' }}</span></div>
+            <div class="gw-game-gallery-grid">{% for image in jeu.galerie %}{% set imageUrl = asset('uploads/jeux/' ~ jeu.id ~ '/' ~ image) %}<a class="gw-lg-item" href="{{ imageUrl }}"><img src="{{ imageUrl }}" alt="Capture {{ loop.index }} de {{ jeu.nom }}" loading="lazy"></a>{% endfor %}</div>
+        </section>
+    {% endif %}
+    <div class="gw-game-console-actions mt-3">
+        <a class="btn btn-primary" href="#a-propos"><i class="bi bi-layout-text-window-reverse" aria-hidden="true"></i><span>Présentation</span></a>
+        <a class="btn btn-light" href="#noter"><i class="bi bi-star-fill" aria-hidden="true"></i><span>Noter le jeu</span></a>
+        <a class="btn btn-light" href="#avis-joueurs"><i class="bi bi-chat-square-heart-fill" aria-hidden="true"></i><span>Avis des joueurs</span></a>
+        {% if sectionTelechargement %}<a class="btn btn-light" href="#section-telechargement"><i class="bi bi-download" aria-hidden="true"></i><span>Téléchargement</span></a>{% else %}<a class="btn btn-light" href="#commentaires"><i class="bi bi-chat-dots-fill" aria-hidden="true"></i><span>Commentaires</span></a>{% endif %}
+    </div>
+    <section class="gw-game-overview row g-3 mt-1" aria-label="Aperçu du jeu">
+        <div class="col-xl-6"><div class="gw-console-panel h-100 p-4"><div class="d-flex gap-3"><i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i><div><h2 class="h5 text-uppercase">À propos de ce jeu</h2><p class="mb-0">{{ presentationCourte|slice(0, 360) }}{{ presentationCourte|length > 360 ? '…' : '' }}</p></div></div></div></div>
+        <div class="col-md-5 col-xl-2"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Genres et catégorie</h2><div class="gw-overview-tags">{% for item in jeu.genres|slice(0, 4) %}<a href="{{ path('app_jeux', {genre: item.slug}) }}">{{ item.nom }}</a>{% endfor %}{% if jeu.categorie %}<a href="{{ path('app_jeux', {categorie: jeu.categorie.slug}) }}">{{ jeu.categorie.nom }}</a>{% endif %}</div></div></div>
+        <div class="col-md-7 col-xl-4"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Similaires que vous aimerez</h2><div class="gw-overview-similar">{% for similaire in jeuxSimilaires|slice(0, 4) %}<a href="{{ path('app_jeu_show', {slug: similaire.slug, id: similaire.id}) }}">{% if similaire.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ similaire.id ~ '/' ~ similaire.miniature) }}" alt="" loading="lazy">{% else %}<span><i class="bi bi-controller"></i></span>{% endif %}<small>{{ similaire.nom }}</small></a>{% else %}<p class="small text-secondary mb-0">Aucune suggestion pour le moment.</p>{% endfor %}</div></div></div>
+    </section>
+    {% else %}
+    <div class="gw-game-dashboard row g-3 align-items-stretch">
+        <div class="col-xl-9">
+            <header class="gw-game-hero gw-game-hero--console"{% if jeu.banniere starts with 'banniere.' %} style="background-image: linear-gradient(90deg, rgba(4, 20, 37, .97) 0%, rgba(4, 29, 40, .82) 43%, rgba(4, 29, 40, .16) 76%), url('{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.banniere) }}'); background-size: cover; background-position: center;"{% endif %}>
+                {% if backgroundVideoAutorise %}
+                    <div class="gw-game-hero__video-controls gw-ytplayer-controls" aria-label="Contrôles de la vidéo de fond">
+                        <button type="button" class="gw-ytplayer-controls__btn" id="btnPlay" disabled aria-label="Chargement de la vidéo">
+                            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="gw-ytplayer-controls__btn" id="btnPleinEcran" aria-label="Plein écran">
+                            <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                {% endif %}
+                <div class="gw-game-hero__content">
+                    {% if jeu.categorie %}
+                        <a class="gw-game-hero__category" href="{{ path('app_jeux', { categorie: jeu.categorie.slug }) }}">
+                            {{ jeu.categorie.nom }}
+                        </a>
+                    {% endif %}
+
+                    <h1>{{ jeu.nom }}</h1>
+
+                    {% if jeu.description is not empty %}
+                        <p class="gw-game-hero__lead">{{ jeu.description }}</p>
+                    {% endif %}
+
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for item in jeu.genres %}
+                            <a class="gw-game-hero__tag" href="{{ path('app_jeux', { genre: item.slug }) }}">{{ item.nom }}</a>
+                        {% endfor %}
+                        {% for item in jeu.plateformes %}
+                            <a class="gw-game-hero__tag" href="{{ path('app_jeux', { plateforme: item.slug }) }}">{{ item.nom }}</a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="gw-game-hero__actions d-flex flex-wrap gap-2 mt-4">
+                        <a class="btn btn-light" href="#a-propos"><i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i>Plus d’infos</a>
+                        {% if app.user %}
+                            <form method="post" action="{{ path('app_mes_jeux_ajouter', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('bibliotheque-' ~ jeu.id) }}"><input type="hidden" name="statut" value="a_jouer"><button class="btn btn-primary" type="submit"><i class="bi bi-collection-play-fill me-2" aria-hidden="true"></i>Ajouter à Mes jeux</button></form>
+                            {% set estFavori = app.user.aPourFavori(jeu) %}
+                            <form method="post" action="{{ path('app_jeu_favori', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('favori-jeu-' ~ jeu.id) }}"><button class="btn {{ estFavori ? 'btn-light' : 'btn-outline-light' }}" type="submit"><i class="bi bi-heart{{ estFavori ? '-fill' : '' }} me-2" aria-hidden="true"></i>{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}</button></form>
+                        {% else %}
+                            <a class="btn btn-outline-light" href="{{ path('app_connexion') }}"><i class="bi bi-heart me-2" aria-hidden="true"></i>Ajouter aux favoris</a>
+                        {% endif %}
+                        {% if is_granted('PROPOSITION_JEU_MODIFIER', jeu) %}
+                            <a class="btn btn-warning" href="{{ path('app_jeu_proposition_modifier', {id: jeu.id}) }}"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Modifier la fiche</a>
+                        {% endif %}
+                    </div>
+
+                </div>
+                {% include 'jeu/_jaquette.html.twig' with {variante: 'hero', loading: 'eager', fetchpriority: true} %}
+            </header>
+
+            {% if jeu.galerie is not empty %}
+                <section class="gw-game-console-gallery mt-3" aria-labelledby="galerie-title">
+                    <h2 id="galerie-title" class="visually-hidden">Galerie</h2>
+                    {% for image in jeu.galerie|slice(0, 4) %}
+                        {% set imageUrl = asset('uploads/jeux/' ~ jeu.id ~ '/' ~ image) %}
+                        <a class="gw-lg-item" href="{{ imageUrl }}"><img src="{{ imageUrl }}" alt="Capture {{ loop.index }} de {{ jeu.nom }}" loading="{{ loop.first ? 'eager' : 'lazy' }}" decoding="async"></a>
+                    {% endfor %}
+                </section>
+            {% endif %}
+
+            <div class="gw-game-console-actions mt-3">
+                <a class="btn btn-primary" href="#a-propos"><i class="bi bi-layout-text-window-reverse" aria-hidden="true"></i><span>Présentation</span></a>
+                <a class="btn btn-light" href="#noter"><i class="bi bi-star-fill" aria-hidden="true"></i><span>Noter le jeu</span></a>
+                <a class="btn btn-light" href="#avis-joueurs"><i class="bi bi-chat-square-heart-fill" aria-hidden="true"></i><span>Avis des joueurs</span></a>
+                {% if sectionTelechargement %}
+                    <a class="btn btn-light" href="#section-telechargement"><i class="bi bi-download" aria-hidden="true"></i><span>Téléchargement</span></a>
+                {% else %}
+                    <a class="btn btn-light" href="#commentaires"><i class="bi bi-chat-dots-fill" aria-hidden="true"></i><span>Commentaires</span></a>
+                {% endif %}
+            </div>
+        </div>
+
+        <aside class="col-xl-3 d-grid gap-3 align-content-start">
+            <section class="gw-quick-info gw-console-panel" aria-labelledby="infos-jeu-title">
+                <h2 id="infos-jeu-title" class="h5 mb-3">Infos du jeu</h2>
+
+                {% if jeu.dateSortie %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                        <div><span>Date de sortie</span><strong>{{ jeu.dateSortie|format_datetime('none', 'none', 'd MMMM y', locale='fr') }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.plateformes is not empty %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-display" aria-hidden="true"></i>
+                        <div><span>Plateformes</span><strong>{{ jeu.plateformes|map(item => item.nom)|join(', ') }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.langues is not empty %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-translate" aria-hidden="true"></i>
+                        <div><span>Langues</span><strong>{{ jeu.langues|map(item => item.nom)|join(', ') }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.categorie %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-tag-fill" aria-hidden="true"></i>
+                        <div><span>Catégorie</span><strong>{{ jeu.categorie.nom }}</strong></div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.jeuxAssocies is not empty %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-link-45deg" aria-hidden="true"></i>
+                        <div>
+                            <span>Jeu{{ jeu.jeuxAssocies|length > 1 ? 'x' : '' }} associé{{ jeu.jeuxAssocies|length > 1 ? 's' : '' }}</span>
+                            <strong>{% for jeuAssocie in jeu.jeuxAssocies %}<a href="{{ path('app_jeu_show', {slug: jeuAssocie.slug, id: jeuAssocie.id}) }}">{{ jeuAssocie.nom }}</a>{{ not loop.last ? ', ' }}{% endfor %}</strong>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.modsAssocies is not empty %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-puzzle-fill" aria-hidden="true"></i>
+                        <div>
+                            <span>Mods disponibles</span>
+                            <strong>{% for mod in jeu.modsAssocies %}<a href="{{ path('app_jeu_show', {slug: mod.slug, id: mod.id}) }}">{{ mod.nom }}</a>{{ not loop.last ? ', ' }}{% endfor %}</strong>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if jeu.developpeur %}
+                    <div class="gw-quick-info__item">
+                        <i class="bi bi-building" aria-hidden="true"></i>
+                        <div><span>Développeur</span><strong>{{ jeu.developpeur }}</strong></div>
+                    </div>
+                {% endif %}
+
+            </section>
+
+            <section class="gw-game-community gw-console-panel" aria-labelledby="communaute-jeu-title">
+                <h2 id="communaute-jeu-title" class="h5">Communauté</h2>
+                <div class="gw-game-community__score"><i class="bi bi-star-fill" aria-hidden="true"></i><strong>{{ resumeAvis.moyenne ?? '—' }}</strong><span>/5</span></div>
+                <div class="gw-game-community__stars" aria-hidden="true">
+                    {% for etoile in 1..5 %}<i class="bi bi-star{{ resumeAvis.moyenne is not null and resumeAvis.moyenne >= etoile ? '-fill' : '' }}"></i>{% endfor %}
+                </div>
+                <a href="#noter">{{ resumeAvis.total }} avis</a>
+            </section>
+        </aside>
+    </div>
+
+    <section class="gw-game-overview row g-3 mt-1" aria-label="Aperçu du jeu">
+        <div class="col-xl-6"><div class="gw-console-panel h-100 p-4"><div class="d-flex gap-3"><i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i><div><h2 class="h5 text-uppercase">À propos de ce jeu</h2><p class="mb-0">{{ presentationCourte|slice(0, 360) }}{{ presentationCourte|length > 360 ? '…' : '' }}</p></div></div></div></div>
+        <div class="col-md-5 col-xl-2"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Genres et catégorie</h2><div class="gw-overview-tags">{% for item in jeu.genres|slice(0, 4) %}<a href="{{ path('app_jeux', {genre: item.slug}) }}">{{ item.nom }}</a>{% endfor %}{% if jeu.categorie %}<a href="{{ path('app_jeux', {categorie: jeu.categorie.slug}) }}">{{ jeu.categorie.nom }}</a>{% endif %}</div></div></div>
+        <div class="col-md-7 col-xl-4"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Similaires que vous aimerez</h2><div class="gw-overview-similar">{% for similaire in jeuxSimilaires|slice(0, 4) %}<a href="{{ path('app_jeu_show', {slug: similaire.slug, id: similaire.id}) }}">{% if similaire.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ similaire.id ~ '/' ~ similaire.miniature) }}" alt="" loading="lazy">{% else %}<span><i class="bi bi-controller"></i></span>{% endif %}<small>{{ similaire.nom }}</small></a>{% else %}<p class="small text-secondary mb-0">Aucune suggestion pour le moment.</p>{% endfor %}</div></div></div>
+    </section>
+    {% endif %}
+
+    {% set sectionsPresentation = modePresentation != 'complete' ? toutesSections : [] %}
+    <section id="a-propos" class="{{ sectionsPresentation is empty ? 'gw-panel ' : '' }}{{ modePresentation == 'complete' ? 'gw-game-presentation--complete ' : '' }}p-4 mt-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+            {% if toutesSections is not empty %}
+                <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                    <span class="small fw-semibold text-secondary">Mode d’affichage :</span>
+                    <nav class="gw-presentation-switch d-flex flex-wrap gap-2" aria-label="Choisir l’affichage de la présentation">
+                    {% for valeur, choix in {
+                        complete: {libelle: 'Lecture', icone: 'file-earmark-text', aide: 'Afficher toute la présentation à la suite'},
+                        vertical: {libelle: 'Sections', icone: 'view-list', aide: 'Afficher les parties ouvertes et repliables verticalement'},
+                        blocs: {libelle: 'Cartes', icone: 'grid-3x3-gap-fill', aide: 'Afficher des cartes compactes à ouvrir individuellement'}
+                    } %}
+                        <a class="btn btn-sm {{ modePresentation == valeur ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id, presentation: valeur}) }}#a-propos" aria-current="{{ modePresentation == valeur ? 'true' : 'false' }}" title="{{ choix.aide }}" aria-label="{{ choix.libelle }} : {{ choix.aide }}">
+                            {{ choix.libelle }} <i class="bi bi-{{ choix.icone }} ms-1" aria-hidden="true"></i>
+                        </a>
+                    {% endfor %}
+                    </nav>
+                </div>
+            {% endif %}
+        </div>
+
+        {% set iconesSections = {
+            presentation: 'info-circle-fill', avis: 'star-fill', histoire: 'book-fill',
+            fonctionnalites: 'list-check', gameplay: 'controller', pokedex: 'journal-bookmark-fill',
+            region: 'geo-alt-fill', personnages: 'people-fill', starters: 'diagram-3-fill',
+            langues: 'translate', plateformes: 'display', date_sortie: 'calendar-event-fill',
+            captures: 'images', trailer: 'play-circle-fill', telechargement: 'download', credits: 'people-fill'
+        } %}
+        {% if sectionsPresentation is not empty %}
+            <div class="gw-game-sections{{ modePresentation == 'blocs' ? ' gw-game-sections--blocs' : ' gw-game-sections--verticales' }}">
+                {% for section in sectionsPresentation %}
+                    {% set apercuSection = section.contenu|bbcode_texte %}
+                    {% set titreSection = section.type == 'captures' ? 'Images' : (section.titre ?: 'Présentation') %}
+                    {% if modePresentation == 'blocs' %}
+                                        <details id="section-{{ section.type }}" class="gw-panel gw-game-section gw-game-section--{{ section.type }}">
+                            <summary class="gw-game-section__summary">
+                                <span class="gw-game-section__icon"><i class="bi bi-{{ iconesSections[section.type]|default('layout-text-window') }}" aria-hidden="true"></i></span>
+                                <span class="gw-game-section__heading">
+                                    <span class="gw-game-section__title">{{ titreSection }}</span>
+                                    <span class="gw-game-section__preview">{{ apercuSection|slice(0, 150) }}{{ apercuSection|length > 150 ? '…' : '' }}</span>
+                                </span>
+                                <span class="gw-game-section__toggle" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
+                            </summary>
+                            <div class="gw-game-section__body jeu-contenu">{{ section.contenu|bbcode }}</div>
+                        </details>
+                    {% else %}
+                        <details id="section-{{ section.type }}" class="gw-panel gw-game-section gw-game-section--{{ section.type }}" open>
+                            <summary class="gw-game-section__summary">
+                                <span class="gw-game-section__icon"><i class="bi bi-{{ iconesSections[section.type]|default('layout-text-window') }}" aria-hidden="true"></i></span>
+                                <span class="gw-game-section__heading">
+                                    <span class="gw-game-section__title">{{ titreSection }}</span>
+                                    <span class="gw-game-section__preview">{{ apercuSection|slice(0, 150) }}{{ apercuSection|length > 150 ? '…' : '' }}</span>
+                                </span>
+                                <span class="gw-game-section__toggle" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
+                            </summary>
+                            <div class="gw-game-section__body jeu-contenu">{{ section.contenu|bbcode }}</div>
+                        </details>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% elseif modePresentation == 'complete' and toutesSections is not empty %}
+            <div class="jeu-contenu">
+                {% for section in toutesSections %}
+                    {% set apercuSection = section.contenu|bbcode_texte %}
+                    <details id="section-{{ section.type }}" class="gw-game-reading-section gw-game-section--{{ section.type }} mb-4" open>
+                        <summary class="gw-game-section__summary">
+                            <span class="gw-game-section__icon"><i class="bi bi-{{ iconesSections[section.type]|default('layout-text-window') }}" aria-hidden="true"></i></span>
+                            <span class="gw-game-section__heading">
+                                <span class="gw-game-section__title">{{ section.type == 'captures' ? 'Images' : (section.titre ?: 'Présentation') }}</span>
+                                <span class="gw-game-section__preview">{{ apercuSection|slice(0, 150) }}{{ apercuSection|length > 150 ? '…' : '' }}</span>
+                            </span>
+                            <span class="gw-game-section__toggle" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
+                        </summary>
+                        <div class="gw-game-reading-section__body">{{ section.contenu|bbcode }}</div>
+                    </details>
+                {% endfor %}
+            </div>
+        {% elseif jeu.contenu is not empty %}
+            <div class="jeu-contenu">
+                {{ jeu.contenu|bbcode }}
+            </div>
+        {% elseif jeu.description is not empty %}
+            <p class="mb-0">{{ jeu.description }}</p>
+        {% else %}
+            <p class="text-secondary mb-0">Aucune présentation disponible pour le moment.</p>
+        {% endif %}
+
+        {% include '_auteur_fiche.html.twig' with {
+            auteur: auteurFiche,
+            auteurPseudo: auteurFiche ? null : jeu.pseudoAuteurFiche
+        } only %}
+    </section>
+
+    <div id="actions-fiche" class="d-flex flex-wrap justify-content-end gap-2 mt-3">
+        {% if app.user and app.user != jeu.createur %}<a class="btn btn-sm btn-outline-danger" href="{{ path('app_signaler', {type: 'jeu', id: jeu.id}) }}"><i class="bi bi-flag me-1" aria-hidden="true"></i>Signaler</a>{% endif %}
+    </div>
+
+    {% if actualitesLiees is not empty %}
+        <section id="actualites-liees" class="gw-panel p-4 mt-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-newspaper text-primary fs-4" aria-hidden="true"></i>
+                    <h2 class="h4 mb-0">Actualités sur ce jeu</h2>
+                    <span class="badge text-bg-secondary">{{ actualitesLiees|length }}</span>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href="{{ path('app_actualites') }}">Toutes les actualités</a>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                {% for actualite in actualitesLiees %}
+                    <div class="col">
+                        {% include 'actualite/_carte.html.twig' with { actualite: actualite, hauteurImage: 200 } only %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% include '_navigation_sequentielle.html.twig' with {
+        label: 'Naviguer entre les jeux',
+        precedent: jeuPrecedent,
+        suivant: jeuSuivant,
+        route: 'app_jeu_show',
+        type: 'jeu',
+        sens_precedent: 'Jeu précédent',
+        sens_suivant: 'Jeu suivant',
+        son_survol: 'survol-jeu'
+    } only %}
+
+    <section class="gw-game-rate mt-4" id="noter" aria-labelledby="noter-title">
+        <div class="gw-panel gw-game-rate__panel p-4">
+            <div class="gw-game-rate__head"><h2 id="noter-title" class="h5 mb-0">Noter ce jeu</h2>{% if resumeAvis.moyenne is not null %}<p class="gw-game-rate__summary mb-0"><i class="bi bi-star-fill" aria-hidden="true"></i><strong>{{ resumeAvis.moyenne }}</strong><span>{{ resumeAvis.total }} avis</span></p>{% endif %}</div>
+            {% if app.user %}
+                {% if avisUtilisateur %}<p class="gw-game-rate__hint mb-0" role="status"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Tu as déjà publié un avis. Tu peux le modifier ci-dessous.</p>{% endif %}
+                {{ form_start(formulaireNote, {attr: {class: 'gw-game-rate__form'}}) }}
+                    <div class="gw-game-rate__stars">{{ form_label(formulaireNote.note) }}{{ form_widget(formulaireNote.note) }}{{ form_errors(formulaireNote.note) }}</div>
+                    <div class="gw-game-rate__body"><div class="gw-game-rate__comment">{{ form_widget(formulaireNote.contenu, {attr: {placeholder: 'Ton avis (facultatif)', rows: 3}}) }}{{ form_errors(formulaireNote.contenu) }}</div><div class="gw-game-rate__actions">{{ form_widget(formulaireNote.enregistrer, {label: avisUtilisateur ? 'Modifier mon avis' : 'Publier mon avis', attr: {class: 'btn btn-primary'}}) }}</div></div>
+                {{ form_end(formulaireNote) }}
+            {% else %}<p class="gw-game-rate__guest mb-0"><a href="{{ path('app_connexion') }}">Connecte-toi</a> pour noter ce jeu et laisser un avis.</p>{% endif %}
+        </div>
+    </section>
+
+    <section id="avis-joueurs" class="gw-panel p-4 mt-4" aria-labelledby="avis-joueurs-title">
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i>
+                <h2 id="avis-joueurs-title" class="h4 mb-0">Avis des joueurs</h2>
+            </div>
+            <span class="gw-result-count d-inline-flex align-items-center gap-2">
+                {% if resumeAvis.moyenne is not null %}
+                    <span><i class="bi bi-star-fill text-warning me-1" aria-hidden="true"></i>{{ resumeAvis.moyenne }}/5</span>
+                    <span aria-hidden="true">·</span>
+                {% endif %}
+                <span>{{ avisPublies|length }} avis</span>
+            </span>
+        </div>
+
+        {% if avisPublies is not empty %}
+            <div class="vstack gap-3">
+                {% for avis in avisPublies %}
+                    <article class="gw-review">
+                        <div class="gw-review__avatar">{% if avis.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: avis.auteur.id}) }}" aria-label="Voir le profil de {{ avis.auteur.pseudo }}">{% if avis.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ avis.auteur.id ~ '/' ~ avis.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ avis.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}</div>
+                        <div class="min-w-0">
+                        <header class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <strong>{% if avis.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: avis.auteur.id}) }}">{{ avis.auteur.pseudo }}</a>{% else %}Ancien membre{% endif %}</strong>
+                            {% if app.user and avis.auteur and avis.auteur.id == app.user.id %}
+                                <span class="badge text-bg-success"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Votre avis</span>
+                            {% endif %}
+                            <span class="gw-review__rating" aria-label="Note : {{ avis.note|number_format(0) }} sur 5">
+                                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                                {{ avis.note|number_format(0) }}/5
+                            </span>
+                            <time class="small text-secondary ms-sm-auto" datetime="{{ avis.dateAvis|date('c') }}">
+                                {{ avis.dateAvis|format_datetime('medium', 'short', locale='fr') }}
+                            </time>
+                            {% if is_granted('ROLE_MODERATEUR') %}
+                                <a class="btn btn-sm btn-outline-primary" href="{{ path('app_moderation_avis_modifier', { id: avis.id, retour: 'fiche' }) }}" aria-label="Modifier cet avis">
+                                    <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                                    <span class="d-none d-sm-inline ms-1">Modifier</span>
+                                </a>
+                                <form method="post" action="{{ path('app_moderation_avis_supprimer', { id: avis.id }) }}" onsubmit="return confirm('Supprimer cette note et cet avis ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('supprimer-avis-' ~ avis.id) }}">
+                                    <input type="hidden" name="_retour" value="fiche">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer cet avis">
+                                        <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                                        <span class="d-none d-sm-inline ms-1">Supprimer</span>
+                                    </button>
+                                </form>
+                            {% endif %}
+                            {% if app.user and avis.auteur != app.user %}
+                                <a class="btn btn-sm btn-outline-danger" href="{{ path('app_signaler', {type: 'avis', id: avis.id}) }}" aria-label="Signaler cet avis">
+                                    <i class="bi bi-flag-fill" aria-hidden="true"></i>
+                                    <span class="d-none d-sm-inline ms-1">Signaler</span>
+                                </a>
+                            {% endif %}
+                        </header>
+                        <div class="gw-review__content">{{ avis.contenu|nl2br }}</div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-secondary mb-0">Aucun avis écrit pour le moment. Sois le premier à partager le tien.</p>
+        {% endif %}
+    </section>
+
+    <section id="commentaires" class="gw-panel p-4 mt-4" aria-labelledby="commentaires-title">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-chat-dots-fill text-primary fs-4" aria-hidden="true"></i>
+                    <h2 id="commentaires-title" class="h4 mb-0">Commentaires</h2>
+                </div>
+                <span class="gw-result-count">{{ totalCommentaires }}</span>
+            </div>
+
+            {% if commentaires is not empty %}
+            <div class="vstack gap-3 mb-4">
+                {% for commentaire in commentaires %}
+                    <article id="commentaire-{{ commentaire.id }}" class="gw-comment">
+                        <div class="gw-comment__avatar">
+                            {% if commentaire.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: commentaire.auteur.id}) }}" aria-label="Voir le profil de {{ commentaire.auteur.pseudo }}">{% if commentaire.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ commentaire.auteur.id ~ '/' ~ commentaire.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ commentaire.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}
+                        </div>
+                        <div>
+                            <header class="d-flex flex-wrap align-items-baseline gap-2 mb-1">
+                                <strong>{% if commentaire.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: commentaire.auteur.id}) }}">{{ commentaire.auteur.pseudo }}</a>{% else %}Membre supprimé{% endif %}</strong>
+                                <time class="small text-secondary" datetime="{{ commentaire.dateCommentaire|date('c') }}">
+                                    {{ commentaire.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}
+                                </time>
+                                {% if app.user %}
+                                    <form class="ms-auto" method="post" action="{{ path('app_commentaire_aimer', { id: commentaire.id }) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('aimer-commentaire-' ~ commentaire.id) }}">
+                                        <button class="btn btn-sm {{ commentaire.aimePar.contains(app.user) ? 'btn-primary' : 'btn-outline-primary' }}" type="submit" aria-label="Aimer"><i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i> {{ commentaire.aimePar|length }}</button>
+                                    </form>
+                                {% else %}
+                                    <span class="ms-auto small text-secondary"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> {{ commentaire.aimePar|length }}</span>
+                                {% endif %}
+                                {% if app.user and app.user != commentaire.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'commentaire-jeu', id: commentaire.id}) }}" aria-label="Signaler le commentaire"><i class="bi bi-flag"></i></a>{% endif %}
+                                {% if is_granted('COMMENTAIRE_SUPPRIMER', commentaire) %}
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ path('app_commentaire_modifier', { id: commentaire.id }) }}">
+                                        <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                                        <span class="visually-hidden">Modifier</span>
+                                    </a>
+                                    <form method="post" action="{{ path('app_commentaire_supprimer', { id: commentaire.id }) }}" onsubmit="return confirm('Supprimer ce commentaire ?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-' ~ commentaire.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer le commentaire">
+                                            <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                                            <span class="visually-hidden">Supprimer</span>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </header>
+                            <div class="gw-comment__content">{{ commentaire.contenu|bbcode_commentaire }}</div>
+
+                            {% if commentaire.reponses is not empty %}
+                                <div class="gw-comment-replies vstack gap-2">
+                                    {% for reponse in commentaire.reponses %}
+                                        <article class="gw-comment gw-comment--reply">
+                                            <div class="gw-comment__avatar">{% if reponse.auteur %}<a class="gw-member-avatar-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}" aria-label="Voir le profil de {{ reponse.auteur.pseudo }}">{% if reponse.auteur.avatar starts with 'avatar.' %}<img src="{{ asset('uploads/utilisateurs/' ~ reponse.auteur.id ~ '/' ~ reponse.auteur.avatar) }}" alt="" loading="lazy">{% else %}{{ reponse.auteur.pseudo|first|upper }}{% endif %}</a>{% else %}?{% endif %}</div>
+                                            <div class="flex-grow-1">
+                                                <header class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                                    <strong>{% if reponse.auteur %}<a class="gw-member-name-link" href="{{ path('app_profil', {id: reponse.auteur.id}) }}">{{ reponse.auteur.pseudo }}</a>{% else %}Membre supprimé{% endif %}</strong>
+                                                    <span class="badge rounded-pill text-bg-light">Réponse</span>
+                                                    <time class="small text-secondary" datetime="{{ reponse.dateCommentaire|date('c') }}">{{ reponse.dateCommentaire|format_datetime('medium', 'short', locale='fr') }}</time>
+                                                    {% if app.user %}
+                                                        <form class="ms-auto" method="post" action="{{ path('app_commentaire_aimer', { id: reponse.id }) }}"><input type="hidden" name="_token" value="{{ csrf_token('aimer-commentaire-' ~ reponse.id) }}"><button class="btn btn-sm {{ reponse.aimePar.contains(app.user) ? 'btn-primary' : 'btn-outline-primary' }}" type="submit" aria-label="Aimer la réponse"><i class="bi bi-hand-thumbs-up-fill" aria-hidden="true"></i> {{ reponse.aimePar|length }}</button></form>
+                                                    {% else %}
+                                                        <span class="ms-auto small text-secondary"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> {{ reponse.aimePar|length }}</span>
+                                                    {% endif %}
+                                                    {% if is_granted('COMMENTAIRE_MODIFIER', reponse) %}<a class="btn btn-sm btn-outline-primary" href="{{ path('app_commentaire_modifier', { id: reponse.id }) }}" aria-label="Modifier la réponse"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>{% endif %}
+                                                    {% if is_granted('COMMENTAIRE_SUPPRIMER', reponse) %}<form method="post" action="{{ path('app_commentaire_supprimer', { id: reponse.id }) }}" onsubmit="return confirm('Supprimer cette réponse ?')"><input type="hidden" name="_token" value="{{ csrf_token('supprimer-commentaire-' ~ reponse.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Supprimer la réponse"><i class="bi bi-trash-fill" aria-hidden="true"></i></button></form>{% endif %}
+                                                    {% if app.user and app.user != reponse.auteur %}<a class="btn btn-sm btn-outline-secondary" href="{{ path('app_signaler', {type: 'commentaire-jeu', id: reponse.id}) }}" aria-label="Signaler la réponse"><i class="bi bi-flag"></i></a>{% endif %}
+                                                </header>
+                                                <div class="gw-comment__content">{{ reponse.contenu|bbcode_commentaire }}</div>
+                                            </div>
+                                        </article>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            {% if app.user %}
+                                <details class="gw-reply-form mt-2">
+                                    <summary class="btn btn-sm btn-link px-0"><i class="bi bi-reply-fill me-1" aria-hidden="true"></i>Répondre</summary>
+                                    <form class="mt-2" method="post" action="{{ path('app_commentaire_repondre', { id: commentaire.id }) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('repondre-commentaire-' ~ commentaire.id) }}">
+                                        <label class="visually-hidden" for="reponse-jeu-{{ commentaire.id }}">Ta réponse</label>
+                                        {% include '_editeur_commentaire.html.twig' with { id: 'reponse-jeu-' ~ commentaire.id } only %}
+                                        <div class="d-flex justify-content-end mt-2"><button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-send-fill me-1" aria-hidden="true"></i>Publier la réponse</button></div>
+                                    </form>
+                                </details>
+                            {% else %}
+                                <a class="btn btn-sm btn-link px-0 mt-1" href="{{ path('app_connexion') }}"><i class="bi bi-reply-fill me-1" aria-hidden="true"></i>Se connecter pour répondre</a>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            {% else %}
+                <p class="text-secondary">Aucun commentaire pour le moment.</p>
+            {% endif %}
+
+            {% if pagesCommentaires > 1 %}
+                <nav class="mb-4" aria-label="Pagination des commentaires">
+                    <ul class="pagination justify-content-center mb-0">
+                        <li class="page-item{{ pageCommentaires == 1 ? ' disabled' : '' }}">
+                            <a class="page-link" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id, commentaires_page: pageCommentaires - 1}) }}#commentaires">Précédents</a>
+                        </li>
+                        <li class="page-item disabled"><span class="page-link">{{ pageCommentaires }} / {{ pagesCommentaires }}</span></li>
+                        <li class="page-item{{ pageCommentaires == pagesCommentaires ? ' disabled' : '' }}">
+                            <a class="page-link" href="{{ path('app_jeu_show', {slug: jeu.slug, id: jeu.id, commentaires_page: pageCommentaires + 1}) }}#commentaires">Suivants</a>
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
+
+            <div class="border-top pt-4">
+                {{ form_start(formulaireCommentaire) }}
+                    {% include '_editeur_commentaire.html.twig' with { champ: formulaireCommentaire.contenu } only %}
+                    <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
+                        {% if not app.user %}
+                            <small class="text-secondary me-auto"><i class="bi bi-lock-fill me-1" aria-hidden="true"></i><a href="{{ path('app_connexion') }}">Connecte-toi</a> pour commenter.</small>
+                        {% endif %}
+                        {{ form_widget(formulaireCommentaire.publier) }}
+                    </div>
+                {{ form_end(formulaireCommentaire) }}
+            </div>
+        </section>
+
+</article>
+{% endblock %}

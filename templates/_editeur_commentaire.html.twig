@@ -1,0 +1,45 @@
+{# Mini-éditeur destiné aux commentaires et aux réponses.
+   Fournir soit `champ` (FormView), soit les attributs d'un textarea natif. #}
+<div class="gw-comment-editor" data-controller="bbcode">
+    {% set editeurDesactive = champ is defined and champ.vars.disabled %}
+    {% if not editeurDesactive %}
+    <div class="btn-toolbar gap-1 mb-2 gw-bbcode-comment-toolbar" role="toolbar" aria-label="Mise en forme du commentaire">
+        <div class="btn-group btn-group-sm" role="group" aria-label="Style du texte">
+            <button class="btn btn-outline-secondary fw-bold" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[b]" data-bbcode-fermante-param="[/b]" title="Gras" data-bs-toggle="tooltip" data-bs-placement="top">B</button>
+            <button class="btn btn-outline-secondary fst-italic" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[i]" data-bbcode-fermante-param="[/i]" title="Italique" data-bs-toggle="tooltip" data-bs-placement="top">I</button>
+            <button class="btn btn-outline-secondary text-decoration-underline" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[u]" data-bbcode-fermante-param="[/u]" title="Souligner" data-bs-toggle="tooltip" data-bs-placement="top">U</button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#encadrer" data-bbcode-ouvrante-param="[citation]" data-bbcode-fermante-param="[/citation]" title="Citation" data-bs-toggle="tooltip" data-bs-placement="top"><i class="bi bi-quote" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-secondary" type="button" data-action="bbcode#lien" title="Lien" data-bs-toggle="tooltip" data-bs-placement="top"><i class="bi bi-link-45deg" aria-hidden="true"></i></button>
+        </div>
+
+        <div class="gw-bbcode-emoji-wrap">
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="bbcode#basculerEmojis" title="Insérer un emoji" data-bs-toggle="tooltip" data-bs-placement="top" aria-haspopup="dialog" aria-expanded="false">
+                <i class="bi bi-emoji-smile" aria-hidden="true"></i><span class="visually-hidden">Insérer un emoji</span>
+            </button>
+            <div class="gw-bbcode-emoji-menu" data-bbcode-target="menuEmoji" role="dialog" aria-label="Choisir un emoji" hidden></div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if champ is defined %}
+        {{ form_widget(champ, { attr: {
+            'data-bbcode-target': 'contenu',
+            'data-action': 'input->bbcode#planifierApercu'
+        } }) }}
+        {{ form_errors(champ) }}
+        {{ form_help(champ) }}
+    {% else %}
+        <textarea
+            id="{{ id }}"
+            class="form-control"
+            name="{{ name|default('contenu') }}"
+            rows="{{ rows|default(3) }}"
+            minlength="3"
+            maxlength="1000"
+            required
+            placeholder="{{ placeholder|default('Écris ta réponse...') }}"
+            data-bbcode-target="contenu"
+            data-action="input->bbcode#planifierApercu"
+        ></textarea>
+    {% endif %}
+</div>

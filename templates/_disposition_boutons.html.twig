@@ -1,0 +1,19 @@
+<div class="btn-group btn-group-sm" role="group" aria-label="{{ label|default('Disposition') }}">
+    {% set modeInitial = modeInitial|default('grille') %}
+    <button type="button" class="btn btn-outline-secondary{{ modeInitial == 'double' ? ' active' : '' }}" data-disposition-target="boutonDouble" data-action="disposition#choisirDouble" aria-pressed="{{ modeInitial == 'double' ? 'true' : 'false' }}" title="2 par colonne">
+        <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i><span class="visually-hidden">2 par colonne</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary{{ modeInitial == 'grille' ? ' active' : '' }}" data-disposition-target="boutonGrille" data-action="disposition#choisirGrille" aria-pressed="{{ modeInitial == 'grille' ? 'true' : 'false' }}" title="4 par ligne">
+        <i class="bi bi-grid-3x3-gap-fill" aria-hidden="true"></i><span class="visually-hidden">4 par ligne</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary" data-disposition-target="boutonListe" data-action="disposition#choisirListe" aria-pressed="false" title="Vue en liste">
+        <i class="bi bi-list-ul" aria-hidden="true"></i><span class="visually-hidden">Liste</span>
+    </button>
+    {# Le carrousel n'a de sens que sur les aperçus de l'accueil : ailleurs, les
+       listes sont paginées et la grille reste plus lisible. #}
+    {% if carrousel|default(false) %}
+        <button type="button" class="btn btn-outline-secondary" data-disposition-target="boutonCarrousel" data-action="disposition#choisirCarrousel" aria-pressed="false" title="Carrousel, 4 éléments visibles">
+            <i class="bi bi-view-list" aria-hidden="true"></i><span class="visually-hidden">Carrousel, 4 éléments visibles</span>
+        </button>
+    {% endif %}
+</div>

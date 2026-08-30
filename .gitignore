@@ -1,5 +1,7 @@
-
 ###> symfony/framework-bundle ###
+/.env
+/.env.dev
+/.env.test
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -18,3 +20,11 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+/Jeux/
+/Articles/
+/images/
+!/public/
+/public/*
+!/public/favicon.png
+!/public/og-default.jpg

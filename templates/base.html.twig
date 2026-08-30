@@ -1,24 +1,366 @@
 <!DOCTYPE html>
-<html>
+{% set default_theme = app.user ? app.user.getTheme() : 'glitchworlds:system' %}
+{% set default_palette = app.user ? app.user.getPalette() : 'glitchworlds' %}
+{% set default_mode = app.user ? app.user.getMode() : 'system' %}
+{% set theme_styles = {glitchworlds: 'glitchworlds', legacy: 'legacy', wii: 'theme1', ps3: 'theme2', ds: 'theme3', dsi: 'theme4', '3ds': 'theme5'} %}
+<html lang="fr" data-theme="{{ default_palette }}" data-theme-style="{{ theme_styles[default_palette]|default('glitchworlds') }}" data-theme-resolved="{{ default_mode }}" data-gw-theme="{{ default_palette }}" data-gw-mode="{{ default_mode }}" data-default-theme="{{ default_theme }}" data-default-contrast="{{ app.user and app.user.isContrasteRenforce ? 'true' : 'false' }}" data-user-authenticated="{{ app.user ? '1' : '0' }}" data-gw-base-path="{{ app.request.basePath }}">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Glitchworlds{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}Bienvenue sur Glitchworlds - fangames, hacks, mods et communauté.{% endblock %}">
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
+        <link rel="canonical" href="{% block canonical %}{{ app.request.schemeAndHttpHost ~ app.request.baseUrl ~ app.request.pathInfo }}{% endblock %}">
+        <meta name="robots" content="{% block robots_meta %}index,follow{% endblock %}">
+        <meta property="og:site_name" content="Glitchworlds">
+        <meta property="og:locale" content="fr_FR">
+        <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+        <meta property="og:title" content="{{ block('title')|striptags|trim }}">
+        <meta property="og:description" content="{{ block('meta_description')|striptags|trim }}">
+        <meta property="og:url" content="{{ block('canonical')|trim }}">
+        <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('og-default.jpg')) }}{% endblock %}">
+        <meta property="og:image:alt" content="{% block og_image_alt %}Glitchworlds{% endblock %}">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ block('title')|striptags|trim }}">
+        <meta name="twitter:description" content="{{ block('meta_description')|striptags|trim }}">
+        <meta name="twitter:image" content="{{ block('og_image')|trim }}">
+        <meta name="twitter:image:alt" content="{{ block('og_image_alt')|striptags|trim }}">
+        {% block structured_data %}{% endblock %}
+        {# La balise AdSense charge aussi la CMP Google « Confidentialité et
+           messages » publiée pour ce site (CMP TCF n° 300). #}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1179428382006278" crossorigin="anonymous"></script>
+        <script>
+            (function () {
+                try {
+                    const root = document.documentElement;
+                    // Le thème mémorisé combine deux axes indépendants : « palette:mode ».
+                    // Les anciennes valeurs mono-axe sont rattrapées ici, comme côté PHP.
+                    const aliases = {
+                        gamecube: 'wii',
+                        dreamcast: 'ps3',
+                        neon: 'ps3',
+                        wave: 'ps3'
+                    };
+                    const palettes = ['glitchworlds', 'wii', 'ps3', 'legacy', 'ds', 'dsi', '3ds'];
+                    const themeStyles = {glitchworlds: 'glitchworlds', legacy: 'legacy', wii: 'theme1', ps3: 'theme2', ds: 'theme3', dsi: 'theme4', '3ds': 'theme5'};
+                    const modes = ['system', 'light', 'dark'];
+                    const split = function (value) {
+                        const parts = String(value || '').split(':');
+                        let palette = aliases[parts[0]] || parts[0];
+                        let mode = parts.length > 1 ? parts[1] : null;
+
+                        if (mode === null) {
+                            if (modes.includes(palette)) {
+                                mode = palette;
+                                palette = 'glitchworlds';
+                            } else if (palette === 'ps3') {
+                                mode = 'dark';
+                            } else if (palette === 'wii' || palette === 'legacy' || palette === 'ds' || palette === 'dsi' || palette === '3ds') {
+                                mode = 'light';
+                            } else {
+                                mode = 'system';
+                            }
+                        }
+
+                        return {
+                            palette: palettes.includes(palette) ? palette : 'glitchworlds',
+                            mode: modes.includes(mode) ? mode : 'system'
+                        };
+                    };
+
+                    const isAuthenticated = root.getAttribute('data-user-authenticated') === '1';
+                    const storedTheme = localStorage.getItem('glitchworlds-theme');
+                    // Le choix local est appliqué immédiatement sur toutes les pages.
+                    // La valeur du compte reste le repli quand ce navigateur n'a encore rien mémorisé.
+                    const chosen = split(storedTheme || root.getAttribute('data-default-theme'));
+                    const resolvedMode = chosen.mode === 'system'
+                        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                        : chosen.mode;
+
+                    if (isAuthenticated && !storedTheme) {
+                        localStorage.setItem('glitchworlds-theme', chosen.palette + ':' + chosen.mode);
+                    }
+
+                    root.setAttribute('data-theme', chosen.palette);
+                    root.setAttribute('data-theme-style', themeStyles[chosen.palette] || 'glitchworlds');
+                    root.setAttribute('data-gw-theme', chosen.palette);
+                    root.setAttribute('data-gw-mode', chosen.mode);
+                    root.setAttribute('data-theme-resolved', resolvedMode);
+                    root.setAttribute('data-bs-theme', resolvedMode);
+                    root.setAttribute('data-reduced-motion', localStorage.getItem('glitchworlds-reduced-motion') === 'true' ? 'true' : 'false');
+                    const storedContrast = localStorage.getItem('glitchworlds-contrast');
+                    const contrast = storedContrast ?? root.getAttribute('data-default-contrast') ?? 'false';
+                    root.setAttribute('data-contrast-renforce', contrast === 'true' ? 'true' : 'false');
+                    if (isAuthenticated && storedContrast === null) {
+                        localStorage.setItem('glitchworlds-contrast', contrast);
+                    }
+                    root.setAttribute('data-gw-sons', localStorage.getItem('glitchworlds-sons') === '0' ? '0' : '1');
+                    root.setAttribute('data-gw-retour-haut', localStorage.getItem('glitchworlds-retour-haut') === '0' ? '0' : '1');
+                } catch (error) {
+                    document.documentElement.setAttribute('data-theme', 'glitchworlds');
+                    document.documentElement.setAttribute('data-theme-style', 'glitchworlds');
+                    document.documentElement.setAttribute('data-theme-resolved', 'light');
+                    document.documentElement.setAttribute('data-gw-theme', 'glitchworlds');
+                    document.documentElement.setAttribute('data-gw-mode', 'system');
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                    document.documentElement.setAttribute('data-reduced-motion', 'false');
+                    document.documentElement.setAttribute('data-contrast-renforce', 'false');
+                    document.documentElement.setAttribute('data-gw-sons', '1');
+                    document.documentElement.setAttribute('data-gw-retour-haut', '1');
+                }
+            })();
+        </script>
+        {% block stylesheets %}{% endblock %}
 
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
-
-        {% set frankenphp_hot_reload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphp_hot_reload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphp_hot_reload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
     </head>
-    <body>
-        {% block body %}{% endblock %}
+    <body{% block body_attributes %}{% endblock %}>
+        {% block video_background %}{% endblock %}
+        {% set current_route = app.request.attributes.get('_route') %}
+        {# Retiré du sac avant la boucle générique : ces flashes portent un
+           tableau et sont rendus par la popup de succès, en bas de page. #}
+        {% set succes_debloques = app.flashes('succes_debloque') %}
+        {# Les entrées protégées par ROLE_USER restent masquées aux visiteurs :
+           sinon le clic mémorise la page refusée et la connexion y renvoie. #}
+        {% set nav_items = [
+            { label: 'Accueil',    icon: 'house-door-fill', route: 'app_home', couleur: 'bleu' },
+            { label: 'Jeux',       icon: 'controller',      route: 'app_jeux', couleur: 'orange' },
+            { label: 'Glitchs',    icon: 'lightning-charge-fill', route: 'app_actualites_glitchs', couleur: 'jaune' },
+            { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites', couleur: 'gris' }
+        ] %}
+        {% if app.user %}
+            {% set nav_items = nav_items|merge([{ label: 'Mes jeux', icon: 'collection-play-fill', route: 'app_mes_jeux', couleur: 'vert' }]) %}
+        {% endif %}
+        {% set nav_items = nav_items|merge([
+            { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute', couleur: 'bleu' },
+            { label: 'Classement', icon: 'trophy-fill',     route: 'app_classement', couleur: 'jaune' }
+        ]) %}
+        {% if app.user %}
+            {% set nav_items = nav_items|merge([
+                { label: 'Messages',    icon: 'envelope-fill', route: 'app_messages', couleur: 'vert' },
+                { label: 'Notifications', icon: 'bell-fill', route: 'app_notifications', couleur: 'orange' },
+                { label: 'Paramètres', icon: 'gear-fill',       route: 'app_parametres', couleur: 'gris' }
+            ]) %}
+        {% endif %}
+        {% set nav_items = nav_items|merge([
+            { label: 'Récompenses', icon: 'gift-fill',       route: 'app_boutique', couleur: 'orange' }
+        ]) %}
+        {% if is_granted('ROLE_MODERATEUR') %}
+            {% set nav_items = nav_items|merge([{ label: 'Modération', icon: 'shield-check', route: 'app_moderation_accueil', couleur: 'gris' }]) %}
+        {% endif %}
+        {% if is_granted('ROLE_ADMIN') %}
+            {% set nav_items = nav_items|merge([{ label: 'Administration', icon: 'speedometer2', route: 'app_administration_tableau_de_bord', couleur: 'gris' }]) %}
+        {% endif %}
+        {% if app.user %}
+            {% set nav_items = nav_items|merge([{ label: 'Déconnexion', icon: 'box-arrow-right', route: 'app_deconnexion', couleur: 'orange', logout: true }]) %}
+        {% else %}
+            {% set nav_items = nav_items|merge([{ label: 'Connexion', icon: 'box-arrow-in-right', route: 'app_connexion', couleur: 'bleu' }]) %}
+        {% endif %}
+
+        <div class="gw-app">
+            <header class="gw-topbar">
+                <a class="gw-logo" href="{{ path('app_home') }}">
+                    <span class="gw-logo__name">Glitch<span class="gw-logo__accent">Worlds</span></span>
+                </a>
+
+                <search class="gw-search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion') }}">
+                    <form role="search" action="{{ path('app_recherche') }}" method="get" data-recherche-autocomplete-target="formulaire" data-action="submit->recherche-autocomplete#memoriser">
+                        <label class="visually-hidden" for="gw-search-input">Rechercher</label>
+                        <i class="bi bi-search gw-search__icon" aria-hidden="true"></i>
+                        <input id="gw-search-input" class="gw-search__input" type="search" name="recherche" value="{{ current_route == 'app_recherche' ? app.request.query.get('recherche') : '' }}"
+                               placeholder="Rechercher un jeu, une actualité, un membre..." autocomplete="off" aria-autocomplete="list" aria-controls="gw-search-results" aria-expanded="false"
+                               data-recherche-autocomplete-target="champ" data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#ouvrir click->recherche-autocomplete#ouvrir">
+                        <div id="gw-search-results" class="gw-autocomplete d-none" role="listbox" data-recherche-autocomplete-target="resultats"></div>
+                    </form>
+                </search>
+
+                <div class="gw-actions">
+                    <div class="gw-topbar-status">
+                        <a class="gw-topbar-status__messages" href="{{ app.user ? path('app_messages') : path('app_connexion') }}" aria-label="Messages" title="Messages">
+                            <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                        </a>
+                        <div class="gw-topbar-status__clock" data-controller="horloge">
+                            <time data-horloge-target="time" datetime="{{ 'now'|date('c') }}">
+                                <strong data-horloge-target="heure">{{ 'now'|date('H:i') }}</strong>
+                                <span data-horloge-target="date">{{ 'now'|format_datetime('none', 'none', 'EEEE d MMMM y', locale='fr')|capitalize }}</span>
+                            </time>
+                        </div>
+                    </div>
+                    {% if app.user %}
+                        <a class="gw-level-chip" href="{{ path('app_progression_historique') }}" title="Voir ma progression">
+                            <span class="gw-level-chip__points"><i class="bi bi-star-fill" aria-hidden="true"></i>{{ app.user.points|number_format(0, ',', ' ') }} pts</span>
+                            <span class="gw-level-chip__level">Niveau {{ app.user.niveau }}</span>
+                            <span class="gw-level-chip__bar" role="progressbar" aria-label="Progression vers le niveau {{ app.user.niveau + 1 }}" aria-valuenow="{{ app.user.progressionNiveau }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ app.user.progressionNiveau }}%"></span></span>
+                        </a>
+                    {% endif %}
+                    {% if app.user %}
+                        <div class="gw-notif" data-controller="notifications" data-notifications-url-value="{{ path('app_notifications_panneau') }}">
+                            <a class="gw-icon-btn" href="{{ path('app_notifications') }}" aria-label="Notifications{{ notifications_non_lues > 0 ? ' (' ~ notifications_non_lues ~ ' non lue' ~ (notifications_non_lues > 1 ? 's' : '') ~ ')' : '' }}" title="Notifications"
+                               aria-haspopup="true" aria-expanded="false" aria-controls="gw-notif-panel"
+                               data-notifications-target="bouton" data-action="notifications#basculer">
+                                <i class="bi bi-bell-fill" aria-hidden="true"></i>
+                                {% if notifications_non_lues > 0 %}
+                                    <span class="gw-icon-btn__badge">{{ notifications_non_lues > 99 ? '99+' : notifications_non_lues }}</span>
+                                {% endif %}
+                            </a>
+                            <div id="gw-notif-panel" class="gw-notif-panel" role="region" aria-label="Dernières notifications" data-notifications-target="panneau" hidden></div>
+                        </div>
+                    {% endif %}
+                    <button type="button" class="gw-icon-btn gw-icon-btn--sound" aria-label="Activer ou couper les sons d'interface" title="Sons d'interface" aria-pressed="true" data-controller="son" data-action="click->son#basculer" data-son-base-url="{{ app.request.basePath }}/sons/">
+                        <i class="bi bi-volume-up-fill" aria-hidden="true" data-son-target="icone"></i>
+                    </button>
+                    <button type="button" class="gw-icon-btn" aria-label="Activer le thème sombre" title="Activer le thème sombre" aria-pressed="false" data-controller="theme" data-action="click->theme#basculer"{% if app.user %} data-theme-sync-url="{{ path('app_parametres_preferences') }}"{% endif %}>
+                        <i class="bi bi-moon-stars-fill" aria-hidden="true" data-theme-target="icone"></i>
+                    </button>
+                    <a class="gw-icon-btn gw-icon-btn--avatar" href="{{ app.user ? path('app_profil', {id: app.user.id}) : path('app_connexion') }}" aria-label="{{ app.user ? 'Mon profil' : 'Se connecter' }}" title="{{ app.user ? app.user.userIdentifier : 'Se connecter' }}">
+                        {% if app.user and app.user.avatar starts with 'avatar.' %}<img class="w-100 h-100 rounded-circle object-fit-cover" src="{{ asset('uploads/utilisateurs/' ~ app.user.id ~ '/' ~ app.user.avatar) }}" alt="">{% else %}<i class="bi bi-person-fill" aria-hidden="true"></i>{% endif %}
+                        <span class="gw-status-dot" aria-hidden="true"></span>
+                    </a>
+                </div>
+            </header>
+
+            {% set active_item = nav_items|filter(item => item.route is not null and item.route == current_route)|first %}
+            <div class="gw-layout">
+                <nav class="gw-rail" aria-label="Navigation principale" data-controller="rail">
+                    <button type="button"
+                            class="gw-rail__toggle"
+                            aria-label="Ouvrir le menu principal"
+                            aria-controls="gw-rail-list"
+                            aria-expanded="false"
+                            title="Menu principal"
+                            data-rail-target="toggle"
+                            data-action="rail#basculer">
+                        <i class="bi bi-list" aria-hidden="true"></i>
+                        <span class="visually-hidden">Menu principal</span>
+                    </button>
+                    <div class="gw-rail__viewport">
+                        <div class="gw-dsi-selection" aria-live="polite">
+                            <span data-rail-target="selection">
+                                {{ active_item.label|default('Menu DSi') }}
+                            </span>
+                        </div>
+                        <button type="button"
+                                class="gw-rail__suite gw-rail__suite--haut"
+                                data-rail-target="haut"
+                                data-action="rail#monter"
+                                hidden
+                                aria-label="Revenir au début du menu"
+                                title="Remonter">
+                            <i class="bi bi-chevron-up" aria-hidden="true"></i>
+                        </button>
+                        <ul class="gw-rail__list" id="gw-rail-list" data-rail-target="liste" data-action="scroll->rail#actualiser">
+                        {% for item in nav_items %}
+                            {% set is_active = item.route is not null and item.route == current_route %}
+                            <li>
+                                <a class="gw-rail__item gw-rail__item--{{ item.couleur|default('bleu') }} gw-rail__item--route-{{ item.route|default('aucune')|replace({'_': '-'}) }}{{ is_active ? ' is-active' : '' }}{{ item.logout|default(false) ? ' gw-rail__item--logout' : '' }}"
+                                   href="{{ item.route ? path(item.route) : '#' }}"
+                                   title="{{ item.label }}"
+                                   {{ is_active ? 'aria-current="page"' : '' }}
+                                   {{ item.logout|default(false) ? 'data-turbo="false"' : '' }}>
+                                    <i class="bi bi-{{ item.icon }}" aria-hidden="true"></i>
+                                    <span class="gw-rail__label">{{ item.label }}</span>
+                                    {% set badge = item.badge|default(null) %}
+                                    {% set badge_alerte = false %}
+                                    {% if item.route == 'app_notifications' and notifications_non_lues > 0 %}
+                                        {% set badge = notifications_non_lues > 99 ? '99+' : notifications_non_lues %}
+                                        {% set badge_alerte = true %}
+                                    {% endif %}
+                                    {% if badge is not null %}
+                                        <span class="gw-rail__badge{{ badge_alerte ? ' gw-rail__badge--alerte' : '' }}">{{ badge }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                        <button type="button"
+                                class="gw-rail__suite gw-rail__suite--bas"
+                                data-rail-target="bas"
+                                data-action="rail#descendre"
+                                hidden
+                                aria-label="Afficher la suite du menu"
+                                title="Suite">
+                            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </nav>
+
+                <main class="gw-main{{ current_route == 'app_home' ? ' gw-main--home' : ' gw-main--interne' }}">
+                    {% for type, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                    {% block body %}{% endblock %}
+                </main>
+            </div>
+
+            <footer class="gw-bottombar">
+                <div class="gw-bottombar__side">
+                    {% block bottombar_video_controls %}{% endblock %}
+                    <a class="gw-console-btn gw-console-btn--default" href="{{ path('app_parametres') }}" aria-label="Ouvrir les paramètres">
+                        <i class="bi bi-gear-fill" aria-hidden="true"></i>
+                        <span>Paramètres</span>
+                    </a>
+                    <a class="gw-console-btn gw-console-btn--wii" href="{{ path('app_parametres') }}" aria-label="Ouvrir les paramètres">
+                        <i class="bi bi-gear-fill" aria-hidden="true"></i>
+                        <span>Paramètres</span>
+                    </a>
+                </div>
+
+                <div class="gw-bottombar__center">
+                    <div class="gw-clock" data-controller="horloge">
+                        <time data-horloge-target="time" datetime="{{ 'now'|date('c') }}">
+                            {# Fallback serveur si JS désactivé #}
+                            <strong data-horloge-target="heure">{{ 'now'|date('H:i') }}</strong>
+                            <span data-horloge-target="date">{{ 'now'|format_datetime('none', 'none', 'EEEE d MMMM y', locale='fr')|capitalize }}</span>
+                        </time>
+                        <i class="bi bi-wifi" aria-hidden="true"></i>
+                    </div>
+                </div>
+
+                <div class="gw-bottombar__side gw-bottombar__side--end">
+                    <a class="gw-messages" href="{{ app.user ? path('app_messages') : path('app_connexion') }}">
+                        <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                        <span>Messages</span>
+                    </a>
+                </div>
+
+                {{ include('_pied_legal.html.twig') }}
+
+                {# Bande de copyright de l'ancien site : seul le thème legacy l'affiche. #}
+                <p class="gw-bottombar__copyright">
+                    &copy; {{ 'now'|date('Y') }} Copyright : <a href="{{ path('app_home') }}">Glitchworlds.com</a>
+                    · <a href="{{ path('app_mentions_legales') }}">Mentions légales</a>
+                    · <a href="{{ path('app_confidentialite') }}">Confidentialité</a>
+                    · <a href="{{ path('app_conditions_utilisation') }}">Conditions d’utilisation</a>
+                    · <a href="{{ path('app_charte_moderation') }}">Charte de contribution</a>
+                    · {{ include('pages/_bouton_consentement.html.twig', {
+                        classes: 'gw-legal-footer__consent',
+                        label: 'Choix cookies et publicité',
+                        icon: 'bi-sliders'
+                    }) }}
+                </p>
+            </footer>
+        </div>
+
+        <button type="button"
+                class="gw-retour-haut"
+                hidden
+                aria-hidden="true"
+                tabindex="-1"
+                aria-label="Retour en haut de la page"
+                title="Retour en haut"
+                data-controller="retour-haut"
+                data-action="click->retour-haut#remonter">
+            <i class="bi bi-arrow-up-short" aria-hidden="true"></i>
+        </button>
+
+        {{ include('_succes_deblocage.html.twig') }}
     </body>
 </html>

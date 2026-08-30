@@ -1,0 +1,26 @@
+{# Popup de déblocage de succès, façon console : entrée et sortie sont pilotées
+   par CSS pour rester visibles même sans JavaScript. #}
+{% if succes_debloques is not empty %}
+    <div class="gw-succes-popup" data-controller="succes-deblocage" role="status" aria-live="polite">
+        {% for succes in succes_debloques %}
+            <a class="gw-succes-popup__carte gw-succes-popup__carte--{{ succes.couleur }}"
+               href="{{ path('app_mes_jeux') }}#succes"
+               style="--gw-succes-rang: {{ loop.index0 }}">
+                <span class="gw-succes-popup__halo" aria-hidden="true"></span>
+                <span class="gw-succes-popup__icone" aria-hidden="true">
+                    <i class="bi bi-{{ succes.icone }}"></i>
+                </span>
+                <span class="gw-succes-popup__corps">
+                    <span class="gw-succes-popup__label">Succès débloqué</span>
+                    <strong class="gw-succes-popup__nom">{{ succes.nom }}</strong>
+                    <span class="gw-succes-popup__description">{{ succes.description }}</span>
+                </span>
+                <span class="gw-succes-popup__points">
+                    <strong>+{{ succes.points }}</strong>
+                    <small>pts</small>
+                </span>
+                <span class="gw-succes-popup__eclat" aria-hidden="true"></span>
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}

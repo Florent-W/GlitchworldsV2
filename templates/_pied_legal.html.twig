@@ -1,0 +1,15 @@
+<nav class="gw-legal-footer" aria-label="Informations légales">
+    <ul class="gw-legal-footer__list">
+        <li><a href="{{ path('app_mentions_legales') }}">Mentions légales</a></li>
+        <li><a href="{{ path('app_confidentialite') }}">Confidentialité</a></li>
+        <li><a href="{{ path('app_conditions_utilisation') }}">Conditions d’utilisation</a></li>
+        <li><a href="{{ path('app_charte_moderation') }}">Charte de contribution</a></li>
+        <li>
+            {{ include('pages/_bouton_consentement.html.twig', {
+                classes: 'gw-legal-footer__consent',
+                label: 'Choix cookies et publicité',
+                icon: 'bi-sliders'
+            }) }}
+        </li>
+    </ul>
+</nav>

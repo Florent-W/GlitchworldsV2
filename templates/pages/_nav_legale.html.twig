@@ -1,0 +1,13 @@
+{# Navigation transversale entre les pages légales. #}
+{% set page_active = page_active|default(null) %}
+<nav class="gw-panel p-3 gw-legal-page__nav" aria-label="Pages légales">
+    <strong class="d-block px-2 mb-2">Pages légales</strong>
+    <a href="{{ path('app_confidentialite') }}"{{ page_active == 'confidentialite' ? ' aria-current="page"' : '' }}>Politique de confidentialité</a>
+    <a href="{{ path('app_mentions_legales') }}"{{ page_active == 'mentions' ? ' aria-current="page"' : '' }}>Mentions légales</a>
+    <a href="{{ path('app_conditions_utilisation') }}"{{ page_active == 'conditions' ? ' aria-current="page"' : '' }}>Conditions d’utilisation</a>
+    <a href="{{ path('app_charte_moderation') }}"{{ page_active == 'charte' ? ' aria-current="page"' : '' }}>Charte de contribution</a>
+    {% if sommaire is defined %}
+        <strong class="d-block px-2 mt-3 mb-2">Sur cette page</strong>
+        {{ sommaire|raw }}
+    {% endif %}
+</nav>

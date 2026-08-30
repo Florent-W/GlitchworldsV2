@@ -1,0 +1,6 @@
+{# Badge de note moyenne. Variable : note ({moyenne, total}|null) #}
+{% if note is defined and note and note.total > 0 %}
+    <span class="gw-note-badge" aria-label="Note moyenne {{ note.moyenne }} sur 5 ({{ note.total }} avis)">
+        <i class="bi bi-star-fill" aria-hidden="true"></i>{{ note.moyenne }}
+    </span>
+{% endif %}
