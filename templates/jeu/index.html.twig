@@ -111,7 +111,9 @@
                                         <a href="{{ path('app_jeu_show', { slug: jeu.slug, id: jeu.id }) }}">{{ jeu.nom }}</a>
                                     </h2>
 
-                                    {% if jeu.pseudoAuteurFiche %}
+                                    {% if jeu.developpeur %}
+                                        <p class="gw-game-card__author">Développé par {{ jeu.developpeur }}</p>
+                                    {% elseif jeu.pseudoAuteurFiche %}
                                         <p class="gw-game-card__author">Par {{ jeu.pseudoAuteurFiche }}</p>
                                     {% endif %}
 

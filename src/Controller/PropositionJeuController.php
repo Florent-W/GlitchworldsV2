@@ -13,7 +13,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Form\FormError;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -33,10 +32,12 @@ final class PropositionJeuController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $jeu = (new Jeu())->setCreateur($utilisateur)->setStatut(StatutJeu::EnAttente);
-        $formulaire = $this->createForm(JeuPropositionType::class, $jeu);
+        $estAdministrateur = $this->isGranted('ROLE_ADMIN');
+        $jeu = (new Jeu())->setCreateur($utilisateur)->setStatut($estAdministrateur ? StatutJeu::Approuve : StatutJeu::EnAttente);
+        $formulaire = $this->createForm(JeuPropositionType::class, $jeu, [
+            'bouton_libelle' => $estAdministrateur ? 'Publier' : 'Envoyer pour validation',
+        ]);
         $formulaire->handleRequest($request);
-        $this->verifierLimiteGalerie($jeu, $formulaire, []);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $baseSlug = strtolower($slugger->slug((string) $jeu->getNom())->toString());
@@ -49,10 +50,16 @@ final class PropositionJeuController extends AbstractController
 
             $entityManager->persist($jeu);
             $entityManager->flush();
-            $this->enregistrerGalerie($jeu, $formulaire->get('imagesGalerie')->getData(), $galerieUploader);
             $this->enregistrerHabillages($jeu, $formulaire, $galerieUploader);
             $entityManager->flush();
-            $this->addFlash('success', 'Ta proposition a été envoyée pour validation.');
+            $this->addFlash('success', $estAdministrateur ? 'Le jeu a été publié.' : 'Ta proposition a été envoyée pour validation.');
+
+            if ($estAdministrateur) {
+                return $this->redirectToRoute('app_jeu_show', [
+                    'slug' => $jeu->getSlug(),
+                    'id' => $jeu->getId(),
+                ]);
+            }
 
             return $this->redirectToRoute('app_compte');
         }
@@ -65,21 +72,18 @@ final class PropositionJeuController extends AbstractController
     {
         $this->denyAccessUnlessGranted(PropositionJeuVoter::MODIFIER, $jeu);
 
+        $estAdministrateur = $this->isGranted('ROLE_ADMIN');
         $formulaire = $this->createForm(JeuPropositionType::class, $jeu, [
-            'bouton_libelle' => 'Enregistrer les modifications',
+            'bouton_libelle' => $estAdministrateur && $jeu->getStatut() !== StatutJeu::Approuve
+                ? 'Publier'
+                : 'Enregistrer les modifications',
         ]);
         $formulaire->handleRequest($request);
-        $aSupprimer = $request->request->all('supprimer_galerie');
-        $this->verifierLimiteGalerie($jeu, $formulaire, $aSupprimer);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
-            foreach ($aSupprimer as $nom) {
-                if (in_array($nom, $jeu->getGalerie(), true)) {
-                    $galerieUploader->supprimer($nom, (int) $jeu->getId());
-                    $jeu->removeImageGalerie($nom);
-                }
+            if ($estAdministrateur) {
+                $jeu->setStatut(StatutJeu::Approuve);
             }
-            $this->enregistrerGalerie($jeu, $formulaire->get('imagesGalerie')->getData(), $galerieUploader);
             $this->enregistrerHabillages($jeu, $formulaire, $galerieUploader);
             $entityManager->flush();
             $this->addFlash('success', 'La fiche a été modifiée.');
@@ -97,15 +101,6 @@ final class PropositionJeuController extends AbstractController
         return $this->render('jeu/proposer.html.twig', ['formulaire' => $formulaire, 'modification' => true]);
     }
 
-    /** @param list<UploadedFile> $images */
-    private function enregistrerGalerie(Jeu $jeu, array $images, JeuGalerieUploader $uploader): void
-    {
-        $placesRestantes = max(0, 8 - count($jeu->getGalerie()));
-        foreach (array_slice($images, 0, $placesRestantes) as $image) {
-            $jeu->addImageGalerie($uploader->enregistrer($image, (int) $jeu->getId()));
-        }
-    }
-
     private function enregistrerHabillages(Jeu $jeu, \Symfony\Component\Form\FormInterface $formulaire, JeuGalerieUploader $uploader): void
     {
         if (null === $jeu->getId()) {
@@ -120,20 +115,6 @@ final class PropositionJeuController extends AbstractController
         $banniere = $formulaire->get('banniereFichier')->getData();
         if ($banniere instanceof UploadedFile) {
             $jeu->setBanniere($uploader->enregistrerHabillage($banniere, (int) $jeu->getId(), 'banniere'));
-        }
-    }
-
-    /** @param list<string> $aSupprimer */
-    private function verifierLimiteGalerie(Jeu $jeu, \Symfony\Component\Form\FormInterface $formulaire, array $aSupprimer): void
-    {
-        if (!$formulaire->isSubmitted()) {
-            return;
-        }
-
-        $suppressionsValides = count(array_intersect($jeu->getGalerie(), $aSupprimer));
-        $nouveauxFichiers = $formulaire->get('imagesGalerie')->getData();
-        if (count($jeu->getGalerie()) - $suppressionsValides + count($nouveauxFichiers) > 8) {
-            $formulaire->get('imagesGalerie')->addError(new FormError('La galerie peut contenir 8 images maximum.'));
         }
     }
 }

@@ -34,11 +34,19 @@ class Jeu
     #[ORM\Column(type: Types::TEXT)]
     private string $contenu = '';
 
+    #[ORM\Column(length: 20, options: ['default' => 'conteneur'])]
+    private string $typePresentation = 'conteneur';
+
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $dateSortie = null;
 
-    #[ORM\Column(length: 120, nullable: true)]
+    #[ORM\Column(length: 160, nullable: true)]
+    #[Assert\Length(max: 160, normalizer: 'trim')]
     private ?string $developpeur = null;
+
+    /** Ancienne copie texte conservée uniquement pour ne pas perdre les imports historiques. */
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $auteurPresentationLegacy = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true)]
@@ -189,9 +197,9 @@ class Jeu
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
-        $this->description = $description;
+        $this->description = $description ?? '';
 
         return $this;
     }
@@ -201,9 +209,18 @@ class Jeu
         return $this->contenu;
     }
 
-    public function setContenu(string $contenu): static
+    public function setContenu(?string $contenu): static
     {
-        $this->contenu = $contenu;
+        $this->contenu = $contenu ?? '';
+
+        return $this;
+    }
+
+    public function getTypePresentation(): string { return $this->typePresentation; }
+
+    public function setTypePresentation(string $typePresentation): static
+    {
+        $this->typePresentation = in_array($typePresentation, ['conteneur', 'sections', 'sections_blocs'], true) ? $typePresentation : 'conteneur';
 
         return $this;
     }
@@ -227,7 +244,8 @@ class Jeu
 
     public function setDeveloppeur(?string $developpeur): static
     {
-        $this->developpeur = $developpeur;
+        $developpeur = trim((string) $developpeur);
+        $this->developpeur = $developpeur !== '' ? $developpeur : null;
 
         return $this;
     }
@@ -262,9 +280,7 @@ class Jeu
             return $this->createur->getPseudo();
         }
 
-        $pseudoLegacy = trim((string) ($this->developpeur ?? ''));
-
-        return $pseudoLegacy !== '' ? $pseudoLegacy : null;
+        return null;
     }
 
     /**

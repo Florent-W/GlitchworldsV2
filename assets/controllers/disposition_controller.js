@@ -45,6 +45,16 @@ export default class extends Controller {
             return 'carrousel';
         }
 
+        // Sur l'accueil, le thème Legacy retrouve par défaut la présentation
+        // en liste de l'ancien site. Une préférence choisie reste prioritaire.
+        if (valeur === null && this.hasBoutonCarrouselTarget && document.documentElement.dataset.theme === 'legacy') {
+            return 'liste';
+        }
+
+        if (valeur === null && this.hasBoutonCarrouselTarget) {
+            return 'double';
+        }
+
         return 'grille';
     }
 

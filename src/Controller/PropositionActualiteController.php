@@ -36,19 +36,31 @@ final class PropositionActualiteController extends AbstractController
         $actualite = (new Actualite())
             ->setAuteur($utilisateur)
             ->setStatut(StatutActualite::Brouillon);
-        $formulaire = $this->createForm(ActualitePropositionType::class, $actualite);
+        $estAdministrateur = $this->isGranted('ROLE_ADMIN');
+        $formulaire = $this->createForm(ActualitePropositionType::class, $actualite, [
+            'bouton_libelle' => $estAdministrateur ? 'Publier' : 'Envoyer pour validation',
+        ]);
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $enBrouillon = $formulaire->has('brouillon') && $formulaire->get('brouillon')->isClicked();
-            $actualite->setStatut($enBrouillon ? StatutActualite::Brouillon : StatutActualite::EnAttente);
+            $actualite->setStatut($enBrouillon
+                ? StatutActualite::Brouillon
+                : ($estAdministrateur ? StatutActualite::Publiee : StatutActualite::EnAttente));
             $actualite->setSlug($this->creerSlugUnique($this->titrePourSlug($actualite), $slugger, $actualiteRepository));
             $entityManager->persist($actualite);
             $entityManager->flush();
             $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
             $this->addFlash('success', $enBrouillon
                 ? 'Ton brouillon a été enregistré. Tu pourras l’envoyer pour validation quand tu seras prêt.'
-                : 'Ton actualité a été envoyée pour validation.');
+                : ($estAdministrateur ? 'L’actualité a été publiée.' : 'Ton actualité a été envoyée pour validation.'));
+
+            if ($actualite->getStatut() === StatutActualite::Publiee) {
+                return $this->redirectToRoute('app_actualite_voir', [
+                    'slug' => $actualite->getSlug(),
+                    'id' => $actualite->getId(),
+                ]);
+            }
 
             return $this->redirectToRoute('app_compte');
         }
@@ -65,9 +77,12 @@ final class PropositionActualiteController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted(PropositionActualiteVoter::MODIFIER, $actualite);
 
+        $estAdministrateur = $this->isGranted('ROLE_ADMIN');
         $enAttente = $actualite->getStatut() === StatutActualite::EnAttente;
         $formulaire = $this->createForm(ActualitePropositionType::class, $actualite, [
-            'bouton_libelle' => $enAttente ? 'Enregistrer les modifications' : 'Envoyer pour validation',
+            'bouton_libelle' => $estAdministrateur
+                ? ($actualite->getStatut() === StatutActualite::Publiee ? 'Enregistrer les modifications' : 'Publier')
+                : ($enAttente ? 'Enregistrer les modifications' : 'Envoyer pour validation'),
             'afficher_brouillon' => !$enAttente,
         ]);
         $formulaire->handleRequest($request);
@@ -75,8 +90,12 @@ final class PropositionActualiteController extends AbstractController
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             if ($formulaire->has('brouillon') && $formulaire->get('brouillon')->isClicked()) {
                 $actualite->setStatut(StatutActualite::Brouillon);
-            } elseif ($formulaire->get('envoyer')->isClicked() && $actualite->getStatut() === StatutActualite::Brouillon) {
-                $actualite->setStatut(StatutActualite::EnAttente);
+            } elseif ($formulaire->get('envoyer')->isClicked()) {
+                if ($estAdministrateur) {
+                    $actualite->setStatut(StatutActualite::Publiee);
+                } elseif ($actualite->getStatut() === StatutActualite::Brouillon) {
+                    $actualite->setStatut(StatutActualite::EnAttente);
+                }
             }
 
             $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);

@@ -32,8 +32,14 @@ final class JeuPropositionType extends AbstractType
                 'attr' => ['maxlength' => 160, 'rows' => 3],
                 'help' => 'Facultative, 160 caractères maximum.',
             ])
+            ->add('developpeur', null, [
+                'label' => 'Développeur du jeu',
+                'required' => false,
+                'attr' => ['maxlength' => 160],
+                'help' => 'Nom du studio, de l’équipe ou du développeur ayant créé le jeu.',
+            ])
             ->add('contenu', TextareaType::class, [
-                'label' => 'Présentation complète',
+                'label' => 'Contenu de la présentation',
                 'required' => false,
                 'help' => 'Tu peux utiliser le BBCode pour mettre en forme la fiche.',
                 'attr' => ['rows' => 18],
@@ -113,22 +119,6 @@ final class JeuPropositionType extends AbstractType
                     mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
                     mimeTypesMessage: 'Choisis une image JPG, PNG, WebP ou GIF.',
                 )],
-            ])
-            ->add('imagesGalerie', FileType::class, [
-                'mapped' => false,
-                'multiple' => true,
-                'required' => false,
-                'label' => 'Images de la galerie',
-                'help' => 'Jusqu’à 8 images JPG, PNG, WebP ou GIF de 8 Mo maximum chacune.',
-                'attr' => ['accept' => 'image/jpeg,image/png,image/webp,image/gif'],
-                'constraints' => [
-                    new Assert\Count(max: 8, maxMessage: 'Tu peux envoyer au maximum 8 images à la fois.'),
-                    new Assert\All([new Assert\Image(
-                        maxSize: '8M',
-                        mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-                        mimeTypesMessage: 'Choisis uniquement des images JPG, PNG, WebP ou GIF.',
-                    )]),
-                ],
             ])
             ->add('videoBackground', UrlType::class, [
                 'label' => 'Vidéo en arrière-plan',

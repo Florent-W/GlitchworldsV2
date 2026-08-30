@@ -13,3 +13,4 @@ import './styles/themes/legacy.css';
 import './styles/themes/theme3.css';
 import './styles/themes/theme4.css';
 import './styles/themes/theme5.css';
+import './styles/accessibility.css';

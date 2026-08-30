@@ -94,12 +94,14 @@ export default class extends Controller {
 
     choisirMode(event) {
         const actif = this.themeActif();
-        this.previsualiser({ palette: actif.palette, mode: event.params.mode });
+        this.enregistrer({ palette: actif.palette, mode: event.params.mode });
+        this.mettreAJourStatut(`Thème appliqué: ${this.libelle(this.enregistre)}.`);
     }
 
     choisirPalette(event) {
         const actif = this.themeActif();
-        this.previsualiser({ palette: event.params.palette, mode: actif.mode });
+        this.enregistrer({ palette: event.params.palette, mode: actif.mode });
+        this.mettreAJourStatut(`Thème appliqué: ${this.libelle(this.enregistre)}.`);
     }
 
     appliquerSelection() {

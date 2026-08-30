@@ -15,8 +15,9 @@
         <div class="row g-4">
             <div class="col-xl-7">
                 {{ form_row(formulaire.nom) }}
+        {{ form_row(formulaire.developpeur) }}
         {{ form_row(formulaire.description) }}
-        {% include '_editeur_bbcode.html.twig' with { champ: formulaire.contenu, templates: 'jeu' } only %}
+        {% include '_editeur_bbcode.html.twig' with { champ: formulaire.contenu, templates: 'jeu', afficher_modeles_complets: not modification } only %}
                 {{ form_row(formulaire.dateSortie) }}
                 {{ form_row(formulaire.categorie) }}
                 {{ form_row(formulaire.jeuxAssocies) }}
@@ -31,22 +32,6 @@
                 {% endif %}
             </div>
             <div class="col-xl-5">
-                <div class="gw-panel p-3 mb-3">
-                    {{ form_row(formulaire.imagesGalerie) }}
-                    {% if modification and formulaire.vars.data.galerie is not empty %}
-                        <p class="small fw-semibold mb-2">Images actuelles</p>
-                        <div class="row g-2">
-                            {% for image in formulaire.vars.data.galerie %}
-                                <div class="col-6">
-                                    <label class="gw-gallery-admin-image">
-                                        <img src="{{ asset('uploads/jeux/' ~ formulaire.vars.data.id ~ '/' ~ image) }}" alt="" loading="lazy">
-                                        <span><input class="form-check-input" type="checkbox" name="supprimer_galerie[]" value="{{ image }}"> Supprimer</span>
-                                    </label>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
                 <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.genres) }}</div>
                 <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.plateformes) }}</div>
                 <div class="gw-panel p-3 mb-3">{{ form_row(formulaire.langues) }}</div>

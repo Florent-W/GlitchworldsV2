@@ -94,12 +94,10 @@ final class ImportLegacyJeuxCommand extends Command
 
         $rows = $legacy->fetchAllAssociative(
             'SELECT j.id, j.nom, j.contenu, j.nom_miniature, j.date_sortie, j.url, j.nom_banniere, j.approuver, j.description,
-                    j.id_categorie, j.id_auteur_presentation, u.pseudo AS developpeur
+                    j.id_categorie, j.id_auteur_presentation
              FROM jeu j
-             LEFT JOIN utilisateurs u ON u.id = j.id_auteur_presentation
              ORDER BY j.id ASC'
         );
-        // Note : le champ V2 « developpeur » stocke l’auteur de la présentation legacy (id_auteur_presentation).
 
         if ($rows === []) {
             $io->warning('Aucun jeu trouvé dans la base legacy.');
@@ -188,7 +186,6 @@ final class ImportLegacyJeuxCommand extends Command
                 'statut' => $item['statut']->value,
                 'miniature' => $item['miniature'],
                 'banniere' => $item['banniere'],
-                'developpeur' => $item['developpeur'],
                 'categorie_id' => $item['categorie_id'],
                 'cree_le' => $now,
                 'modifie_le' => $now,
@@ -245,7 +242,7 @@ final class ImportLegacyJeuxCommand extends Command
      *     statut: StatutJeu,
      *     miniature: ?string,
      *     banniere: ?string,
-     *     developpeur: ?string,
+     *     createur_id: ?int,
      *     categorie_id: ?int
      * }>
      */
@@ -265,7 +262,6 @@ final class ImportLegacyJeuxCommand extends Command
                 'statut' => $this->convertirStatut((string) $ligne['approuver']),
                 'miniature' => $this->chaineOuNull($ligne['nom_miniature'] ?? null),
                 'banniere' => $this->chaineOuNull($ligne['nom_banniere'] ?? null),
-                'developpeur' => $this->chaineOuNull($ligne['developpeur'] ?? null),
                 'createur_id' => $createurId !== null && $createurId !== '' ? (int) $createurId : null,
                 'categorie_id' => $categorieId !== null && $categorieId !== '' ? (int) $categorieId : null,
             ];

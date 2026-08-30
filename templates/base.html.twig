@@ -3,7 +3,7 @@
 {% set default_palette = app.user ? app.user.getPalette() : 'glitchworlds' %}
 {% set default_mode = app.user ? app.user.getMode() : 'system' %}
 {% set theme_styles = {glitchworlds: 'glitchworlds', legacy: 'legacy', wii: 'theme1', ps3: 'theme2', ds: 'theme3', dsi: 'theme4', '3ds': 'theme5'} %}
-<html lang="fr" data-theme="{{ default_palette }}" data-theme-style="{{ theme_styles[default_palette]|default('glitchworlds') }}" data-theme-resolved="{{ default_mode }}" data-gw-theme="{{ default_palette }}" data-gw-mode="{{ default_mode }}" data-default-theme="{{ default_theme }}" data-user-authenticated="{{ app.user ? '1' : '0' }}" data-gw-base-path="{{ app.request.basePath }}">
+<html lang="fr" data-theme="{{ default_palette }}" data-theme-style="{{ theme_styles[default_palette]|default('glitchworlds') }}" data-theme-resolved="{{ default_mode }}" data-gw-theme="{{ default_palette }}" data-gw-mode="{{ default_mode }}" data-default-theme="{{ default_theme }}" data-default-contrast="{{ app.user and app.user.isContrasteRenforce ? 'true' : 'false' }}" data-user-authenticated="{{ app.user ? '1' : '0' }}" data-gw-base-path="{{ app.request.basePath }}">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -89,6 +89,12 @@
                     root.setAttribute('data-theme-resolved', resolvedMode);
                     root.setAttribute('data-bs-theme', resolvedMode);
                     root.setAttribute('data-reduced-motion', localStorage.getItem('glitchworlds-reduced-motion') === 'true' ? 'true' : 'false');
+                    const storedContrast = localStorage.getItem('glitchworlds-contrast');
+                    const contrast = storedContrast ?? root.getAttribute('data-default-contrast') ?? 'false';
+                    root.setAttribute('data-contrast-renforce', contrast === 'true' ? 'true' : 'false');
+                    if (isAuthenticated && storedContrast === null) {
+                        localStorage.setItem('glitchworlds-contrast', contrast);
+                    }
                     root.setAttribute('data-gw-sons', localStorage.getItem('glitchworlds-sons') === '0' ? '0' : '1');
                     root.setAttribute('data-gw-retour-haut', localStorage.getItem('glitchworlds-retour-haut') === '0' ? '0' : '1');
                 } catch (error) {
@@ -99,6 +105,7 @@
                     document.documentElement.setAttribute('data-gw-mode', 'system');
                     document.documentElement.setAttribute('data-bs-theme', 'light');
                     document.documentElement.setAttribute('data-reduced-motion', 'false');
+                    document.documentElement.setAttribute('data-contrast-renforce', 'false');
                     document.documentElement.setAttribute('data-gw-sons', '1');
                     document.documentElement.setAttribute('data-gw-retour-haut', '1');
                 }
@@ -157,7 +164,6 @@
             <header class="gw-topbar">
                 <a class="gw-logo" href="{{ path('app_home') }}">
                     <span class="gw-logo__name">Glitch<span class="gw-logo__accent">Worlds</span></span>
-                    <span class="gw-logo__tagline">Play. Hack. Rewrite Reality.</span>
                 </a>
 
                 <search class="gw-search" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion') }}">
@@ -294,8 +300,6 @@
                 </main>
             </div>
 
-            {{ include('_pied_legal.html.twig') }}
-
             <footer class="gw-bottombar">
                 <div class="gw-bottombar__side">
                     {% block bottombar_video_controls %}{% endblock %}
@@ -309,13 +313,15 @@
                     </a>
                 </div>
 
-                <div class="gw-clock" data-controller="horloge">
-                    <time data-horloge-target="time" datetime="{{ 'now'|date('c') }}">
-                        {# Fallback serveur si JS désactivé #}
-                        <strong data-horloge-target="heure">{{ 'now'|date('H:i') }}</strong>
-                        <span data-horloge-target="date">{{ 'now'|format_datetime('none', 'none', 'EEEE d MMMM y', locale='fr')|capitalize }}</span>
-                    </time>
-                    <i class="bi bi-wifi" aria-hidden="true"></i>
+                <div class="gw-bottombar__center">
+                    <div class="gw-clock" data-controller="horloge">
+                        <time data-horloge-target="time" datetime="{{ 'now'|date('c') }}">
+                            {# Fallback serveur si JS désactivé #}
+                            <strong data-horloge-target="heure">{{ 'now'|date('H:i') }}</strong>
+                            <span data-horloge-target="date">{{ 'now'|format_datetime('none', 'none', 'EEEE d MMMM y', locale='fr')|capitalize }}</span>
+                        </time>
+                        <i class="bi bi-wifi" aria-hidden="true"></i>
+                    </div>
                 </div>
 
                 <div class="gw-bottombar__side gw-bottombar__side--end">
@@ -325,6 +331,8 @@
                     </a>
                 </div>
 
+                {{ include('_pied_legal.html.twig') }}
+
                 {# Bande de copyright de l'ancien site : seul le thème legacy l'affiche. #}
                 <p class="gw-bottombar__copyright">
                     &copy; {{ 'now'|date('Y') }} Copyright : <a href="{{ path('app_home') }}">Glitchworlds.com</a>
@@ -332,6 +340,11 @@
                     · <a href="{{ path('app_confidentialite') }}">Confidentialité</a>
                     · <a href="{{ path('app_conditions_utilisation') }}">Conditions d’utilisation</a>
                     · <a href="{{ path('app_charte_moderation') }}">Charte de contribution</a>
+                    · {{ include('pages/_bouton_consentement.html.twig', {
+                        classes: 'gw-legal-footer__consent',
+                        label: 'Choix cookies et publicité',
+                        icon: 'bi-sliders'
+                    }) }}
                 </p>
             </footer>
         </div>

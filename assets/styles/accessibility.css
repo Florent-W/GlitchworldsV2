@@ -1,0 +1,84 @@
+/* Le contraste renforcé est chargé après tous les thèmes afin de rester
+   perceptible quelle que soit l'ambiance sélectionnée. */
+html[data-contrast-renforce="true"][data-bs-theme="light"] {
+    --gw-text: #050a12;
+    --gw-muted: #263445;
+    --gw-border: rgba(5, 10, 18, .58);
+    --gw-background: #fff;
+    --gw-background-accent: #e7edf5;
+    --gw-surface: #fff;
+    --gw-surface-solid: #fff;
+    --bs-secondary-color: #263445;
+    --bs-border-color: rgba(5, 10, 18, .58);
+}
+
+html[data-contrast-renforce="true"][data-bs-theme="dark"] {
+    --gw-text: #fff;
+    --gw-muted: #d7e2f1;
+    --gw-border: rgba(255, 255, 255, .62);
+    --gw-background: #02050a;
+    --gw-background-accent: #09111d;
+    --gw-surface: #080e18;
+    --gw-surface-solid: #080e18;
+    --bs-secondary-color: #d7e2f1;
+    --bs-border-color: rgba(255, 255, 255, .62);
+}
+
+html[data-contrast-renforce="true"] :is(.text-secondary, .text-muted, .gw-muted) {
+    color: var(--gw-muted) !important;
+    opacity: 1 !important;
+}
+
+html[data-contrast-renforce="true"] :is(
+    .gw-panel,
+    .gw-page-panel,
+    .card,
+    .gw-game-card,
+    .gw-similar-card,
+    .gw-article-card,
+    .gw-community__composer,
+    .gw-community__post,
+    .gw-community__side,
+    .gw-comment,
+    .modal-content,
+    .dropdown-menu
+) {
+    border-color: var(--gw-border) !important;
+    border-width: 2px !important;
+}
+
+html[data-contrast-renforce="true"] :is(.form-control, .form-select, .input-group-text) {
+    border: 2px solid var(--gw-border) !important;
+    color: var(--gw-text) !important;
+    background-color: var(--gw-surface-solid) !important;
+}
+
+html[data-contrast-renforce="true"] :is(.form-control, .form-select)::placeholder {
+    color: var(--gw-muted) !important;
+    opacity: 1;
+}
+
+html[data-contrast-renforce="true"] .btn {
+    border-width: 2px;
+    font-weight: 700;
+}
+
+html[data-contrast-renforce="true"] .btn-outline-secondary {
+    border-color: currentColor;
+    color: var(--gw-text);
+}
+
+html[data-contrast-renforce="true"] a:not(.btn, .gw-logo, .gw-rail__item, .gw-icon-btn, .gw-console-btn, .gw-game-card__visual) {
+    text-decoration-thickness: 2px;
+    text-underline-offset: .16em;
+}
+
+html[data-contrast-renforce="true"] :focus-visible {
+    outline: 4px solid #ffb703 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 2px #050a12 !important;
+}
+
+html[data-contrast-renforce="true"] .form-check-input {
+    border: 2px solid var(--gw-text);
+}

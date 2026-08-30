@@ -50,10 +50,19 @@ final class PropositionJeuControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/jeu/proposer');
         self::assertSelectorExists('[data-controller="bbcode"]');
         self::assertSelectorExists('button[data-bbcode-id-param="presentation_pokemon"]');
+        self::assertSelectorExists('button[data-bbcode-id-param="presentation_complete"]');
+        self::assertSelectorExists('select[data-action="change->bbcode#ajouterPartie"] option[value="section_presentation"]');
+        self::assertSelectorExists('select[data-action="change->bbcode#ajouterPartie"] option[value="section_avis"]');
+        self::assertSelectorExists('select[data-action="change->bbcode#ajouterPartie"] option[value="section_histoire"]');
+        self::assertSelectorExists('select[data-action="change->bbcode#ajouterPartie"] option[value="section_fonctionnalites"]');
+        self::assertSelectorNotExists('select[data-action="change->bbcode#ajouterPartie"] option[value="section_configuration"]');
+        self::assertSelectorExists('[data-action="bbcode#ajouterPartiePersonnalisee"]');
         self::assertSelectorExists('body[data-turbo="false"]');
         self::assertStringContainsString('onbeforeunload', (string) $client->getResponse()->getContent());
         self::assertSelectorExists('input[name="jeu_proposition[miniatureFichier]"]');
         self::assertSelectorExists('input[name="jeu_proposition[banniereFichier]"]');
+        self::assertSelectorNotExists('input[name="jeu_proposition[imagesGalerie][]"]');
+        self::assertSelectorNotExists('input[name="jeu_proposition[typePresentation]"]');
         self::assertSelectorExists('[data-action="bbcode#video"]');
         self::assertSelectorExists('[data-action="bbcode#tableau"]');
         self::assertSelectorTextContains('[data-action="bbcode#basculerApercu"]', 'Afficher l’aperçu');
@@ -98,6 +107,7 @@ final class PropositionJeuControllerTest extends WebTestCase
         self::assertSame(StatutJeu::EnAttente, $jeu->getStatut());
         self::assertSame($ids['utilisateur'], $jeu->getCreateur()?->getId());
         self::assertSame('mon-jeu-symfony-'.$suffixe, $jeu->getSlug());
+        self::assertSame('conteneur', $jeu->getTypePresentation());
         self::assertStringStartsWith('miniature.', (string) $jeu->getMiniature());
         self::assertStringStartsWith('banniere.', (string) $jeu->getBanniere());
         self::assertFileExists(self::getContainer()->getParameter('kernel.project_dir').'/public/uploads/jeux/'.$jeu->getId().'/'.$jeu->getMiniature());
@@ -108,6 +118,9 @@ final class PropositionJeuControllerTest extends WebTestCase
         $crawler = $client->followRedirect();
         self::assertSelectorTextContains('body', $nomJeu);
         $crawler = $client->click($crawler->selectLink('Modifier la proposition')->link());
+        self::assertSelectorNotExists('button[data-bbcode-id-param="presentation_complete"]');
+        self::assertSelectorExists('select[data-action="change->bbcode#ajouterPartie"]');
+        self::assertSelectorNotExists('input[name="jeu_proposition[imagesGalerie][]"]');
         $client->submit($crawler->selectButton('Enregistrer les modifications')->form([
             'jeu_proposition[nom]' => $nomJeu.' Modifié',
         ]));

@@ -1115,3 +1115,228 @@
     --gw-shadow: 0 1rem 3rem rgba(0, 0, 0, .42);
     --gw-shadow-soft: 0 .5rem 1.5rem rgba(4, 10, 20, .45);
 }
+
+/* Lisibilité de l'accueil : les surfaces restent translucides, mais les
+   informations et commandes essentielles ne se fondent plus dans le décor. */
+:root[data-theme="ps3"] .gw-game-hero--home .gw-game-hero__lead {
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, .9);
+}
+
+:root[data-theme="ps3"] .gw-game-hero--home .gw-game-hero__tag {
+    border-color: rgba(255, 255, 255, .58);
+    background: rgba(3, 14, 31, .66);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .28);
+}
+
+:root[data-theme="ps3"] .gw-game-hero--home .btn-outline-light {
+    border-color: rgba(255, 255, 255, .78);
+    color: #fff;
+    background: rgba(3, 14, 31, .58);
+}
+
+:root[data-theme="ps3"] .gw-3ds-screen--bottom > .gw-home-menu {
+    border-color: rgba(205, 235, 255, .52);
+    background: linear-gradient(100deg, rgba(4, 20, 54, .88), rgba(10, 48, 100, .68) 58%, rgba(19, 74, 130, .38));
+}
+
+:root[data-theme="ps3"] .gw-home-menu__lien {
+    color: #e6f5ff;
+    font-size: .8rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .18em;
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection :is(.gw-similar-card, .gw-article-card) {
+    color: #f4f9ff;
+}
+
+:root[data-theme="ps3"] .gw-home-shell .gw-collection :is(.gw-similar-card h3, .gw-article-card .card-title) {
+    color: #f4f9ff;
+    font-weight: 600;
+}
+
+:root[data-theme="ps3"] .gw-home-menu--communaute :is(.text-secondary, .gw-activity__extrait, time) {
+    color: #cfe8fa !important;
+}
+
+:root[data-theme="ps3"] .gw-home-menu--communaute :is(.gw-activity__item, .gw-members__item) {
+    border-color: rgba(190, 226, 255, .34);
+    background: rgba(3, 15, 31, .58);
+}
+
+:root[data-theme="ps3"] .gw-home-menu__entete :is(.gw-home-order-button, .gw-home-drag-handle) {
+    border-color: rgba(205, 235, 255, .55);
+    color: #e6f5ff;
+    background: rgba(3, 15, 31, .72);
+}
+
+/* Fiches de jeux : surface de lecture plus opaque et typographie claire. */
+:root[data-theme="ps3"] .gw-game-breadcrumb {
+    position: relative;
+    z-index: 2;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 !important;
+}
+
+:root[data-theme="ps3"] .breadcrumb {
+    --bs-breadcrumb-divider: '›';
+    --bs-breadcrumb-divider-color: #b9dcf5;
+    flex-wrap: nowrap;
+    max-width: min(100%, 42rem);
+    margin-bottom: 0;
+    padding: .55rem .8rem;
+    border: 1px solid rgba(190, 226, 255, .42);
+    border-radius: .5rem .5rem 0 0;
+    color: #f4f9ff;
+    background: rgba(6, 37, 78, .82);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .08);
+    backdrop-filter: blur(8px);
+}
+
+:root[data-theme="ps3"] .gw-game-breadcrumb + .row .gw-game-hero {
+    border-top-left-radius: 0;
+}
+
+:root[data-theme="ps3"] .breadcrumb-item a {
+    color: #8fd8ff;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+:root[data-theme="ps3"] .breadcrumb-item a:is(:hover, :focus-visible) {
+    color: #fff;
+    text-decoration: underline;
+}
+
+:root[data-theme="ps3"] .breadcrumb-item.active {
+    min-width: 0;
+    overflow: hidden;
+    color: #fff;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+:root[data-theme="ps3"] .breadcrumb-item + .breadcrumb-item::before {
+    color: #b9dcf5;
+}
+
+:root[data-theme="ps3"] .gw-console-panel {
+    border-color: rgba(190, 226, 255, .5);
+    color: #f4f9ff;
+    background: linear-gradient(135deg, rgba(9, 47, 100, .94), rgba(17, 78, 145, .86) 58%, rgba(35, 111, 174, .72));
+    box-shadow: inset 0 1px rgba(255, 255, 255, .12), 0 .8rem 2rem rgba(0, 12, 42, .24);
+}
+
+:root[data-theme="ps3"] .gw-console-panel :is(h1, h2, h3, h4, h5, h6, strong) {
+    color: #fff;
+}
+
+:root[data-theme="ps3"] .gw-console-panel :is(.text-secondary, .text-muted, .gw-quick-info__item span, .gw-game-community__score span) {
+    color: #cfe8fa !important;
+}
+
+:root[data-theme="ps3"] .gw-console-panel :is(.gw-quick-info__item a, .gw-overview-similar a, .gw-game-community > a) {
+    color: #7fd3ff;
+}
+
+:root[data-theme="ps3"][data-bs-theme="dark"] .gw-console-panel {
+    border-color: var(--gw-border);
+    background: var(--gw-surface);
+    box-shadow: var(--gw-shadow-soft);
+    backdrop-filter: blur(12px);
+}
+
+:root[data-theme="ps3"] #a-propos {
+    --gw-fiche-reading-text: #f4f9ff;
+    --gw-fiche-reading-muted: #cfe8fa;
+    --gw-fiche-reading-surface: linear-gradient(135deg, rgba(9, 47, 100, .94), rgba(17, 78, 145, .86) 58%, rgba(35, 111, 174, .72));
+    --gw-fiche-section-surface: rgba(7, 37, 82, .72);
+    border: 1px solid rgba(190, 226, 255, .5);
+    border-radius: .75rem;
+    color: var(--gw-fiche-reading-text);
+    background: var(--gw-fiche-reading-surface);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .05), 0 .8rem 2rem rgba(0, 0, 0, .22);
+    backdrop-filter: blur(10px);
+}
+
+:root[data-theme="ps3"][data-bs-theme="dark"] #a-propos {
+    --gw-fiche-reading-surface: var(--gw-surface);
+    --gw-fiche-section-surface: var(--gw-surface);
+    border-color: var(--gw-border);
+    box-shadow: var(--gw-shadow-soft);
+}
+
+:root[data-theme="ps3"] :is(
+    #actualites-liees,
+    #avis-joueurs,
+    #commentaires,
+    .gw-game-rate__panel
+) {
+    color: #f4f9ff;
+}
+
+:root[data-theme="ps3"] #a-propos :is(.jeu-contenu, .gw-game-section__body, .gw-game-reading-section__body),
+:root[data-theme="ps3"] #a-propos :is(.jeu-contenu, .gw-game-section__body, .gw-game-reading-section__body) :is(p, li, td, th, blockquote) {
+    color: var(--gw-fiche-reading-text) !important;
+}
+
+:root[data-theme="ps3"] #a-propos :is(h1, h2, h3, h4, h5, h6, .gw-game-section__title) {
+    color: var(--gw-fiche-reading-text) !important;
+}
+
+:root[data-theme="ps3"] #a-propos :is(.gw-game-section__preview, .text-secondary, .text-muted) {
+    color: var(--gw-fiche-reading-muted) !important;
+    opacity: 1;
+}
+
+:root[data-theme="ps3"] :is(#avis-joueurs, #commentaires, .gw-game-rate__panel) .text-secondary {
+    color: #cfe8fa !important;
+    opacity: 1;
+}
+
+:root[data-theme="ps3"] #a-propos .gw-game-section {
+    border-color: rgba(190, 226, 255, .34);
+    background: var(--gw-fiche-section-surface);
+}
+
+:root[data-theme="ps3"] #a-propos .gw-game-reading-section {
+    overflow: hidden;
+    border: 1px solid rgba(190, 226, 255, .38);
+    border-radius: .65rem;
+    background: var(--gw-fiche-section-surface);
+}
+
+:root[data-theme="ps3"] #a-propos .gw-game-reading-section .gw-game-section__summary {
+    align-items: center;
+    min-height: 4rem;
+    background: rgba(5, 28, 66, .48);
+    transition: background-color .15s ease;
+}
+
+:root[data-theme="ps3"] #a-propos .gw-game-reading-section .gw-game-section__summary:is(:hover, :focus-visible) {
+    background: rgba(38, 137, 199, .3);
+}
+
+:root[data-theme="ps3"] #a-propos .gw-game-reading-section[open] .gw-game-section__summary {
+    border-bottom: 1px solid rgba(190, 226, 255, .34);
+}
+
+:root[data-theme="ps3"] #a-propos .gw-game-reading-section .gw-game-section__toggle {
+    flex: 0 0 2rem;
+    border: 1px solid rgba(190, 226, 255, .48);
+    color: #fff;
+    background: rgba(7, 37, 82, .72);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .1);
+}
+
+:root[data-theme="ps3"] #a-propos .jeu-contenu a {
+    color: #7fd3ff;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: .16em;
+}

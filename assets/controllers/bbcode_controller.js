@@ -45,7 +45,8 @@ export default class extends Controller {
     }
 
     appliquerTemplate(event) {
-        if (this.contenuTarget.value.trim() !== '') {
+        const estSection = event.params.mode === 'section';
+        if (!estSection && this.contenuTarget.value.trim() !== '') {
             return;
         }
 
@@ -54,13 +55,37 @@ export default class extends Controller {
             return;
         }
 
-        this.contenuTarget.value = modele.contenu;
-        this.contenuTarget.focus();
-        this.contenuTarget.dispatchEvent(new Event('input', { bubbles: true }));
-        this.actualiserVisibiliteTemplates();
+        if (estSection) {
+            const separation = this.contenuTarget.value.trim() === '' ? '' : '\n\n';
+            this.remplacerSelection(`${separation}${modele.contenu}`);
+        } else {
+            this.contenuTarget.value = modele.contenu;
+            this.contenuTarget.focus();
+            this.contenuTarget.dispatchEvent(new Event('input', { bubbles: true }));
+        }
         if (this.apercuActif) {
             this.actualiserApercu();
         }
+    }
+
+    ajouterPartie(event) {
+        const selection = event.currentTarget;
+        const modele = MODELES_BBCODE[selection.value];
+        if (modele) this.insererPartie(modele.contenu);
+        selection.value = '';
+    }
+
+    ajouterPartiePersonnalisee() {
+        const titre = window.prompt('Titre de la partie');
+        if (!titre?.trim()) return;
+        const titreSecurise = titre.trim().replace(/["\[\]]/g, '');
+        this.insererPartie(`[section type=personnalisee titre="${titreSecurise}"]\nRédigez cette partie.\n[/section]`);
+    }
+
+    insererPartie(contenu) {
+        const separation = this.contenuTarget.value.trim() === '' ? '' : '\n\n';
+        this.remplacerSelection(`${separation}${contenu}`);
+        if (this.apercuActif) this.actualiserApercu();
     }
 
     actualiserVisibiliteTemplates() {
@@ -68,7 +93,9 @@ export default class extends Controller {
             return;
         }
 
-        this.groupeTemplatesTarget.classList.toggle('d-none', this.contenuTarget.value.trim() !== '');
+        this.groupeTemplatesTarget.querySelectorAll('[data-bbcode-mode-param="complet"]').forEach((bouton) => {
+            bouton.disabled = this.contenuTarget.value.trim() !== '';
+        });
     }
 
     async actualiserApercu() {

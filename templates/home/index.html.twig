@@ -4,25 +4,33 @@
 {% block meta_description %}Découvre les fangames, hacks et créations de la communauté Glitchworlds.{% endblock %}
 
 {% block body %}
-<div class="gw-home-shell gw-disposition gw-disposition--grille" data-controller="disposition" data-disposition-mode="grille">
+<div class="gw-home-shell gw-disposition gw-disposition--double" data-controller="disposition" data-disposition-mode="double">
     <div class="gw-3ds-screen gw-3ds-screen--top">
         <section class="gw-game-hero gw-game-hero--home mb-4">
             <div class="gw-game-hero__content">
-                <span class="gw-game-hero__category"><i class="bi bi-broadcast me-1" aria-hidden="true"></i>Glitchworlds</span>
-                <h1>Play. Hack. Rewrite Reality.</h1>
-                <p class="gw-game-hero__lead">Explore des fangames, partage tes découvertes et construis ta collection avec la communauté.</p>
-                <div class="d-flex flex-wrap gap-2 mt-4">
-                    <a class="btn btn-light btn-lg" href="{{ path('app_jeux') }}"><i class="bi bi-controller me-2" aria-hidden="true"></i>Découvrir les jeux</a>
-                    <a class="btn btn-outline-light btn-lg" href="{{ path('app_actualites_glitchs') }}"><i class="bi bi-lightning-charge-fill me-2" aria-hidden="true"></i>Explorer les glitchs</a>
-                    {% if not app.user %}<a class="btn btn-outline-light btn-lg" href="{{ path('app_inscription') }}">Rejoindre la communauté</a>{% endif %}
+                <h1>Glitchworlds</h1>
+                <p class="gw-game-hero__lead">Retrouve des fiches de jeux, des astuces et les découvertes partagées par les membres.</p>
+                <div class="gw-game-hero__actions d-flex flex-wrap gap-2 mt-4">
+                    <a class="btn btn-light btn-lg" href="{{ path('app_jeux') }}"><i class="bi bi-controller me-2" aria-hidden="true"></i>Explorer les jeux</a>
+                    <a class="btn btn-outline-light btn-lg" href="{{ path('app_actualites') }}"><i class="bi bi-newspaper me-2" aria-hidden="true"></i>Voir les actualités</a>
+                    {% if not app.user %}
+                        <a class="btn btn-outline-light btn-lg" href="{{ path('app_inscription') }}"><i class="bi bi-person-plus-fill me-2" aria-hidden="true"></i>Créer un compte</a>
+                    {% endif %}
                 </div>
+                <nav class="gw-game-hero__quick-links d-flex gap-2 mt-3" aria-label="Accès rapides aux catégories">
+                    <a class="gw-game-hero__tag" href="{{ path('app_actualites_glitchs') }}"><i class="bi bi-lightning-charge-fill me-1" aria-hidden="true"></i>Glitchs</a>
+                    <a class="gw-game-hero__tag" href="{{ path('app_jeux', { categorie: 'fan-games' }) }}"><i class="bi bi-controller me-1" aria-hidden="true"></i>Fangames</a>
+                    <a class="gw-game-hero__tag" href="{{ path('app_jeux', { categorie: 'rom-hacks' }) }}"><i class="bi bi-tools me-1" aria-hidden="true"></i>Rom hacks</a>
+                    <a class="gw-game-hero__tag" href="{{ path('app_jeux', { categorie: 'mods' }) }}"><i class="bi bi-puzzle-fill me-1" aria-hidden="true"></i>Mods</a>
+                    <a class="gw-game-hero__tag" href="{{ path('app_jeux', { categorie: 'recompilations' }) }}"><i class="bi bi-cpu-fill me-1" aria-hidden="true"></i>Recompilations</a>
+                </nav>
                 <ul class="gw-game-hero__stats" aria-label="Glitchworlds en chiffres">
                     <li><strong>{{ totalJeux }}</strong><span>jeux</span></li>
                     <li><strong>{{ totalMembres }}</strong><span>membres</span></li>
                     <li><strong>{{ totalCommentaires }}</strong><span>commentaires</span></li>
                 </ul>
             </div>
-            <i class="bi bi-globe2 gw-game-hero__icon" aria-hidden="true"></i>
+            <i class="bi bi-controller gw-game-hero__icon" aria-hidden="true"></i>
         </section>
 
         {% if actualitesMisesEnAvant is not empty %}
@@ -60,7 +68,7 @@
                 <button type="button" class="btn btn-sm btn-outline-secondary gw-home-organize-button" data-action="home-order#basculerMode" aria-pressed="false">
                     <i class="bi bi-arrows-move" aria-hidden="true"></i><span> Réorganiser</span>
                 </button>
-                {% include '_disposition_boutons.html.twig' with { label: 'Disposition des jeux et actualités', carrousel: true } only %}
+                {% include '_disposition_boutons.html.twig' with { label: 'Disposition des jeux et actualités', carrousel: true, modeInitial: 'double' } only %}
             </div>
         {% endif %}
 

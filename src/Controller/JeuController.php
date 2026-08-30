@@ -17,13 +17,13 @@ use App\Repository\GenreRepository;
 use App\Repository\JeuRepository;
 use App\Repository\LangueRepository;
 use App\Repository\PlateformeRepository;
-use App\Repository\UtilisateurRepository;
 use App\Service\ProgressionUtilisateur;
 use App\Service\GestionSucces;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class JeuController extends AbstractController
@@ -88,7 +88,6 @@ final class JeuController extends AbstractController
         ActualiteRepository $actualiteRepository,
         ProgressionUtilisateur $progression,
         GestionSucces $gestionSucces,
-        UtilisateurRepository $utilisateurRepository,
     ): Response
     {
         $jeu = $jeuRepository->find($id);
@@ -105,10 +104,6 @@ final class JeuController extends AbstractController
         }
 
         $auteurFiche = $jeu->getCreateur();
-        if (!$auteurFiche instanceof Utilisateur && $jeu->getDeveloppeur()) {
-            $auteurFiche = $utilisateurRepository->trouverParPseudoExact($jeu->getDeveloppeur());
-        }
-
         $commentaire = new CommentaireJeu();
         $formulaireCommentaire = $this->createForm(CommentaireJeuType::class, $commentaire, [
             'disabled' => !$this->getUser() instanceof Utilisateur,
@@ -153,7 +148,19 @@ final class JeuController extends AbstractController
             $pagesCommentaires,
         );
 
-        return $this->render('jeu/show.html.twig', [
+        $modesPresentation = ['complete', 'vertical', 'blocs'];
+        $modeEnregistre = match ($jeu->getTypePresentation()) {
+            'sections' => 'vertical',
+            'sections_blocs' => 'blocs',
+            default => 'complete',
+        };
+        $modeDemande = $request->query->getString('presentation');
+        $modeMemorise = $request->cookies->getString('gw_presentation_jeu');
+        $modePresentation = in_array($modeDemande, $modesPresentation, true)
+            ? $modeDemande
+            : (in_array($modeMemorise, $modesPresentation, true) ? $modeMemorise : $modeEnregistre);
+
+        $reponse = $this->render('jeu/show.html.twig', [
             'jeu' => $jeu,
             'auteurFiche' => $auteurFiche,
             'jeuxSimilaires' => $jeuxSimilaires,
@@ -174,6 +181,20 @@ final class JeuController extends AbstractController
             'formulaireNote' => $formulaireNote,
             'avisUtilisateur' => $avisUtilisateur,
             'actualitesLiees' => $actualiteRepository->trouverPourJeu($jeu),
+            'modePresentation' => $modePresentation,
         ]);
+
+        if (in_array($modeDemande, $modesPresentation, true) && $modeDemande !== $modeMemorise) {
+            $reponse->headers->setCookie(
+                Cookie::create('gw_presentation_jeu')
+                    ->withValue($modeDemande)
+                    ->withExpires(new \DateTimeImmutable('+1 year'))
+                    ->withSecure($request->isSecure())
+                    ->withHttpOnly(true)
+                    ->withSameSite(Cookie::SAMESITE_LAX),
+            );
+        }
+
+        return $reponse;
     }
 }

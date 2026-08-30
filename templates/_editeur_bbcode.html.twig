@@ -1,23 +1,60 @@
 {# Éditeur BBCode réutilisable.
    Variables :
    - champ : FormView du textarea contenu
-   - templates (optionnel) : 'jeu' ou 'actualite' pour afficher les modèles legacy #}
+   - templates (optionnel) : 'jeu' ou 'actualite' pour afficher les modèles legacy
+   - afficher_modeles_complets (optionnel, défaut true) #}
 {% set modeles = templates is defined ? (templates == 'jeu'
-    ? [{ id: 'presentation_pokemon', label: 'Présentation Pokémon', title: 'Présentation jeu Pokémon' }]
+    ? [
+        { id: 'presentation_complete', label: 'Présentation complète', title: 'Insérer une fiche complète', mode: 'complet' },
+        { id: 'presentation_pokemon', label: 'Présentation Pokémon', title: 'Insérer une présentation de jeu Pokémon', mode: 'complet' },
+        { id: 'section_presentation', label: 'Présentation générale', title: 'Ajouter la présentation générale', mode: 'section' },
+        { id: 'section_histoire', label: 'Histoire', title: 'Ajouter une rubrique Histoire', mode: 'section' },
+        { id: 'section_avis', label: 'Avis', title: 'Ajouter une rubrique Avis', mode: 'section' },
+        { id: 'section_fonctionnalites', label: 'Fonctionnalités', title: 'Ajouter les fonctionnalités', mode: 'section' },
+        { id: 'section_gameplay', label: 'Gameplay', title: 'Ajouter le gameplay', mode: 'section' },
+        { id: 'section_date_sortie', label: 'Date de sortie', title: 'Ajouter la date de sortie', mode: 'section' },
+        { id: 'section_duree_vie', label: 'Durée de vie', title: 'Ajouter la durée de vie', mode: 'section' },
+        { id: 'section_plateformes', label: 'Plateformes', title: 'Ajouter les plateformes', mode: 'section' },
+        { id: 'section_langues', label: 'Langues', title: 'Ajouter les langues', mode: 'section' },
+        { id: 'section_pokedex', label: 'Pokédex', title: 'Ajouter le Pokédex', mode: 'section' },
+        { id: 'section_region', label: 'Région', title: 'Ajouter la région', mode: 'section' },
+        { id: 'section_personnages', label: 'Personnages', title: 'Ajouter les personnages', mode: 'section' },
+        { id: 'section_starters', label: 'Starters', title: 'Ajouter les starters', mode: 'section' },
+        { id: 'section_difficulte', label: 'Difficulté', title: 'Ajouter la difficulté', mode: 'section' },
+        { id: 'section_captures', label: 'Captures d’écran', title: 'Ajouter les captures d’écran', mode: 'section' },
+        { id: 'section_trailer', label: 'Trailer et vidéos', title: 'Ajouter les vidéos', mode: 'section' },
+        { id: 'section_telechargement', label: 'Téléchargement', title: 'Ajouter le téléchargement', mode: 'section' },
+        { id: 'section_credits', label: 'Crédits', title: 'Ajouter les crédits', mode: 'section' }
+    ]
     : (templates == 'actualite'
         ? [{ id: 'glitch', label: 'Glitch', title: 'Glitch' }]
         : [])) : [] %}
 <div class="mb-3" data-controller="bbcode" data-bbcode-apercu-url-value="{{ path('app_bbcode_apercu') }}" data-bbcode-jeton-value="{{ csrf_token('apercu-bbcode') }}">
     {{ form_label(champ) }}
     {% if modeles is not empty %}
-        <div class="mb-2" data-bbcode-target="groupeTemplates">
-            <span class="form-label d-block mb-1">Template</span>
+        <div class="mb-3" data-bbcode-target="groupeTemplates">
+            {% if afficher_modeles_complets is not defined or afficher_modeles_complets %}
+                <span class="form-label d-block mb-1">Modèle de contenu</span>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    {% for modele in modeles|filter(modele => modele.mode|default('complet') == 'complet') %}
+                        <button class="btn btn-outline-primary btn-sm" type="button" title="{{ modele.title }}" data-bs-toggle="tooltip" data-bs-placement="top" data-action="bbcode#appliquerTemplate" data-bbcode-id-param="{{ modele.id }}" data-bbcode-mode-param="complet">{{ modele.label }}</button>
+                    {% endfor %}
+                </div>
+                <div class="form-text">Un format complet remplit une fiche vide.</div>
+            {% endif %}
+            <span class="form-label d-block {{ afficher_modeles_complets is not defined or afficher_modeles_complets ? 'mt-3 ' : '' }}mb-1">Ajouter une partie</span>
             <div class="d-flex flex-wrap gap-2">
-                {% for modele in modeles %}
-                    <button class="btn btn-outline-secondary btn-sm" type="button" title="{{ modele.title }}" data-bs-toggle="tooltip" data-bs-placement="top" data-action="bbcode#appliquerTemplate" data-bbcode-id-param="{{ modele.id }}">{{ modele.label }}</button>
-                {% endfor %}
+                <select class="form-select form-select-sm" data-action="change->bbcode#ajouterPartie" aria-label="Choisir une partie à ajouter">
+                    <option value="">Choisir une partie…</option>
+                    {% for modele in modeles|filter(modele => modele.mode|default('complet') == 'section') %}
+                        <option value="{{ modele.id }}">{{ modele.label }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-action="bbcode#ajouterPartiePersonnalisee">
+                    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Partie personnalisée
+                </button>
             </div>
-            <div class="form-text">Remplit le contenu uniquement si le champ est vide.</div>
+            <div class="form-text">Les parties s’insèrent à l’emplacement du curseur et peuvent être combinées librement.</div>
         </div>
     {% endif %}
     <div class="btn-toolbar gap-2 my-2 gw-bbcode-toolbar" role="toolbar" aria-label="Mise en forme BBCode">
