@@ -25,6 +25,7 @@ final class CompteType extends AbstractType
                 'constraints' => [
                     new Assert\NotBlank(normalizer: 'trim'),
                     new Assert\Length(min: 3, max: 50, normalizer: 'trim'),
+                    new Assert\Regex(pattern: '/^\S+$/u', message: 'Le pseudo ne doit contenir aucun espace.'),
                 ],
             ])
             ->add('email', EmailType::class, [
@@ -39,7 +40,7 @@ final class CompteType extends AbstractType
             ->add('localisation', null, ['required' => false, 'label' => 'Localisation'])
             ->add('statutProfil', null, ['required' => false, 'label' => 'Statut', 'help' => 'Une phrase courte affichée sur ton profil.'])
             ->add('dateNaissance', DateType::class, ['required' => false, 'label' => 'Date de naissance', 'widget' => 'single_text', 'input' => 'datetime_immutable'])
-            ->add('avatarFichier', FileType::class, ['mapped' => false, 'required' => false, 'label' => 'Avatar', 'constraints' => [new File(maxSize: '5M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp'])]])
+            ->add('avatarFichier', FileType::class, ['mapped' => false, 'required' => false, 'label' => 'Avatar', 'constraints' => [new File(maxSize: '2M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp'])]])
             ->add('banniereFichier', FileType::class, ['mapped' => false, 'required' => false, 'label' => 'Bannière', 'constraints' => [new File(maxSize: '8M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp'])]])
             ->add('enregistrer', SubmitType::class, [
                 'label' => 'Enregistrer les modifications',

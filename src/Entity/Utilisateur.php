@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
+#[ORM\Index(columns: ['derniere_activite', 'inactivite_avertie_le', 'suppression_programmee_le'], name: 'utilisateur_inactivite_idx')]
 #[UniqueEntity(fields: ['email'], message: 'Cette adresse e-mail est déjà utilisée.')]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {
@@ -34,9 +35,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     #[ORM\Column(length: 180, unique: true, nullable: true)]
     #[Assert\Email(message: 'Cette adresse e-mail n\'est pas valide.')]
     private ?string $email = null;
-
-    #[ORM\Column(length: 180, nullable: true)]
-    private ?string $emailLegacy = null;
 
     #[ORM\Column(nullable: true)]
     private ?string $motDePasse = null;
@@ -77,6 +75,21 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $derniereActivite = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $inactiviteAvertieLe = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $suppressionProgrammeeLe = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $conditionsAccepteesLe = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $versionConditions = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private bool $finalisationOauthRequise = false;
 
     #[ORM\Column(length: 32, options: ['default' => 'system'])]
     private string $theme = 'glitchworlds:system';
@@ -213,11 +226,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
         return $this;
     }
 
-    public function getEmailLegacy(): ?string
-    {
-        return $this->emailLegacy;
-    }
-
     public function getUserIdentifier(): string
     {
         return $this->pseudo;
@@ -292,6 +300,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     public function setPoints(int $points): static { $this->points = max(0, $points); return $this; }
     public function getDerniereActivite(): ?\DateTimeImmutable { return $this->derniereActivite; }
     public function setDerniereActivite(?\DateTimeImmutable $date): static { $this->derniereActivite = $date; return $this; }
+    public function getInactiviteAvertieLe(): ?\DateTimeImmutable { return $this->inactiviteAvertieLe; }
+    public function setInactiviteAvertieLe(?\DateTimeImmutable $date): static { $this->inactiviteAvertieLe = $date; return $this; }
+    public function getSuppressionProgrammeeLe(): ?\DateTimeImmutable { return $this->suppressionProgrammeeLe; }
+    public function setSuppressionProgrammeeLe(?\DateTimeImmutable $date): static { $this->suppressionProgrammeeLe = $date; return $this; }
+    public function annulerSuppressionPourInactivite(): static { $this->inactiviteAvertieLe = null; $this->suppressionProgrammeeLe = null; return $this; }
+    public function getConditionsAccepteesLe(): ?\DateTimeImmutable { return $this->conditionsAccepteesLe; }
+    public function getVersionConditions(): ?string { return $this->versionConditions; }
+    public function isFinalisationOauthRequise(): bool { return $this->finalisationOauthRequise; }
+    public function setFinalisationOauthRequise(bool $requise): static { $this->finalisationOauthRequise = $requise; return $this; }
+    public function accepterConditions(string $version, ?\DateTimeImmutable $date = null): static { $this->versionConditions = $version; $this->conditionsAccepteesLe = $date ?? new \DateTimeImmutable(); $this->finalisationOauthRequise = false; return $this; }
     /** Valeur stockée : « palette:mode », par exemple « wii:dark ». */
     public function getTheme(): string { return implode(':', self::decomposerTheme($this->theme)); }
     public function getPalette(): string { return self::decomposerTheme($this->theme)[0]; }

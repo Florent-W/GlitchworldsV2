@@ -72,7 +72,7 @@ final class JeuCommentaireControllerTest extends WebTestCase
 
         $client->loginUser($utilisateur);
         $crawler = $client->request('GET', sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeu->getId()));
-        $client->submit($crawler->selectButton('Publier')->form([
+        $client->submit($crawler->filter('#commentaire_jeu_publier')->form([
             'commentaire_jeu[contenu]' => 'Commentaire créé par le test Symfony.',
         ]));
 

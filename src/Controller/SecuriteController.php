@@ -8,6 +8,7 @@ use App\Form\CompteType;
 use App\Form\MotDePasseType;
 use App\Repository\ActualiteRepository;
 use App\Repository\JeuRepository;
+use App\Repository\UtilisateurRepository;
 use App\Service\ImageProfilUploader;
 use App\Service\GestionSucces;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +27,7 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -37,18 +39,30 @@ final class SecuriteController extends AbstractController
     use AnnonceSuccesTrait;
 
     #[Route('/inscription', name: 'app_inscription')]
-    public function inscription(Request $request, UserPasswordHasherInterface $hasher, EntityManagerInterface $entityManager): Response
+    public function inscription(Request $request, UserPasswordHasherInterface $hasher, EntityManagerInterface $entityManager, UtilisateurRepository $utilisateurs, ImageProfilUploader $uploader): Response
     {
         $utilisateur = new Utilisateur();
         $formulaire = $this->createForm(InscriptionType::class, $utilisateur);
         $formulaire->handleRequest($request);
 
+        if ($formulaire->isSubmitted() && $formulaire->isValid() && !$utilisateurs->pseudoEstDisponible($utilisateur->getPseudo())) {
+            $formulaire->get('pseudo')->addError(new FormError('Ce pseudo est déjà utilisé.'));
+        }
+
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $motDePasseClair = (string) $formulaire->get('motDePasseClair')->getData();
-            $utilisateur->setPassword($hasher->hashPassword($utilisateur, $motDePasseClair));
+            $utilisateur
+                ->setPassword($hasher->hashPassword($utilisateur, $motDePasseClair))
+                ->accepterConditions('2026-08-23');
 
             $entityManager->persist($utilisateur);
             $entityManager->flush();
+
+            $avatar = $formulaire->get('avatarFichier')->getData();
+            if ($avatar instanceof UploadedFile) {
+                $utilisateur->setAvatar($uploader->enregistrer($avatar, $utilisateur, 'avatar'));
+                $entityManager->flush();
+            }
 
             $this->addFlash('success', 'Ton compte a été créé. Tu peux maintenant te connecter.');
 
@@ -88,15 +102,24 @@ final class SecuriteController extends AbstractController
     }
 
     #[Route('/mon-compte/modifier', name: 'app_compte_modifier')]
-    public function modifierCompte(Request $request, EntityManagerInterface $entityManager, ImageProfilUploader $uploader, GestionSucces $gestionSucces): Response
+    public function modifierCompte(Request $request, EntityManagerInterface $entityManager, ImageProfilUploader $uploader, GestionSucces $gestionSucces, UtilisateurRepository $utilisateurs): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
             throw $this->createAccessDeniedException();
         }
 
+        $pseudoAvantModification = $utilisateur->getPseudo();
         $formulaire = $this->createForm(CompteType::class, $utilisateur);
         $formulaire->handleRequest($request);
+
+        if ($formulaire->isSubmitted()
+            && $formulaire->isValid()
+            && 0 !== strcasecmp($pseudoAvantModification, $utilisateur->getPseudo())
+            && !$utilisateurs->pseudoEstDisponible($utilisateur->getPseudo(), $utilisateur->getId())
+        ) {
+            $formulaire->get('pseudo')->addError(new FormError('Ce pseudo est déjà utilisé.'));
+        }
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
             $avatar = $formulaire->get('avatarFichier')->getData();
@@ -143,7 +166,7 @@ final class SecuriteController extends AbstractController
         }
 
         $violations = $validator->validate($fichier, [
-            new File(maxSize: '5M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp']),
+            new File(maxSize: '2M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp']),
         ]);
         if (\count($violations) > 0) {
             $this->addFlash('danger', (string) $violations->get(0)->getMessage());

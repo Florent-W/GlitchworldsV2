@@ -28,4 +28,23 @@ final class ImageProfilUploader
 
         return $this->optimiseur->enregistrer($fichier, $dossier, $type);
     }
+
+    public function supprimerMedias(Utilisateur $utilisateur): void
+    {
+        if (null === $utilisateur->getId()) {
+            return;
+        }
+
+        $dossier = $this->projectDir.'/public/uploads/utilisateurs/'.$utilisateur->getId();
+        if (!is_dir($dossier)) {
+            return;
+        }
+
+        foreach (new \FilesystemIterator($dossier) as $fichier) {
+            if ($fichier->isFile()) {
+                unlink($fichier->getPathname());
+            }
+        }
+        rmdir($dossier);
+    }
 }

@@ -32,10 +32,10 @@ final class NoteJeuControllerTest extends WebTestCase
 
         $client->loginUser($utilisateur);
         $crawler = $client->request('GET', sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeuId));
-        $client->submit($crawler->selectButton('Enregistrer ma note')->form([
+        $client->submit($crawler->selectButton('Publier mon avis')->form([
             'note_jeu[note]' => 4,
         ]));
-        self::assertResponseRedirects(sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeuId));
+        self::assertResponseRedirects(sprintf('/jeu/%s-%d#avis-joueurs', $jeu->getSlug(), $jeuId));
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $avis = $entityManager->getRepository(Avis::class)->findOneBy(['jeu' => $jeuId, 'auteur' => $utilisateurId]);
@@ -44,10 +44,10 @@ final class NoteJeuControllerTest extends WebTestCase
         $avisId = $avis->getId();
 
         $crawler = $client->followRedirect();
-        $client->submit($crawler->selectButton('Enregistrer ma note')->form([
+        $client->submit($crawler->selectButton('Modifier mon avis')->form([
             'note_jeu[note]' => 5,
         ]));
-        self::assertResponseRedirects(sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeuId));
+        self::assertResponseRedirects(sprintf('/jeu/%s-%d#avis-joueurs', $jeu->getSlug(), $jeuId));
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $entityManager->clear();

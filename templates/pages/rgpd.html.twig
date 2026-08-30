@@ -12,7 +12,7 @@
             <div>
                 <h1 class="display-6 mb-2">Politique de confidentialité</h1>
                 <p class="lead text-secondary mb-1">Cette page explique quelles données Glitchworlds utilise, pourquoi et comment tu peux agir dessus.</p>
-                <p class="small text-secondary mb-0">Dernière mise à jour : 21 août 2026</p>
+                <p class="small text-secondary mb-0">Dernière mise à jour : 30 août 2026</p>
             </div>
         </div>
     </header>
@@ -37,18 +37,18 @@
             <div class="gw-panel p-4 p-lg-5 gw-legal-page__content">
                 <section id="responsable">
                     <h2><i class="bi bi-person-badge-fill" aria-hidden="true"></i> Responsable et contact</h2>
-                    <p>Le responsable du traitement est l’éditeur de <strong>Glitchworlds</strong>. Pour toute question ou pour exercer un droit relatif à tes données, écris à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a>. Si tu possèdes un compte, tu peux également contacter l’administration depuis la messagerie du site.</p>
+                    <p>Le responsable du traitement est l’éditeur de <strong>Glitchworlds</strong>, identifié dans les <a href="{{ path('app_mentions_legales') }}">mentions légales</a>. Pour toute question ou pour exercer un droit relatif à tes données, écris à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a>. Si tu possèdes un compte, tu peux également contacter l’administration depuis la messagerie du site.</p>
                 </section>
 
                 <section id="donnees">
                     <h2><i class="bi bi-database-fill" aria-hidden="true"></i> Données traitées</h2>
                     <ul>
-                        <li><strong>Compte :</strong> pseudo, adresse e-mail, mot de passe chiffré, date d’inscription et rôles.</li>
+                        <li><strong>Compte :</strong> pseudo, adresse e-mail, mot de passe haché, date d’inscription et rôles.</li>
                         <li><strong>Profil facultatif :</strong> avatar, bannière, biographie, localisation, statut et date de naissance.</li>
                         <li><strong>Activité :</strong> jeux proposés, actualités, commentaires, réponses, avis, notes, publications, favoris, listes, abonnements, réactions, progression et achats virtuels.</li>
                         <li><strong>Communications :</strong> messages privés, pièces jointes, notifications et signalements.</li>
                         <li><strong>Connexion externe :</strong> compte Google, identifiant technique et, lorsqu’il est transmis, e-mail associé.</li>
-                        <li><strong>Sécurité et statistiques :</strong> informations de session, dernière activité, pages consultées et empreinte hachée calculée à partir de l’adresse IP et du navigateur. L’adresse IP brute n’est pas enregistrée dans la table de statistiques.</li>
+                        <li><strong>Sécurité et statistiques :</strong> informations de session, dernière activité et pages consultées. Une empreinte pseudonymisée est calculée à partir de l’adresse IP et du navigateur afin de distinguer les visiteurs ; l’adresse IP brute n’est pas enregistrée dans la table de statistiques. Lorsqu’un membre est connecté, une visite peut également être associée à son compte.</li>
                         <li><strong>Publicité AdSense :</strong> lorsque les annonces sont activées, Google et ses partenaires peuvent recevoir l’adresse IP, l’URL consultée, des informations sur le navigateur et l’appareil, des identifiants publicitaires, ainsi que des données relatives aux annonces affichées, vues ou sélectionnées.</li>
                     </ul>
                     <p class="mb-0">Les champs signalés comme facultatifs peuvent rester vides. Les données indispensables à l’inscription, à la connexion ou à une fonctionnalité sont nécessaires pour fournir le service demandé.</p>
@@ -63,7 +63,7 @@
                                 <tr><td>Créer le compte, authentifier le membre et fournir les fonctionnalités demandées</td><td>Exécution du service</td></tr>
                                 <tr><td>Publier les contenus, gérer le profil, les listes, la progression et la messagerie</td><td>Exécution du service</td></tr>
                                 <tr><td>Modérer, prévenir les abus, sécuriser les comptes et conserver un journal des actions sensibles</td><td>Intérêt légitime à protéger le site et sa communauté</td></tr>
-                                <tr><td>Mesurer la fréquentation et améliorer l’interface à partir de statistiques internes</td><td>Intérêt légitime à comprendre et améliorer le service</td></tr>
+                                <tr><td>Mesurer la fréquentation et améliorer l’interface à partir de statistiques internes pseudonymisées</td><td>Intérêt légitime à comprendre et améliorer le service ; opposition possible en contactant l’éditeur</td></tr>
                                 <tr><td>Envoyer les notifications facultatives choisies dans les paramètres</td><td>Consentement, retirable à tout moment</td></tr>
                                 <tr><td>Afficher, mesurer et, si tu l’acceptes, personnaliser les publicités Google AdSense</td><td>Consentement pour les traceurs et la personnalisation lorsqu’il est requis ; intérêt légitime pour certaines opérations strictement nécessaires, selon les choix présentés par la plateforme de consentement</td></tr>
                                 <tr><td>Respecter une demande légale valide</td><td>Obligation légale</td></tr>
@@ -108,17 +108,21 @@
                 <section id="destinataires">
                     <h2><i class="bi bi-people-fill" aria-hidden="true"></i> Destinataires et services externes</h2>
                     <p>Les données sont accessibles uniquement aux personnes autorisées selon leur rôle : membre concerné, destinataires d’un message, modérateurs et administrateurs lorsque leur mission le nécessite. Les contenus publics sont visibles par les visiteurs.</p>
-                    <p>Si tu utilises la connexion Google, consultes un contenu externe intégré ou affiches une publicité, les fournisseurs concernés peuvent traiter leurs propres données selon leurs politiques : Google, ses partenaires publicitaires ou YouTube. Certains partenaires peuvent traiter des données hors de l’Espace économique européen en s’appuyant sur les mécanismes de transfert prévus par la réglementation applicable.</p>
+                    <p>Les prestataires strictement nécessaires au fonctionnement du service peuvent également recevoir les données utiles à leur mission : hébergement et sauvegarde, envoi d’e-mails, authentification externe, diffusion de vidéos et services publicitaires. Ils n’accèdent pas aux données pour d’autres finalités que celles prévues par leur service et leurs engagements applicables.</p>
+                    <p>Si tu utilises la connexion Google, consultes un contenu externe intégré ou affiches une publicité, les fournisseurs concernés peuvent traiter leurs propres données selon leurs politiques : Google, ses partenaires publicitaires ou YouTube. Certains traitements peuvent avoir lieu hors de l’Espace économique européen. Selon le pays et le fournisseur, ils reposent notamment sur une décision d’adéquation ou sur des clauses contractuelles types approuvées par la Commission européenne. Des informations complémentaires peuvent être demandées à l’adresse de contact du site.</p>
                     <p>Glitchworlds ne vend pas tes données personnelles. La liste à jour des fournisseurs publicitaires activés est présentée dans la plateforme de consentement AdSense.</p>
                 </section>
 
                 <section id="conservation">
                     <h2><i class="bi bi-hourglass-split" aria-hidden="true"></i> Durée de conservation</h2>
                     <ul>
-                        <li>Les données du compte sont conservées tant que celui-ci existe, puis supprimées ou anonymisées lors de sa suppression, sous réserve des nécessités de sécurité et obligations légales.</li>
-                        <li>Les contenus publics restent disponibles jusqu’à leur suppression par leur auteur ou la modération. Après suppression d’un compte, certains échanges peuvent rester anonymisés afin de préserver la cohérence des discussions.</li>
-                        <li>Les messages et pièces jointes sont conservés tant que la conversation est nécessaire au service ou jusqu’à leur suppression.</li>
-                        <li>Les données techniques et statistiques sont conservées pendant la durée nécessaire à la sécurité et à la mesure de fréquentation, puis supprimées ou agrégées.</li>
+                        <li>Les données du compte sont conservées jusqu’à sa suppression. Un compte sans connexion ni action volontaire pendant vingt-trois mois fait l’objet d’un premier avertissement. Après vingt-quatre mois d’inactivité, sa suppression est programmée et un dernier avertissement est envoyé. Une connexion dans les trente jours annule automatiquement la procédure ; passé ce délai, le compte est supprimé, sauf lorsqu’une conservation limitée est nécessaire pour respecter une obligation légale, assurer la sécurité ou défendre un droit.</li>
+                        <li><strong>Suppression des données personnelles :</strong> l’adresse e-mail, le mot de passe haché, les informations et préférences du profil, la progression, les relations entre membres, les favoris, les listes personnelles, les notifications et les autres données directement rattachées au compte sont supprimés. L’avatar et la bannière sont également effacés du stockage du site.</li>
+                        <li><strong>Anonymisation des contributions publiques :</strong> les commentaires, avis, publications, actualités ou fiches nécessaires à la cohérence du site peuvent rester disponibles, mais leur relation avec le compte supprimé est retirée. Ils sont alors présentés comme provenant d’un compte supprimé et ne permettent plus d’ouvrir l’ancien profil.</li>
+                        <li>L’anonymisation ne retire pas automatiquement une information personnelle que le membre aurait lui-même écrite dans le texte ou intégrée à un média public. Une demande de suppression de ce contenu peut être adressée à l’éditeur avant ou après la suppression du compte.</li>
+                        <li><strong>Communications privées :</strong> les conversations privées et leurs messages sont supprimés de la base de données lorsque la suppression d’un compte entraîne celle de la conversation concernée. Les éventuelles pièces jointes ne sont alors plus accessibles depuis le service.</li>
+                        <li>Les données de fréquentation pseudonymisées ne doivent être conservées que pendant une durée permettant l’analyse utile de l’audience, avec un objectif maximal de vingt-cinq mois, puis être supprimées ou rendues anonymes. Les journaux de sécurité et de modération sont conservés pendant la durée nécessaire au traitement de l’incident ou à la défense d’un droit.</li>
+                        <li>Les notifications sont conservées jusqu’à leur suppression ou jusqu’à la suppression du compte.</li>
                         <li>La durée des cookies et données publicitaires dépend de Google, du fournisseur concerné et du choix effectué. Les durées disponibles sont indiquées dans la plateforme de consentement et les politiques des partenaires.</li>
                         <li>Une conservation plus longue peut être appliquée lorsqu’elle est nécessaire à la constatation, à l’exercice ou à la défense d’un droit.</li>
                     </ul>
@@ -126,8 +130,10 @@
 
                 <section id="cookies">
                     <h2><i class="bi bi-cookie" aria-hidden="true"></i> Cookies et stockage local</h2>
-                    <p>Le site utilise un cookie de session indispensable à la connexion, à la sécurité et au maintien de ta session. Il n’est pas utilisé pour de la publicité ciblée.</p>
-                    <p>Le navigateur conserve aussi localement tes choix d’interface : thème, mode clair ou sombre, sons, accessibilité, disposition et ordre des sections de l’accueil. Ces préférences restent sur ton appareil et peuvent être effacées depuis les réglages du navigateur.</p>
+                    <p>Le site utilise des cookies strictement nécessaires à la connexion, au maintien et à la sécurisation de la session, notamment des jetons temporaires de protection des formulaires. Ils ne sont pas utilisés pour de la publicité ciblée.</p>
+                    <p>Un cookie fonctionnel peut mémoriser la présentation choisie pour les fiches de jeux pendant une durée maximale d’un an. Il sert uniquement à retrouver cet affichage lors d’une visite ultérieure.</p>
+                    <p>Le navigateur conserve aussi localement certains choix d’interface : thème, mode clair ou sombre, sons, accessibilité, disposition et ordre des sections de l’accueil. La liste des recherches récentes peut également être enregistrée uniquement sur l’appareil. Ces informations peuvent être effacées depuis les réglages du navigateur ou, lorsqu’un contrôle est proposé, depuis l’interface du site.</p>
+                    <p>La plateforme de consentement peut enregistrer un traceur afin de mémoriser les choix exprimés et d’éviter de demander le même choix à chaque page.</p>
                     <p>Lorsque Google AdSense est activé, Google et ses partenaires peuvent utiliser des cookies propriétaires ou tiers, notamment liés aux domaines Google ou DoubleClick, ainsi que des balises web et identifiants similaires. Leur dépôt ou leur lecture soumis au consentement doit intervenir selon le choix enregistré dans la plateforme de consentement.</p>
                     <p class="mb-0">Un service externe intégré peut également déposer ses propres cookies lorsque son contenu est chargé ou lorsque tu utilises sa connexion.</p>
                 </section>
@@ -138,7 +144,7 @@
                     <p>Le consentement publicitaire doit pouvoir être modifié ou retiré à tout moment depuis le lien de gestion des choix fourni avec la bannière AdSense. Le retrait n’affecte pas la licéité des traitements effectués avant ce changement.</p>
                     <div class="alert alert-primary d-flex gap-3" role="note">
                         <i class="bi bi-envelope-fill fs-4" aria-hidden="true"></i>
-                        <div><strong>Exercer un droit</strong><br>Écris à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a> en précisant ton pseudo et ta demande. Une preuve d’identité peut être demandée uniquement en cas de doute raisonnable.</div>
+                        <div><strong>Exercer un droit</strong><br>Écris à <a href="mailto:contact@glitchworlds.com">contact@glitchworlds.com</a> en précisant ton pseudo et ta demande. Une réponse est apportée dans un délai d’un mois, sauf prolongation permise par la réglementation en raison de la complexité ou du nombre de demandes. Une preuve d’identité peut être demandée uniquement en cas de doute raisonnable.</div>
                     </div>
                     {% if app.user %}
                         <p>Tu peux déjà rectifier plusieurs informations et gérer tes préférences depuis <a href="{{ path('app_parametres') }}">les paramètres de ton compte</a>, où la suppression définitive du compte est également disponible.</p>

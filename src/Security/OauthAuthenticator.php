@@ -32,15 +32,28 @@ final class OauthAuthenticator extends OAuth2Authenticator
     {
         $identites = $this->entityManager->getRepository(IdentiteOauth::class);
         if ($identite = $identites->findOneBy(['fournisseur' => $fournisseur, 'identifiant' => $identifiant])) { return $identite->getUtilisateur(); }
-        $donnees = $profil->toArray(); $email = isset($donnees['email']) && filter_var($donnees['email'], FILTER_VALIDATE_EMAIL) ? strtolower($donnees['email']) : null;
-        if ($email && $this->entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email])) { throw new CustomUserMessageAuthenticationException('Un compte utilise déjà cet e-mail. Connecte-toi avec ton mot de passe avant de lier ce fournisseur.'); }
+        $donnees = $profil->toArray();
+        $email = isset($donnees['email']) && filter_var($donnees['email'], FILTER_VALIDATE_EMAIL) ? strtolower($donnees['email']) : null;
+        $emailVerifie = filter_var($donnees['email_verified'] ?? false, FILTER_VALIDATE_BOOL);
+        if ($email === null || !$emailVerifie) { throw new CustomUserMessageAuthenticationException('Google n’a pas fourni d’adresse e-mail vérifiée. Utilise l’inscription classique.'); }
+        if ($this->entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email])) { throw new CustomUserMessageAuthenticationException('Un compte utilise déjà cet e-mail. Connecte-toi avec ce compte plutôt qu’avec Google.'); }
         $pseudo = (string) ($donnees['global_name'] ?? $donnees['name'] ?? $donnees['login'] ?? $donnees['username'] ?? ucfirst($fournisseur));
-        $pseudo = mb_substr(trim($pseudo) ?: ucfirst($fournisseur), 0, 40).'-'.substr(hash('sha256', $fournisseur.$identifiant), 0, 6);
-        $utilisateur = (new Utilisateur())->setPseudo($pseudo)->setEmail($email ?? $fournisseur.'.'.$identifiant.'@oauth.glitchworlds.local');
+        $pseudo = preg_replace('/\s+/u', '', trim($pseudo)) ?: ucfirst($fournisseur);
+        $pseudo = mb_substr($pseudo, 0, 40).'-'.substr(hash('sha256', $fournisseur.$identifiant), 0, 6);
+        $utilisateur = (new Utilisateur())->setPseudo($pseudo)->setEmail($email)->setFinalisationOauthRequise(true);
         $this->entityManager->persist($utilisateur);
         $this->entityManager->persist((new IdentiteOauth())->setUtilisateur($utilisateur)->setFournisseur($fournisseur)->setIdentifiant($identifiant)->setEmail($email));
         $this->entityManager->flush(); return $utilisateur;
     }
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response { return new RedirectResponse($this->urls->generate('app_home')); }
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
+    {
+        $utilisateur = $token->getUser();
+
+        return new RedirectResponse($this->urls->generate(
+            $utilisateur instanceof Utilisateur && $utilisateur->isFinalisationOauthRequise()
+                ? 'app_oauth_finaliser'
+                : 'app_home'
+        ));
+    }
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response { $request->getSession()->getFlashBag()->add('danger', $exception instanceof CustomUserMessageAuthenticationException ? $exception->getMessageKey() : 'La connexion OAuth a échoué. Réessaie ou utilise ton mot de passe.'); return new RedirectResponse($this->urls->generate('app_connexion')); }
 }

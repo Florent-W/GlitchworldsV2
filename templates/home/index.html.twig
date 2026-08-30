@@ -1,5 +1,59 @@
 {% extends 'base.html.twig' %}
 
+{% macro listeJeux(cle, titre, icone, jeux, notes, commentairesJeux) %}
+    {% if jeux is not empty %}
+        <section class="gw-panel p-4 mb-4 gw-home-menu gw-home-sortable-section" data-home-section="{{ cle }}" data-controller="home-carousel">
+            <div class="gw-home-menu__entete d-flex justify-content-between align-items-center gap-3 mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-{{ icone }} text-primary me-2" aria-hidden="true"></i>{{ titre }}</h2>
+                <div class="d-flex align-items-center gap-2">
+                    <a class="gw-home-menu__lien" href="{{ path('app_jeux') }}">Voir tout</a>
+                    <button class="gw-home-order-button gw-home-order-button--up" type="button" aria-label="Monter la section {{ titre }}" title="Monter" data-action="home-order#monter"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
+                    <button class="gw-home-order-button gw-home-order-button--down" type="button" aria-label="Descendre la section {{ titre }}" title="Descendre" data-action="home-order#descendre"><i class="bi bi-arrow-down" aria-hidden="true"></i></button>
+                    <button class="gw-home-drag-handle" type="button" aria-label="Déplacer la section {{ titre }}" title="Faire glisser pour déplacer" data-action="keydown->home-order#deplacerAuClavier"><i class="bi bi-grip-vertical" aria-hidden="true"></i></button>
+                </div>
+            </div>
+            <div class="gw-home-carousel__stage">
+                <button class="gw-home-carousel__arrow gw-home-carousel__arrow--previous" type="button" data-home-carousel-target="precedent" data-action="home-carousel#precedent" aria-label="Afficher les jeux précédents"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3 gw-collection gw-collection--jeux" data-home-carousel-target="piste">
+                    {% for jeu in jeux %}
+                        <div class="col">
+                            {% include 'jeu/_carte.html.twig' with { jeu: jeu, note: notes[jeu.id]|default(null), nombreCommentaires: commentairesJeux[jeu.id]|default(0) } only %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="gw-home-carousel__arrow gw-home-carousel__arrow--next" type="button" data-home-carousel-target="suivant" data-action="home-carousel#suivant" aria-label="Afficher les jeux suivants"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+            </div>
+        </section>
+    {% endif %}
+{% endmacro %}
+
+{% macro listeActualites(cle, titre, icone, actualites, lienVoirTout, commentairesActualites) %}
+    {% if actualites is not empty %}
+        <section class="gw-panel p-4 mb-4 gw-home-menu gw-home-sortable-section" data-home-section="{{ cle }}" data-controller="home-carousel">
+            <div class="gw-home-menu__entete d-flex justify-content-between align-items-center gap-3 mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-{{ icone }} text-primary me-2" aria-hidden="true"></i>{{ titre }}</h2>
+                <div class="d-flex align-items-center gap-2">
+                    <a class="gw-home-menu__lien" href="{{ lienVoirTout }}">Voir tout</a>
+                    <button class="gw-home-order-button gw-home-order-button--up" type="button" aria-label="Monter la section {{ titre }}" title="Monter" data-action="home-order#monter"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
+                    <button class="gw-home-order-button gw-home-order-button--down" type="button" aria-label="Descendre la section {{ titre }}" title="Descendre" data-action="home-order#descendre"><i class="bi bi-arrow-down" aria-hidden="true"></i></button>
+                    <button class="gw-home-drag-handle" type="button" aria-label="Déplacer la section {{ titre }}" title="Faire glisser pour déplacer" data-action="keydown->home-order#deplacerAuClavier"><i class="bi bi-grip-vertical" aria-hidden="true"></i></button>
+                </div>
+            </div>
+            <div class="gw-home-carousel__stage">
+                <button class="gw-home-carousel__arrow gw-home-carousel__arrow--previous" type="button" data-home-carousel-target="precedent" data-action="home-carousel#precedent" aria-label="Afficher les actualités précédentes"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3 gw-collection gw-collection--actualites" data-home-carousel-target="piste">
+                    {% for actualite in actualites %}
+                        <div class="col">
+                            {% include 'actualite/_carte_accueil.html.twig' with { actualite: actualite, nombreCommentaires: commentairesActualites[actualite.id]|default(0) } only %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="gw-home-carousel__arrow gw-home-carousel__arrow--next" type="button" data-home-carousel-target="suivant" data-action="home-carousel#suivant" aria-label="Afficher les actualités suivantes"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+            </div>
+        </section>
+    {% endif %}
+{% endmacro %}
+
 {% block title %}Glitchworlds | Le site des Glitchs et des Fan Games{% endblock %}
 {% block meta_description %}Découvre les fangames, hacks et créations de la communauté Glitchworlds.{% endblock %}
 
@@ -72,64 +126,9 @@
             </div>
         {% endif %}
 
-        {% macro listeJeux(cle, titre, icone, jeux, notes, commentairesJeux) %}
-            {% if jeux is not empty %}
-                <section class="gw-panel p-4 mb-4 gw-home-menu gw-home-sortable-section" data-home-section="{{ cle }}" data-controller="home-carousel">
-                    <div class="gw-home-menu__entete d-flex justify-content-between align-items-center gap-3 mb-3">
-                        <h2 class="h4 mb-0"><i class="bi bi-{{ icone }} text-primary me-2" aria-hidden="true"></i>{{ titre }}</h2>
-                        <div class="d-flex align-items-center gap-2">
-                            <a class="gw-home-menu__lien" href="{{ path('app_jeux') }}">Voir tout</a>
-                            <button class="gw-home-order-button gw-home-order-button--up" type="button" aria-label="Monter la section {{ titre }}" title="Monter" data-action="home-order#monter"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
-                            <button class="gw-home-order-button gw-home-order-button--down" type="button" aria-label="Descendre la section {{ titre }}" title="Descendre" data-action="home-order#descendre"><i class="bi bi-arrow-down" aria-hidden="true"></i></button>
-                            <button class="gw-home-drag-handle" type="button" aria-label="Déplacer la section {{ titre }}" title="Faire glisser pour déplacer" data-action="keydown->home-order#deplacerAuClavier"><i class="bi bi-grip-vertical" aria-hidden="true"></i></button>
-                        </div>
-                    </div>
-                    <div class="gw-home-carousel__stage">
-                        <button class="gw-home-carousel__arrow gw-home-carousel__arrow--previous" type="button" data-home-carousel-target="precedent" data-action="home-carousel#precedent" aria-label="Afficher les jeux précédents"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3 gw-collection gw-collection--jeux" data-home-carousel-target="piste">
-                        {% for jeu in jeux %}
-                            <div class="col">
-                                {% include 'jeu/_carte.html.twig' with { jeu: jeu, note: notes[jeu.id]|default(null), nombreCommentaires: commentairesJeux[jeu.id]|default(0) } only %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                        <button class="gw-home-carousel__arrow gw-home-carousel__arrow--next" type="button" data-home-carousel-target="suivant" data-action="home-carousel#suivant" aria-label="Afficher les jeux suivants"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
-                    </div>
-                </section>
-            {% endif %}
-        {% endmacro %}
-
-        {{ _self.listeJeux('populaires', 'Jeux populaires', 'star-fill', populaires, notesJeux, commentairesJeux) }}
         {{ _self.listeJeux('nouveautes', 'Nouveautés', 'stars', nouveautes, notesJeux, commentairesJeux) }}
-
-        {% macro listeActualites(cle, titre, icone, actualites, lienVoirTout, commentairesActualites) %}
-            {% if actualites is not empty %}
-                <section class="gw-panel p-4 mb-4 gw-home-menu gw-home-sortable-section" data-home-section="{{ cle }}" data-controller="home-carousel">
-                    <div class="gw-home-menu__entete d-flex justify-content-between align-items-center gap-3 mb-3">
-                        <h2 class="h4 mb-0"><i class="bi bi-{{ icone }} text-primary me-2" aria-hidden="true"></i>{{ titre }}</h2>
-                        <div class="d-flex align-items-center gap-2">
-                            <a class="gw-home-menu__lien" href="{{ lienVoirTout }}">Voir tout</a>
-                            <button class="gw-home-order-button gw-home-order-button--up" type="button" aria-label="Monter la section {{ titre }}" title="Monter" data-action="home-order#monter"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
-                            <button class="gw-home-order-button gw-home-order-button--down" type="button" aria-label="Descendre la section {{ titre }}" title="Descendre" data-action="home-order#descendre"><i class="bi bi-arrow-down" aria-hidden="true"></i></button>
-                            <button class="gw-home-drag-handle" type="button" aria-label="Déplacer la section {{ titre }}" title="Faire glisser pour déplacer" data-action="keydown->home-order#deplacerAuClavier"><i class="bi bi-grip-vertical" aria-hidden="true"></i></button>
-                        </div>
-                    </div>
-            <div class="gw-home-carousel__stage">
-                <button class="gw-home-carousel__arrow gw-home-carousel__arrow--previous" type="button" data-home-carousel-target="precedent" data-action="home-carousel#precedent" aria-label="Afficher les actualités précédentes"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3 gw-collection gw-collection--actualites" data-home-carousel-target="piste">
-                {% for actualite in actualites %}
-                    <div class="col">
-                        {% include 'actualite/_carte_accueil.html.twig' with { actualite: actualite, nombreCommentaires: commentairesActualites[actualite.id]|default(0) } only %}
-                    </div>
-                {% endfor %}
-            </div>
-                <button class="gw-home-carousel__arrow gw-home-carousel__arrow--next" type="button" data-home-carousel-target="suivant" data-action="home-carousel#suivant" aria-label="Afficher les actualités suivantes"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
-            </div>
-                </section>
-            {% endif %}
-        {% endmacro %}
-
         {{ _self.listeActualites('actualites', 'Dernières actualités', 'newspaper', dernieresActualites, path('app_actualites'), commentairesActualites) }}
+        {{ _self.listeJeux('populaires', 'Jeux populaires', 'star-fill', populaires, notesJeux, commentairesJeux) }}
         {{ _self.listeActualites('glitchs', 'Derniers glitchs', 'lightning-charge-fill', derniersGlitchs, path('app_actualites_glitchs'), commentairesActualites) }}
 
         {% if activiteRecente is not empty or nouveauxMembres is not empty %}

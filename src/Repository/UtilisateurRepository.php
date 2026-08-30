@@ -63,6 +63,22 @@ class UtilisateurRepository extends ServiceEntityRepository implements UserLoade
             ->getOneOrNullResult();
     }
 
+    public function pseudoEstDisponible(string $pseudo, ?int $utilisateurExcluId = null): bool
+    {
+        $requete = $this->createQueryBuilder('utilisateur')
+            ->select('COUNT(utilisateur.id)')
+            ->andWhere('LOWER(TRIM(utilisateur.pseudo)) = :pseudo')
+            ->setParameter('pseudo', mb_strtolower(trim($pseudo)));
+
+        if ($utilisateurExcluId !== null) {
+            $requete
+                ->andWhere('utilisateur.id != :utilisateurExclu')
+                ->setParameter('utilisateurExclu', $utilisateurExcluId);
+        }
+
+        return 0 === (int) $requete->getQuery()->getSingleScalarResult();
+    }
+
     /** @return list<Utilisateur> */
     public function rechercherParPseudo(string $recherche, int $limite = 5): array
     {

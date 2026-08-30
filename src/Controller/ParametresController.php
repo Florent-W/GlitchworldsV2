@@ -92,7 +92,7 @@ final class ParametresController extends AbstractController
     }
 
     #[Route('/parametres/supprimer', name: 'app_parametres_supprimer', methods: ['POST'])]
-    public function supprimerCompte(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $hasher, TokenStorageInterface $tokenStorage, SessionInterface $session): Response
+    public function supprimerCompte(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $hasher, TokenStorageInterface $tokenStorage, SessionInterface $session, \App\Service\ImageProfilUploader $imagesProfil): Response
     {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -113,6 +113,7 @@ final class ParametresController extends AbstractController
         $session->invalidate();
         $entityManager->remove($utilisateur);
         $entityManager->flush();
+        $imagesProfil->supprimerMedias($utilisateur);
 
         $this->addFlash('success', 'Ton compte a bien été supprimé.');
 

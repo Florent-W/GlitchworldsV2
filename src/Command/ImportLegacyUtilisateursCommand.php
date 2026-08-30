@@ -125,7 +125,6 @@ final class ImportLegacyUtilisateursCommand extends Command
                 }
 
                 $champs = ['roles' => json_encode($estAdministrateur ? ['ROLE_ADMIN'] : [], JSON_THROW_ON_ERROR)];
-                $champs['email_legacy'] = $email;
                 if ($emailImportable) {
                     $champs['email'] = $email;
                 }

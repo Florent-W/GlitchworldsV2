@@ -15,6 +15,12 @@
             <div class="col-md-6">{{ form_row(formulaire.motDePasseClair.first) }}</div>
             <div class="col-md-6">{{ form_row(formulaire.motDePasseClair.second) }}</div>
         </div>
+        {{ form_row(formulaire.avatarFichier) }}
+        <div class="form-check mb-4">
+            {{ form_widget(formulaire.conditions, { attr: { class: 'form-check-input' } }) }}
+            <label class="form-check-label" for="{{ formulaire.conditions.vars.id }}">J’accepte les <a href="{{ path('app_conditions_utilisation') }}" target="_blank" rel="noopener">conditions d’utilisation</a> et j’ai pris connaissance de la <a href="{{ path('app_confidentialite') }}" target="_blank" rel="noopener">politique de confidentialité</a>.</label>
+            {{ form_errors(formulaire.conditions) }}
+        </div>
         {{ form_row(formulaire.creer) }}
     {{ form_end(formulaire) }}
 

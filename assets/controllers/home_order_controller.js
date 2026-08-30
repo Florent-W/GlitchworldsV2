@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import Sortable from 'sortablejs';
 
-const CLE_ORDRE = 'glitchworlds-ordre-accueil';
+const CLE_ORDRE = 'glitchworlds-ordre-accueil-v2';
 const SELECTEUR_SECTION = '.gw-home-sortable-section';
 
 export default class extends Controller {

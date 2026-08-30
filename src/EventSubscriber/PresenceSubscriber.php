@@ -14,8 +14,10 @@ final readonly class PresenceSubscriber implements EventSubscriberInterface
     public function actualiser(ResponseEvent $event): void
     {
         if (!$event->isMainRequest() || !($utilisateur = $this->security->getUser()) instanceof Utilisateur) { return; }
-        if ($utilisateur->getDerniereActivite() && $utilisateur->getDerniereActivite() > new \DateTimeImmutable('-1 minute')) { return; }
-        $utilisateur->setDerniereActivite(new \DateTimeImmutable());
+        $maintenant = new \DateTimeImmutable();
+        $procedureInactivite = $utilisateur->getInactiviteAvertieLe() !== null || $utilisateur->getSuppressionProgrammeeLe() !== null;
+        if (!$procedureInactivite && $utilisateur->getDerniereActivite() && $utilisateur->getDerniereActivite() > $maintenant->modify('-1 minute')) { return; }
+        $utilisateur->setDerniereActivite($maintenant)->annulerSuppressionPourInactivite();
         $this->progression->recompenseAnciennete($utilisateur);
         $this->entityManager->flush();
     }

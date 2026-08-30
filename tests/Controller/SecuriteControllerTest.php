@@ -46,6 +46,7 @@ final class SecuriteControllerTest extends WebTestCase
             'inscription[email]' => $email,
             'inscription[motDePasseClair][first]' => 'mot-de-passe-test-2026',
             'inscription[motDePasseClair][second]' => 'mot-de-passe-test-2026',
+            'inscription[conditions]' => true,
         ]));
 
         self::assertResponseRedirects('/connexion');
@@ -120,8 +121,8 @@ final class SecuriteControllerTest extends WebTestCase
         self::assertSelectorTextContains('[data-theme-value="ds"] strong', 'Thème 3');
         self::assertSelectorTextContains('[data-theme-value="dsi"] strong', 'Thème 4');
         self::assertSelectorTextContains('[data-theme-value="3ds"] strong', 'Thème 5');
-        self::assertSelectorExists('[data-action="theme#appliquerSelection"]');
-        self::assertSelectorExists('[data-action="theme#annulerApercu"]');
+        self::assertSelectorExists('[data-action="theme#choisirMode"]');
+        self::assertSelectorExists('[data-action="theme#choisirPalette"]');
         self::assertSelectorExists('[data-action="theme#restaurerDefaut"]');
         self::assertSelectorExists('a[href="/mon-compte/modifier"]');
         self::assertSelectorExists('a[href="/mon-compte/mot-de-passe"]');

@@ -27,7 +27,7 @@ final class JeuVideoBackgroundControllerTest extends WebTestCase
         $entityManager->persist($jeu);
         $entityManager->flush();
 
-        $crawler = $client->request('GET', sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeu->getId()));
+        $crawler = $client->request('GET', sprintf('/jeu/%s-%d?presentation=blocs', $jeu->getSlug(), $jeu->getId()));
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('body.gw-has-video-background');

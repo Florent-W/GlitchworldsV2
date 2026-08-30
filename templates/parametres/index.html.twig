@@ -222,7 +222,7 @@
                     <div class="d-flex flex-wrap gap-3 mt-4">
                         <form method="post" action="{{ path('app_parametres_supprimer') }}" id="suppression-compte" onsubmit="return confirm('Supprimer ton compte ? Cette action est définitive.');">
                             <input type="hidden" name="_token" value="{{ csrf_token('suppression-compte-' ~ utilisateur.id) }}">
-                            <input type="password" name="motDePasse" class="form-control form-control-sm mb-2" placeholder="Mot de passe" aria-label="Mot de passe" required>
+                            {% if utilisateur.password %}<input type="password" name="motDePasse" class="form-control form-control-sm mb-2" placeholder="Mot de passe" aria-label="Mot de passe" required>{% endif %}
                             <button type="submit" class="btn btn-outline-danger">Supprimer le compte</button>
                         </form>
                     </div>
