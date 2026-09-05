@@ -12,8 +12,19 @@ final class Version20260815031500 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql('ALTER TABLE utilisateur_abonnement ENGINE = InnoDB');
-        $this->addSql('ALTER TABLE utilisateur_abonnement ADD CONSTRAINT FK_7AAAAADC325A696 FOREIGN KEY (abonne_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
-        $this->addSql('ALTER TABLE utilisateur_abonnement ADD CONSTRAINT FK_7AAAAAD7FEA59C0 FOREIGN KEY (suivi_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+
+        $foreignKeyNames = array_map(
+            static fn ($foreignKey): string => strtoupper($foreignKey->getName()),
+            $this->connection->createSchemaManager()->listTableForeignKeys('utilisateur_abonnement'),
+        );
+
+        if (!in_array('FK_7AAAAADC325A696', $foreignKeyNames, true)) {
+            $this->addSql('ALTER TABLE utilisateur_abonnement ADD CONSTRAINT FK_7AAAAADC325A696 FOREIGN KEY (abonne_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+        }
+
+        if (!in_array('FK_7AAAAAD7FEA59C0', $foreignKeyNames, true)) {
+            $this->addSql('ALTER TABLE utilisateur_abonnement ADD CONSTRAINT FK_7AAAAAD7FEA59C0 FOREIGN KEY (suivi_id) REFERENCES utilisateur (id) ON DELETE CASCADE');
+        }
     }
     public function down(Schema $schema): void
     {

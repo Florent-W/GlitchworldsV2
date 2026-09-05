@@ -412,7 +412,7 @@ class Jeu
     /** @return list<string> */
     public function getGalerie(): array
     {
-        return $this->galerie;
+        return $this->galerie ?? [];
     }
 
     /** @param list<string> $galerie */
@@ -425,8 +425,10 @@ class Jeu
 
     public function addImageGalerie(string $image): static
     {
-        if (!in_array($image, $this->galerie, true)) {
-            $this->galerie[] = $image;
+        $galerie = $this->getGalerie();
+        if (!in_array($image, $galerie, true)) {
+            $galerie[] = $image;
+            $this->galerie = $galerie;
         }
 
         return $this;
@@ -435,7 +437,7 @@ class Jeu
     public function removeImageGalerie(string $image): static
     {
         $this->galerie = array_values(array_filter(
-            $this->galerie,
+            $this->getGalerie(),
             static fn (string $element): bool => $element !== $image,
         ));
 
