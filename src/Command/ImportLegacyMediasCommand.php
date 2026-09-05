@@ -271,21 +271,32 @@ final class ImportLegacyMediasCommand extends Command
     /** @param list<string> $fragmentsObligatoires */
     private function trouverFichierStrict(string $nom, array $fragmentsObligatoires): ?string
     {
-        $candidats = [];
+        $tousLesCandidats = [];
         foreach ($this->clesNom($nom) as $cle) {
-            $candidats = [...$candidats, ...($this->fichiersParNom[$cle] ?? [])];
+            $tousLesCandidats = [...$tousLesCandidats, ...($this->fichiersParNom[$cle] ?? [])];
         }
+        $tousLesCandidats = array_values(array_unique($tousLesCandidats));
 
         $normaliser = static fn (string $chemin): string => mb_strtolower(str_replace('\\', '/', $chemin));
         $fragments = array_map($normaliser, $fragmentsObligatoires);
-        $candidats = array_values(array_filter(array_unique($candidats), static function (string $candidat) use ($normaliser, $fragments): bool {
+        $candidatsExacts = array_values(array_filter($tousLesCandidats, static function (string $candidat) use ($normaliser, $fragments): bool {
             $chemin = $normaliser($candidat);
 
             return array_all($fragments, static fn (string $fragment): bool => str_contains($chemin, $fragment));
         }));
-        sort($candidats, SORT_STRING);
+        sort($candidatsExacts, SORT_STRING);
 
-        return 1 === count($candidats) ? $candidats[0] : null;
+        if (1 === count($candidatsExacts)) {
+            return $candidatsExacts[0];
+        }
+
+        // Un nom unique dans toutes les sources est fiable même si l’ancienne
+        // arborescence a été déplacée. Toute ambiguïté est volontairement refusée.
+        if ([] === $candidatsExacts && 1 === count($tousLesCandidats)) {
+            return $tousLesCandidats[0];
+        }
+
+        return null;
     }
 
     /** @return list<string> */
