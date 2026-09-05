@@ -55,7 +55,7 @@ final class ImportLegacyMediasCommand extends Command
         $this->indexerFichiers($legacyRoot);
 
         $jeux = $this->connection->fetchAllAssociative('SELECT id, slug, miniature, banniere FROM jeu ORDER BY id');
-        $actualites = $this->connection->fetchAllAssociative('SELECT id, slug, miniature, banniere FROM actualite ORDER BY id');
+        $actualites = $this->connection->fetchAllAssociative('SELECT id, slug, miniature, banniere, publiee_le FROM actualite ORDER BY id');
         $utilisateurs = $this->connection->fetchAllAssociative('SELECT id, avatar, banniere FROM utilisateur ORDER BY id');
         $copiesJeux = 0;
         $copiesActualites = 0;
@@ -71,11 +71,8 @@ final class ImportLegacyMediasCommand extends Command
                 }
 
                 $dossierType = 'miniature' === $type ? 'miniature' : 'bandeaux';
-                $source = $this->trouverFichier($nomSource, [
+                $source = $this->trouverFichierStrict($nomSource, [
                     '/Jeux/'.$jeu['slug'].'/'.$dossierType.'/',
-                    '/Jeux/'.$jeu['slug'].'/',
-                    '/'.$dossierType.'/',
-                    '/Jeux/',
                 ]);
                 if (null === $source) {
                     $introuvables[] = ['Jeu '.$jeu['id'], $type, $nomSource];
@@ -100,11 +97,11 @@ final class ImportLegacyMediasCommand extends Command
                 }
 
                 $dossierType = 'miniature' === $type ? 'miniature' : 'bandeaux';
-                $source = $this->trouverFichier($nomSource, [
-                    '/Articles/'.$actualite['slug'].'/'.$dossierType.'/',
-                    '/Articles/'.$actualite['slug'].'/',
-                    '/'.$dossierType.'/',
-                    '/Articles/',
+                $date = new \DateTimeImmutable((string) $actualite['publiee_le']);
+                $mois = [1 => 'janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin', 'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre'][(int) $date->format('n')];
+                $source = $this->trouverFichierStrict($nomSource, [
+                    '/Articles/'.$date->format('Y').'/'.$mois.'/'.$date->format('d').'/',
+                    '/'.$actualite['slug'].'/'.$dossierType.'/',
                 ]);
                 if (null === $source) {
                     $introuvables[] = ['Actualité '.$actualite['id'], $type, $nomSource];
@@ -269,6 +266,26 @@ final class ImportLegacyMediasCommand extends Command
         });
 
         return $candidats[0] ?? null;
+    }
+
+    /** @param list<string> $fragmentsObligatoires */
+    private function trouverFichierStrict(string $nom, array $fragmentsObligatoires): ?string
+    {
+        $candidats = [];
+        foreach ($this->clesNom($nom) as $cle) {
+            $candidats = [...$candidats, ...($this->fichiersParNom[$cle] ?? [])];
+        }
+
+        $normaliser = static fn (string $chemin): string => mb_strtolower(str_replace('\\', '/', $chemin));
+        $fragments = array_map($normaliser, $fragmentsObligatoires);
+        $candidats = array_values(array_filter(array_unique($candidats), static function (string $candidat) use ($normaliser, $fragments): bool {
+            $chemin = $normaliser($candidat);
+
+            return array_all($fragments, static fn (string $fragment): bool => str_contains($chemin, $fragment));
+        }));
+        sort($candidats, SORT_STRING);
+
+        return 1 === count($candidats) ? $candidats[0] : null;
     }
 
     /** @return list<string> */
