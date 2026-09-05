@@ -43,7 +43,7 @@ final class ImportLegacyActualitesCommand extends Command
         }
 
         $legacy = DriverManager::getConnection((new DsnParser(['mysql' => 'pdo_mysql', 'mysqli' => 'mysqli']))->parse($this->legacyDatabaseUrl));
-        $articles = $legacy->fetchAllAssociative('SELECT id, titre, contenu, nom_categorie, nom_miniature, date_creation, url, id_auteur, approuver, description FROM article ORDER BY id ASC');
+        $articles = $legacy->fetchAllAssociative('SELECT id, titre, contenu, nom_categorie, nom_miniature, nom_banniere, date_creation, url, id_auteur, approuver, description FROM article ORDER BY id ASC');
         $commentaires = $legacy->fetchAllAssociative('SELECT id, id_utilisateur, contenu, id_news, date_commentaire FROM commentaire ORDER BY id ASC');
         $liaisonsJeux = $legacy->fetchAllAssociative('SELECT id_article, id_jeu FROM article_lier_jeu ORDER BY id_article, id_jeu');
         $mentionsJaime = $legacy->fetchAllAssociative('SELECT DISTINCT id_commentaire, id_pseudo_utilisateur_qui_aime AS id_utilisateur FROM aime_commentaire ORDER BY id_commentaire, id_pseudo_utilisateur_qui_aime');
@@ -71,9 +71,9 @@ final class ImportLegacyActualitesCommand extends Command
 
                 if (!(bool) $input->getOption('dry-run')) {
                     $this->connection->executeStatement(
-                        'INSERT INTO actualite (id, auteur_id, titre, slug, description, contenu, categorie, statut, miniature, publiee_le)
-                         VALUES (:id, :auteur, :titre, :slug, :description, :contenu, :categorie, :statut, :miniature, :publiee_le)
-                         ON DUPLICATE KEY UPDATE auteur_id = VALUES(auteur_id), titre = VALUES(titre), slug = VALUES(slug), description = VALUES(description), contenu = VALUES(contenu), categorie = VALUES(categorie), statut = VALUES(statut), miniature = VALUES(miniature), publiee_le = VALUES(publiee_le)',
+                        'INSERT INTO actualite (id, auteur_id, titre, slug, description, contenu, categorie, statut, miniature, banniere, publiee_le)
+                         VALUES (:id, :auteur, :titre, :slug, :description, :contenu, :categorie, :statut, :miniature, :banniere, :publiee_le)
+                         ON DUPLICATE KEY UPDATE auteur_id = VALUES(auteur_id), titre = VALUES(titre), slug = VALUES(slug), description = VALUES(description), contenu = VALUES(contenu), categorie = VALUES(categorie), statut = VALUES(statut), miniature = VALUES(miniature), banniere = VALUES(banniere), publiee_le = VALUES(publiee_le)',
                         [
                             'id' => $id,
                             'auteur' => $this->connection->fetchOne('SELECT id FROM utilisateur WHERE id = ?', [(int) $article['id_auteur']]) ?: null,
@@ -84,6 +84,7 @@ final class ImportLegacyActualitesCommand extends Command
                             'categorie' => $this->convertirCategorie((string) $article['nom_categorie'])->value,
                             'statut' => $statut->value,
                             'miniature' => $miniature,
+                            'banniere' => '' !== trim((string) ($article['nom_banniere'] ?? '')) ? 'legacy:'.trim((string) $article['nom_banniere']) : null,
                             'publiee_le' => (string) $article['date_creation'],
                         ],
                     );
