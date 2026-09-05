@@ -101,7 +101,7 @@ final class ImportLegacyMediasCommand extends Command
                 $mois = [1 => 'janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin', 'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre'][(int) $date->format('n')];
                 $source = $this->trouverFichierStrict($nomSource, [
                     '/Articles/'.$date->format('Y').'/'.$mois.'/'.$date->format('d').'/',
-                    '/'.$actualite['slug'].'/'.$dossierType.'/',
+                    '/'.$dossierType.'/',
                 ]);
                 if (null === $source) {
                     $introuvables[] = ['Actualité '.$actualite['id'], $type, $nomSource];
@@ -277,7 +277,11 @@ final class ImportLegacyMediasCommand extends Command
         }
         $tousLesCandidats = array_values(array_unique($tousLesCandidats));
 
-        $normaliser = static fn (string $chemin): string => mb_strtolower(str_replace('\\', '/', $chemin));
+        $normaliser = static function (string $chemin): string {
+            $chemin = mb_strtolower(str_replace('\\', '/', $chemin));
+
+            return transliterator_transliterate('Any-Latin; Latin-ASCII', $chemin) ?: $chemin;
+        };
         $fragments = array_map($normaliser, $fragmentsObligatoires);
         $candidatsExacts = array_values(array_filter($tousLesCandidats, static function (string $candidat) use ($normaliser, $fragments): bool {
             $chemin = $normaliser($candidat);
