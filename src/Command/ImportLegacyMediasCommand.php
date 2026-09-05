@@ -11,11 +11,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-#[AsCommand(name: 'app:import-legacy-medias', description: 'Copie les miniatures et bannières de l’ancien site dans public/uploads.')]
+#[AsCommand(name: 'app:import-legacy-medias', description: 'Copie les images de l’ancien site dans les dossiers de médias de la V2.')]
 final class ImportLegacyMediasCommand extends Command
 {
     /** @var array<string, list<string>> */
     private array $fichiersParNom = [];
+    private bool $ecraser = false;
 
     public function __construct(
         private readonly Connection $connection,
@@ -30,6 +31,7 @@ final class ImportLegacyMediasCommand extends Command
         $this
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Affiche les médias trouvés sans copier les fichiers')
             ->addOption('habillages', null, InputOption::VALUE_NONE, 'Migre aussi les miniatures et les bannières')
+            ->addOption('ecraser', null, InputOption::VALUE_NONE, 'Écrase les médias déjà copiés')
             ->addOption('legacy-root', null, InputOption::VALUE_REQUIRED, 'Dossier racine contenant les fichiers du site legacy');
     }
 
@@ -37,6 +39,7 @@ final class ImportLegacyMediasCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
+        $this->ecraser = (bool) $input->getOption('ecraser');
         $legacyRoot = $input->getOption('legacy-root');
         if (is_string($legacyRoot) && '' !== trim($legacyRoot)) {
             $legacyRoot = realpath(trim($legacyRoot));
@@ -51,10 +54,13 @@ final class ImportLegacyMediasCommand extends Command
         }
         $this->indexerFichiers($legacyRoot);
 
-        $jeux = $this->connection->fetchAllAssociative('SELECT id, miniature, banniere FROM jeu ORDER BY id');
-        $actualites = $this->connection->fetchAllAssociative('SELECT id, miniature FROM actualite ORDER BY id');
+        $jeux = $this->connection->fetchAllAssociative('SELECT id, slug, miniature, banniere FROM jeu ORDER BY id');
+        $actualites = $this->connection->fetchAllAssociative('SELECT id, slug, miniature, banniere FROM actualite ORDER BY id');
+        $utilisateurs = $this->connection->fetchAllAssociative('SELECT id, avatar, banniere FROM utilisateur ORDER BY id');
         $copiesJeux = 0;
         $copiesActualites = 0;
+        $copiesAvatars = 0;
+        $copiesBannieresProfil = 0;
         $introuvables = [];
 
         foreach ((bool) $input->getOption('habillages') ? $jeux : [] as $jeu) {
@@ -64,7 +70,13 @@ final class ImportLegacyMediasCommand extends Command
                     continue;
                 }
 
-                $source = $this->trouverFichier($nomSource, 'Jeux');
+                $dossierType = 'miniature' === $type ? 'miniature' : 'bandeaux';
+                $source = $this->trouverFichier($nomSource, [
+                    '/Jeux/'.$jeu['slug'].'/'.$dossierType.'/',
+                    '/Jeux/'.$jeu['slug'].'/',
+                    '/'.$dossierType.'/',
+                    '/Jeux/',
+                ]);
                 if (null === $source) {
                     $introuvables[] = ['Jeu '.$jeu['id'], $type, $nomSource];
                     continue;
@@ -80,23 +92,58 @@ final class ImportLegacyMediasCommand extends Command
         }
 
         foreach ((bool) $input->getOption('habillages') ? $actualites : [] as $actualite) {
-            $nomSource = preg_replace('/^legacy:/', '', trim((string) $actualite['miniature'])) ?? '';
-            if ('' === $nomSource || !str_starts_with((string) $actualite['miniature'], 'legacy:')) {
-                continue;
+            foreach (['miniature', 'banniere'] as $type) {
+                $valeur = trim((string) $actualite[$type]);
+                $nomSource = preg_replace('/^legacy:/', '', $valeur) ?? '';
+                if ('' === $nomSource || !str_starts_with($valeur, 'legacy:')) {
+                    continue;
+                }
+
+                $dossierType = 'miniature' === $type ? 'miniature' : 'bandeaux';
+                $source = $this->trouverFichier($nomSource, [
+                    '/Articles/'.$actualite['slug'].'/'.$dossierType.'/',
+                    '/Articles/'.$actualite['slug'].'/',
+                    '/'.$dossierType.'/',
+                    '/Articles/',
+                ]);
+                if (null === $source) {
+                    $introuvables[] = ['Actualité '.$actualite['id'], $type, $nomSource];
+                    continue;
+                }
+
+                $nomCible = $type.'.'.strtolower((string) pathinfo($source, PATHINFO_EXTENSION));
+                if (!$dryRun) {
+                    $this->copier($source, $this->projectDir.'/public/uploads/actualites/'.$actualite['id'].'/'.$nomCible);
+                    $this->connection->update('actualite', [$type => $nomCible], ['id' => (int) $actualite['id']]);
+                }
+                ++$copiesActualites;
+            }
+        }
+
+        foreach ($utilisateurs as $utilisateur) {
+            $id = (int) $utilisateur['id'];
+            $avatarLegacy = trim((string) $utilisateur['avatar']);
+            $sourceAvatar = $this->trouverMediaUtilisateur($legacyRoot, $id, 'photo_profil', $avatarLegacy);
+            if (null !== $sourceAvatar) {
+                $nomCible = 'avatar.'.strtolower((string) pathinfo($sourceAvatar, PATHINFO_EXTENSION));
+                if (!$dryRun) {
+                    $this->copier($sourceAvatar, $this->projectDir.'/public/uploads/utilisateurs/'.$id.'/'.$nomCible);
+                    $this->connection->update('utilisateur', ['avatar' => $nomCible], ['id' => $id]);
+                }
+                ++$copiesAvatars;
+            } elseif ('' !== $avatarLegacy && !str_starts_with($avatarLegacy, 'avatar.')) {
+                $introuvables[] = ['Utilisateur '.$id, 'avatar', $avatarLegacy];
             }
 
-            $source = $this->trouverFichier($nomSource, 'Articles');
-            if (null === $source) {
-                $introuvables[] = ['Actualité '.$actualite['id'], 'miniature', $nomSource];
-                continue;
+            $sourceBanniere = $this->trouverMediaUtilisateur($legacyRoot, $id, 'background_site', 'background');
+            if (null !== $sourceBanniere) {
+                $nomCible = 'banniere.'.strtolower((string) pathinfo($sourceBanniere, PATHINFO_EXTENSION));
+                if (!$dryRun) {
+                    $this->copier($sourceBanniere, $this->projectDir.'/public/uploads/utilisateurs/'.$id.'/'.$nomCible);
+                    $this->connection->update('utilisateur', ['banniere' => $nomCible], ['id' => $id]);
+                }
+                ++$copiesBannieresProfil;
             }
-
-            $nomCible = 'miniature.'.strtolower((string) pathinfo($source, PATHINFO_EXTENSION));
-            if (!$dryRun) {
-                $this->copier($source, $this->projectDir.'/public/uploads/actualites/'.$actualite['id'].'/'.$nomCible);
-                $this->connection->update('actualite', ['miniature' => $nomCible], ['id' => (int) $actualite['id']]);
-            }
-            ++$copiesActualites;
         }
 
         [$imagesContenu, $imagesContenuIntrouvables] = $this->migrerImagesContenu($dryRun);
@@ -105,6 +152,8 @@ final class ImportLegacyMediasCommand extends Command
         $io->table(['Type', 'Médias trouvés'], [
             ['Jeux', $copiesJeux],
             ['Actualités', $copiesActualites],
+            ['Avatars', $copiesAvatars],
+            ['Bannières de profil', $copiesBannieresProfil],
             ['Contenus', $imagesContenu],
         ]);
         if ([] !== $introuvables) {
@@ -161,14 +210,63 @@ final class ImportLegacyMediasCommand extends Command
         }
     }
 
-    private function trouverFichier(string $nom, string $dossierPrefere): ?string
+    private function trouverMediaUtilisateur(?string $legacyRoot, int $id, string $sousDossier, string $nomAttendu): ?string
+    {
+        $racine = $legacyRoot ?? dirname($this->projectDir);
+        $dossiers = [
+            $racine.'/utilisateurs/'.$id.'/'.$sousDossier,
+            $racine.'/Glitchworld/utilisateurs/'.$id.'/'.$sousDossier,
+            $racine.'/portfolio/utilisateurs/'.$id.'/'.$sousDossier,
+            $racine.'/portfoliov1/utilisateurs/'.$id.'/'.$sousDossier,
+        ];
+
+        foreach ($dossiers as $dossier) {
+            if (!is_dir($dossier)) {
+                continue;
+            }
+            $fichiers = array_values(array_filter(scandir($dossier) ?: [], static fn (string $nom): bool => preg_match('/\.(?:avif|gif|jpe?g|png|webp)$/i', $nom) === 1));
+            if ('' !== $nomAttendu) {
+                foreach ($fichiers as $fichier) {
+                    if ($this->clesNom($fichier)[0] === $this->clesNom(basename($nomAttendu))[0]) {
+                        return $dossier.'/'.$fichier;
+                    }
+                }
+            }
+            if ('background_site' === $sousDossier) {
+                foreach ($fichiers as $fichier) {
+                    if (str_starts_with(mb_strtolower($fichier), 'background.')) {
+                        return $dossier.'/'.$fichier;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /** @param list<string> $dossiersPreferes */
+    private function trouverFichier(string $nom, array $dossiersPreferes): ?string
     {
         $candidats = [];
         foreach ($this->clesNom($nom) as $cle) {
             $candidats = [...$candidats, ...($this->fichiersParNom[$cle] ?? [])];
         }
         $candidats = array_values(array_unique($candidats));
-        usort($candidats, static fn (string $a, string $b): int => (int) !str_contains($a, $dossierPrefere) <=> (int) !str_contains($b, $dossierPrefere));
+        usort($candidats, static function (string $a, string $b) use ($dossiersPreferes): int {
+            $normaliser = static fn (string $chemin): string => mb_strtolower(str_replace('\\', '/', $chemin));
+            $cheminA = $normaliser($a);
+            $cheminB = $normaliser($b);
+            foreach ($dossiersPreferes as $dossierPrefere) {
+                $preference = $normaliser($dossierPrefere);
+                $aCorrespond = str_contains($cheminA, $preference);
+                $bCorrespond = str_contains($cheminB, $preference);
+                if ($aCorrespond !== $bCorrespond) {
+                    return $aCorrespond ? -1 : 1;
+                }
+            }
+
+            return strcmp($cheminA, $cheminB);
+        });
 
         return $candidats[0] ?? null;
     }
@@ -196,7 +294,7 @@ final class ImportLegacyMediasCommand extends Command
         if (!is_dir($dossier) && !mkdir($dossier, 0775, true) && !is_dir($dossier)) {
             throw new \RuntimeException(sprintf('Impossible de créer le dossier %s.', $dossier));
         }
-        if (!is_file($cible) && !copy($source, $cible)) {
+        if (($this->ecraser || !is_file($cible)) && !copy($source, $cible)) {
             throw new \RuntimeException(sprintf('Impossible de copier %s.', $source));
         }
     }
@@ -229,7 +327,7 @@ final class ImportLegacyMediasCommand extends Command
         $copies = 0;
         $introuvables = [];
         foreach (array_keys($references) as $reference) {
-            $source = $this->trouverFichier(basename($reference), 'images');
+            $source = $this->trouverFichier(basename($reference), ['/images/']);
             if (null === $source) {
                 $introuvables[] = ['Contenu', 'image', $reference];
                 continue;
