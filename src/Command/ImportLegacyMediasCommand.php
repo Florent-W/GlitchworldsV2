@@ -29,14 +29,27 @@ final class ImportLegacyMediasCommand extends Command
     {
         $this
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Affiche les médias trouvés sans copier les fichiers')
-            ->addOption('habillages', null, InputOption::VALUE_NONE, 'Migre aussi les miniatures et les bannières');
+            ->addOption('habillages', null, InputOption::VALUE_NONE, 'Migre aussi les miniatures et les bannières')
+            ->addOption('legacy-root', null, InputOption::VALUE_REQUIRED, 'Dossier racine contenant les fichiers du site legacy');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
-        $this->indexerFichiers();
+        $legacyRoot = $input->getOption('legacy-root');
+        if (is_string($legacyRoot) && '' !== trim($legacyRoot)) {
+            $legacyRoot = realpath(trim($legacyRoot));
+            if (false === $legacyRoot || !is_dir($legacyRoot)) {
+                $io->error('Le dossier indiqué par --legacy-root est introuvable ou illisible.');
+
+                return Command::FAILURE;
+            }
+            $io->note('Fichiers legacy recherchés dans : '.$legacyRoot);
+        } else {
+            $legacyRoot = null;
+        }
+        $this->indexerFichiers($legacyRoot);
 
         $jeux = $this->connection->fetchAllAssociative('SELECT id, miniature, banniere FROM jeu ORDER BY id');
         $actualites = $this->connection->fetchAllAssociative('SELECT id, miniature FROM actualite ORDER BY id');
@@ -103,22 +116,32 @@ final class ImportLegacyMediasCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function indexerFichiers(): void
+    private function indexerFichiers(?string $legacyRoot = null): void
     {
-        $racineLegacy = dirname($this->projectDir);
+        $racineLegacy = $legacyRoot ?? dirname($this->projectDir);
         $dossiers = [
             $racineLegacy.'/miniature',
             $racineLegacy.'/bandeaux',
-            $racineLegacy.'/Glitchworld/Jeux',
-            $racineLegacy.'/portfoliov1/Jeux',
+            $racineLegacy.'/Jeux',
+            $racineLegacy.'/Articles',
             $racineLegacy.'/images',
+            $racineLegacy.'/portfolio/miniature',
+            $racineLegacy.'/portfolio/bandeaux',
+            $racineLegacy.'/portfolio/Jeux',
+            $racineLegacy.'/portfolio/Articles',
+            $racineLegacy.'/portfolio/images',
+            $racineLegacy.'/Glitchworld/Jeux',
+            $racineLegacy.'/Glitchworld/Articles',
+            $racineLegacy.'/Glitchworld/miniature',
+            $racineLegacy.'/Glitchworld/bandeaux',
+            $racineLegacy.'/portfoliov1/Jeux',
             $racineLegacy.'/Glitchworld/images',
             $this->projectDir.'/images',
             $this->projectDir.'/Articles',
             $this->projectDir.'/Jeux',
         ];
 
-        foreach ($dossiers as $dossier) {
+        foreach (array_unique($dossiers) as $dossier) {
             if (!is_dir($dossier)) {
                 continue;
             }
