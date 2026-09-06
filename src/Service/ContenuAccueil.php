@@ -22,7 +22,7 @@ final readonly class ContenuAccueil
     /** @return list<Jeu> */
     public function nouveautes(): array
     {
-        $ids = $this->cache->get('glitchworlds.accueil.nouveautes.v1', function (ItemInterface $item): array {
+        $ids = $this->cache->get('glitchworlds.accueil.nouveautes.v2', function (ItemInterface $item): array {
             $item->expiresAfter(300);
 
             return array_map(static fn (Jeu $jeu): int => (int) $jeu->getId(), $this->jeux->trouverNouveautes(9));
