@@ -48,7 +48,7 @@ final class JeuController extends AbstractController
         $anneeBrute = trim((string) $request->query->get('annee', ''));
         $annee = ctype_digit($anneeBrute) ? (int) $anneeBrute : null;
         $mesFavoris = $request->query->getBoolean('mes_favoris');
-        $tri = TriJeu::tryFrom((string) $request->query->get('tri', 'recent')) ?? TriJeu::Recent;
+        $tri = TriJeu::tryFrom((string) $request->query->get('tri', TriJeu::IdDesc->value)) ?? TriJeu::IdDesc;
         $utilisateur = $this->getUser();
         $pagination = $jeuRepository->trouverApprouvesPagines(
             $page,
