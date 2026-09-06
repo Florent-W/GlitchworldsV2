@@ -341,8 +341,7 @@ class JeuRepository extends ServiceEntityRepository
             ->leftJoin('j.categorie', 'categorie')->addSelect('categorie')
             ->andWhere('j.statut = :statut')
             ->setParameter('statut', StatutJeu::Approuve)
-            ->orderBy('j.creeLe', 'DESC')
-            ->addOrderBy('j.id', 'DESC')
+            ->orderBy('j.id', 'DESC')
             ->setMaxResults(max(1, min(12, $limite)))
             ->getQuery()
             ->getResult();
