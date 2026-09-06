@@ -65,7 +65,7 @@ class JeuRepository extends ServiceEntityRepository
         string $plateforme = '',
         string $genre = '',
         string $langue = '',
-        TriJeu $tri = TriJeu::Recent,
+        TriJeu $tri = TriJeu::IdDesc,
         ?int $annee = null,
         bool $mesFavoris = false,
         ?Utilisateur $utilisateur = null,
@@ -146,6 +146,8 @@ class JeuRepository extends ServiceEntityRepository
             TriJeu::Recent => $qb->distinct()->orderBy('j.dateSortie', 'DESC')->addOrderBy('j.id', 'DESC'),
             TriJeu::Nom => $qb->distinct()->orderBy('j.nom', 'ASC'),
             TriJeu::Ancien => $qb->distinct()->orderBy('j.dateSortie', 'ASC')->addOrderBy('j.id', 'ASC'),
+            TriJeu::IdDesc => $qb->distinct()->orderBy('j.id', 'DESC'),
+            TriJeu::IdAsc => $qb->distinct()->orderBy('j.id', 'ASC'),
             TriJeu::Populaire => $qb
                 ->leftJoin('j.ajouteAuxFavorisPar', 'triFavori')
                 ->addSelect('COUNT(DISTINCT triFavori.id) AS HIDDEN nbFavoris')

@@ -28,3 +28,4 @@
 /public/*
 !/public/favicon.png
 !/public/og-default.jpg
+!/public/ads.txt
