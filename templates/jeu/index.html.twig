@@ -136,9 +136,9 @@
                                     </div>
 
                                     {% if jeu.description is not empty %}
-                                        <p class="gw-game-card__description">{{ jeu.description|slice(0, 110) }}</p>
+                                        <p class="gw-game-card__description">{{ jeu.description|extrait(110) }}</p>
                                     {% elseif jeu.contenu is not empty %}
-                                        <p class="gw-game-card__description">{{ jeu.contenu|bbcode_texte|slice(0, 110) }}</p>
+                                        <p class="gw-game-card__description">{{ jeu.contenu|bbcode_texte|extrait(110) }}</p>
                                     {% endif %}
                                 </div>
                             </article>
