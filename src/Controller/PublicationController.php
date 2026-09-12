@@ -65,9 +65,17 @@ final class PublicationController extends AbstractController
     {
         $this->denyAccessUnlessGranted(PublicationVoter::MODIFIER, $publication);
         $formulaire = $this->createForm(PublicationType::class, $publication);
+        $formulaire->get('optionsSondageTexte')->setData(implode(PHP_EOL, $publication->getOptionsSondage()));
         $formulaire->handleRequest($request);
 
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
+            $options = $this->optionsSondage($formulaire->get('optionsSondageTexte')->getData());
+            if ($publication->getQuestionSondage() !== null && count($options) < 2) {
+                $this->addFlash('danger', 'Un sondage doit proposer au moins deux choix.');
+
+                return $this->redirect($this->generateUrl('app_communaute').'#fil');
+            }
+            $publication->setOptionsSondage($publication->getQuestionSondage() === null ? [] : $options);
             $entityManager->flush();
             $this->addFlash('success', 'Ta publication a été modifiée.');
 
@@ -140,6 +148,6 @@ final class PublicationController extends AbstractController
         $options = array_filter($options);
         $options = array_unique($options);
 
-        return array_slice(array_values($options), 0, 6);
+        return array_values($options);
     }
 }

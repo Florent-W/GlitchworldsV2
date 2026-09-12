@@ -3,14 +3,21 @@
 {% set default_palette = app.user ? app.user.getPalette() : 'glitchworlds' %}
 {% set default_mode = app.user ? app.user.getMode() : 'system' %}
 {% set theme_styles = {glitchworlds: 'glitchworlds', legacy: 'legacy', wii: 'theme1', ps3: 'theme2', ds: 'theme3', dsi: 'theme4', '3ds': 'theme5'} %}
-<html lang="fr" data-theme="{{ default_palette }}" data-theme-style="{{ theme_styles[default_palette]|default('glitchworlds') }}" data-theme-resolved="{{ default_mode }}" data-gw-theme="{{ default_palette }}" data-gw-mode="{{ default_mode }}" data-default-theme="{{ default_theme }}" data-default-contrast="{{ app.user and app.user.isContrasteRenforce ? 'true' : 'false' }}" data-user-authenticated="{{ app.user ? '1' : '0' }}" data-gw-base-path="{{ app.request.basePath }}">
+<html lang="fr" class="gw-styles-loading" data-theme="{{ default_palette }}" data-theme-style="{{ theme_styles[default_palette]|default('glitchworlds') }}" data-theme-resolved="{{ default_mode }}" data-gw-theme="{{ default_palette }}" data-gw-mode="{{ default_mode }}" data-default-theme="{{ default_theme }}" data-default-contrast="{{ app.user and app.user.isContrasteRenforce ? 'true' : 'false' }}" data-user-authenticated="{{ app.user ? '1' : '0' }}" data-gw-base-path="{{ app.request.basePath }}">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            /* Évite l'affichage fugitif du HTML brut lors d'une première visite sans cache. */
+            html.gw-styles-loading { min-height: 100%; background: #eef5fc; }
+            html.gw-styles-loading[data-theme-resolved="dark"] { background: #071321; }
+            html.gw-styles-loading body { visibility: hidden; }
+        </style>
         <title>{% block title %}Glitchworlds{% endblock %}</title>
         <meta name="description" content="{% block meta_description %}Bienvenue sur Glitchworlds - fangames, hacks, mods et communauté.{% endblock %}">
         <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
         <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
+        <link rel="preload" href="{{ asset('vendor/bootstrap-icons/font/fonts/bootstrap-icons.woff2') }}" as="font" type="font/woff2" crossorigin>
         <link rel="canonical" href="{% block canonical %}{{ app.request.schemeAndHttpHost ~ app.request.baseUrl ~ app.request.pathInfo }}{% endblock %}">
         <meta name="robots" content="{% block robots_meta %}index,follow{% endblock %}">
         <meta property="og:site_name" content="Glitchworlds">
@@ -116,6 +123,7 @@
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
+        <script>document.documentElement.classList.remove('gw-styles-loading');</script>
     </head>
     <body{% block body_attributes %}{% endblock %}>
         {% block video_background %}{% endblock %}

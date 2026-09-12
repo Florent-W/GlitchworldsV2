@@ -56,7 +56,7 @@
                     {% endif %}
                 </div>
             {% endif %}
-            <div class="flex-grow-1 pt-3">
+            <div class="gw-profile__details flex-grow-1 pt-3">
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <h1 class="h2 mb-0">{{ membre.pseudo }}</h1>
                     {% if 'ROLE_ADMIN' in membre.roles %}<span class="badge text-bg-primary">Administrateur</span>{% elseif 'ROLE_MODERATEUR' in membre.roles %}<span class="badge text-bg-info">Modérateur</span>{% endif %}
@@ -127,8 +127,18 @@
                 {% if section == 'apropos' %}
                     <h2 class="h5">À propos de {{ membre.pseudo }}</h2>
                     {% if app.user == membre and formulaireBiographie %}
-                        {{ form_start(formulaireBiographie, { action: path('app_profil_biographie', {id: membre.id}) }) }}
-                            {{ form_row(formulaireBiographie.biographie) }}
+                        {{ form_start(formulaireBiographie, {
+                            action: path('app_profil_biographie', {id: membre.id}),
+                            attr: {
+                                'data-controller': 'compteur-caracteres',
+                                'data-compteur-caracteres-max-value': '500'
+                            }
+                        }) }}
+                            {{ form_row(formulaireBiographie.biographie, {attr: {
+                                'data-compteur-caracteres-target': 'champ',
+                                'data-action': 'input->compteur-caracteres#mettreAJour'
+                            }}) }}
+                            <div class="small text-secondary text-end mb-3" data-compteur-caracteres-target="compteur" aria-live="polite">0 / 500 caractères</div>
                             <div class="d-flex justify-content-end">{{ form_widget(formulaireBiographie.enregistrer) }}</div>
                         {{ form_end(formulaireBiographie) }}
                     {% else %}

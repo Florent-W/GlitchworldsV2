@@ -155,7 +155,7 @@
         {% if sectionTelechargement %}<a class="btn btn-light" href="#section-telechargement"><i class="bi bi-download" aria-hidden="true"></i><span>Téléchargement</span></a>{% else %}<a class="btn btn-light" href="#commentaires"><i class="bi bi-chat-dots-fill" aria-hidden="true"></i><span>Commentaires</span></a>{% endif %}
     </div>
     <section class="gw-game-overview row g-3 mt-1" aria-label="Aperçu du jeu">
-        <div class="col-xl-6"><div class="gw-console-panel h-100 p-4"><div class="d-flex gap-3"><i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i><div><h2 class="h5 text-uppercase">À propos de ce jeu</h2><p class="mb-0">{{ presentationCourte|slice(0, 360) }}{{ presentationCourte|length > 360 ? '…' : '' }}</p></div></div></div></div>
+        <div class="col-xl-6"><div class="gw-console-panel h-100 p-4"><div class="d-flex gap-3"><i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i><div><h2 class="h5 text-uppercase">À propos de ce jeu</h2><p class="mb-0">{{ presentationCourte|extrait(360) }}</p></div></div></div></div>
         <div class="col-md-5 col-xl-2"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Genres et catégorie</h2><div class="gw-overview-tags">{% for item in jeu.genres|slice(0, 4) %}<a href="{{ path('app_jeux', {genre: item.slug}) }}">{{ item.nom }}</a>{% endfor %}{% if jeu.categorie %}<a href="{{ path('app_jeux', {categorie: jeu.categorie.slug}) }}">{{ jeu.categorie.nom }}</a>{% endif %}</div></div></div>
         <div class="col-md-7 col-xl-4"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Similaires que vous aimerez</h2><div class="gw-overview-similar">{% for similaire in jeuxSimilaires|slice(0, 4) %}<a href="{{ path('app_jeu_show', {slug: similaire.slug, id: similaire.id}) }}">{% if similaire.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ similaire.id ~ '/' ~ similaire.miniature) }}" alt="" loading="lazy">{% else %}<span><i class="bi bi-controller"></i></span>{% endif %}<small>{{ similaire.nom }}</small></a>{% else %}<p class="small text-secondary mb-0">Aucune suggestion pour le moment.</p>{% endfor %}</div></div></div>
     </section>
@@ -308,7 +308,7 @@
     </div>
 
     <section class="gw-game-overview row g-3 mt-1" aria-label="Aperçu du jeu">
-        <div class="col-xl-6"><div class="gw-console-panel h-100 p-4"><div class="d-flex gap-3"><i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i><div><h2 class="h5 text-uppercase">À propos de ce jeu</h2><p class="mb-0">{{ presentationCourte|slice(0, 360) }}{{ presentationCourte|length > 360 ? '…' : '' }}</p></div></div></div></div>
+        <div class="col-xl-6"><div class="gw-console-panel h-100 p-4"><div class="d-flex gap-3"><i class="bi bi-star-fill text-primary fs-4" aria-hidden="true"></i><div><h2 class="h5 text-uppercase">À propos de ce jeu</h2><p class="mb-0">{{ presentationCourte|extrait(360) }}</p></div></div></div></div>
         <div class="col-md-5 col-xl-2"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Genres et catégorie</h2><div class="gw-overview-tags">{% for item in jeu.genres|slice(0, 4) %}<a href="{{ path('app_jeux', {genre: item.slug}) }}">{{ item.nom }}</a>{% endfor %}{% if jeu.categorie %}<a href="{{ path('app_jeux', {categorie: jeu.categorie.slug}) }}">{{ jeu.categorie.nom }}</a>{% endif %}</div></div></div>
         <div class="col-md-7 col-xl-4"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Similaires que vous aimerez</h2><div class="gw-overview-similar">{% for similaire in jeuxSimilaires|slice(0, 4) %}<a href="{{ path('app_jeu_show', {slug: similaire.slug, id: similaire.id}) }}">{% if similaire.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ similaire.id ~ '/' ~ similaire.miniature) }}" alt="" loading="lazy">{% else %}<span><i class="bi bi-controller"></i></span>{% endif %}<small>{{ similaire.nom }}</small></a>{% else %}<p class="small text-secondary mb-0">Aucune suggestion pour le moment.</p>{% endfor %}</div></div></div>
     </section>
@@ -353,7 +353,7 @@
                                 <span class="gw-game-section__icon"><i class="bi bi-{{ iconesSections[section.type]|default('layout-text-window') }}" aria-hidden="true"></i></span>
                                 <span class="gw-game-section__heading">
                                     <span class="gw-game-section__title">{{ titreSection }}</span>
-                                    <span class="gw-game-section__preview">{{ apercuSection|slice(0, 150) }}{{ apercuSection|length > 150 ? '…' : '' }}</span>
+                                    <span class="gw-game-section__preview">{{ apercuSection|extrait(150) }}</span>
                                 </span>
                                 <span class="gw-game-section__toggle" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
                             </summary>
@@ -365,7 +365,7 @@
                                 <span class="gw-game-section__icon"><i class="bi bi-{{ iconesSections[section.type]|default('layout-text-window') }}" aria-hidden="true"></i></span>
                                 <span class="gw-game-section__heading">
                                     <span class="gw-game-section__title">{{ titreSection }}</span>
-                                    <span class="gw-game-section__preview">{{ apercuSection|slice(0, 150) }}{{ apercuSection|length > 150 ? '…' : '' }}</span>
+                                    <span class="gw-game-section__preview">{{ apercuSection|extrait(150) }}</span>
                                 </span>
                                 <span class="gw-game-section__toggle" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
                             </summary>
@@ -383,7 +383,7 @@
                             <span class="gw-game-section__icon"><i class="bi bi-{{ iconesSections[section.type]|default('layout-text-window') }}" aria-hidden="true"></i></span>
                             <span class="gw-game-section__heading">
                                 <span class="gw-game-section__title">{{ section.type == 'captures' ? 'Images' : (section.titre ?: 'Présentation') }}</span>
-                                <span class="gw-game-section__preview">{{ apercuSection|slice(0, 150) }}{{ apercuSection|length > 150 ? '…' : '' }}</span>
+                                <span class="gw-game-section__preview">{{ apercuSection|extrait(150) }}</span>
                             </span>
                             <span class="gw-game-section__toggle" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
                         </summary>

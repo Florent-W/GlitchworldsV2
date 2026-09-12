@@ -85,6 +85,19 @@ final class CommunauteControllerTest extends WebTestCase
 
         $client->loginUser($utilisateur);
         $crawler = $client->request('GET', '/communaute');
+
+        $contenuInvalide = 'Sondage avec trop de choix '.$suffixe;
+        $client->submit($crawler->selectButton('Publier')->form([
+            'publication[contenu]' => $contenuInvalide,
+            'publication[questionSondage]' => 'Trop de choix ?',
+            'publication[optionsSondageTexte]' => "Un\nDeux\nTrois\nQuatre\nCinq\nSix\nSept",
+        ]));
+
+        self::assertResponseRedirects('/communaute#fil');
+        self::assertNull($entityManager->getRepository(Publication::class)->findOneBy(['contenu' => $contenuInvalide]));
+        $crawler = $client->followRedirect();
+        self::assertSelectorTextContains('.alert-danger', 'Un sondage ne peut pas contenir plus de 6 choix.');
+
         $client->submit($crawler->selectButton('Publier')->form([
             'publication[contenu]' => $contenu,
             'publication[lien]' => 'https://example.com/projet',
@@ -118,7 +131,8 @@ final class CommunauteControllerTest extends WebTestCase
         self::assertCount(1, $entityManager->find(Publication::class, $publicationId)?->getAimePar());
 
         $crawler = $client->followRedirect();
-        $crawler = $client->click($crawler->selectLink('Modifier')->link());
+        $crawler = $client->click($crawler->filter(sprintf('#publication-%d a', $publicationId))->selectLink('Modifier')->link());
+        self::assertSame("Option A\nOption B", str_replace("\r\n", "\n", $crawler->filter('#publication_optionsSondageTexte')->html()));
         $contenuModifie = $contenu.' modifiée';
         $client->submit($crawler->selectButton('Enregistrer')->form([
             'publication[contenu]' => $contenuModifie,
@@ -127,6 +141,7 @@ final class CommunauteControllerTest extends WebTestCase
 
         $entityManager->clear();
         self::assertSame($contenuModifie, $entityManager->find(Publication::class, $publicationId)?->getContenu());
+        self::assertSame(['Option A', 'Option B'], $entityManager->find(Publication::class, $publicationId)?->getOptionsSondage());
         $crawler = $client->followRedirect();
         $client->submit($crawler->selectButton('Supprimer')->form());
         self::assertResponseRedirects('/communaute#fil');

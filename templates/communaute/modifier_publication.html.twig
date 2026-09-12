@@ -7,9 +7,30 @@
 <section class="gw-panel p-4 p-md-5 mx-auto" style="max-width: 760px">
     <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_communaute') }}#fil">Communauté</a></li><li class="breadcrumb-item active" aria-current="page">Modifier la publication</li></ol></nav>
     <h1 class="h2 mb-4">Modifier ma publication</h1>
-    {{ form_start(formulaire) }}
+    {{ form_start(formulaire, {attr: {
+        'data-controller': 'sondage-limite',
+        'data-sondage-limite-max-value': '6',
+        'data-action': 'submit->sondage-limite#valider'
+    }}) }}
+        {{ form_widget(formulaire._token) }}
         {{ form_row(formulaire.contenu) }}
-        <div class="d-flex gap-2"><button class="btn btn-primary" type="submit">Enregistrer</button><a class="btn btn-outline-secondary" href="{{ path('app_communaute') }}#fil">Annuler</a></div>
-    {{ form_end(formulaire) }}
+        {{ form_row(formulaire.imageFichier) }}
+        {{ form_row(formulaire.lien) }}
+        <div class="row g-3">
+            <div class="col-md-6">{{ form_row(formulaire.questionSondage) }}</div>
+            <div class="col-md-6">
+                {{ form_row(formulaire.optionsSondageTexte, {attr: {
+                    'data-sondage-limite-target': 'champ',
+                    'data-action': 'input->sondage-limite#verifier',
+                    'aria-describedby': 'limite-choix-sondage-modification'
+                }}) }}
+                <div id="limite-choix-sondage-modification" class="d-flex justify-content-between gap-2 small text-secondary mb-3">
+                    <span data-sondage-limite-target="validation" aria-live="polite"></span>
+                    <span class="text-nowrap" data-sondage-limite-target="compteur">0 / 6 choix</span>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2"><button class="btn btn-primary" type="submit" data-sondage-limite-target="bouton">Enregistrer</button><a class="btn btn-outline-secondary" href="{{ path('app_communaute') }}#fil">Annuler</a></div>
+    {{ form_end(formulaire, {render_rest: false}) }}
 </section>
 {% endblock %}

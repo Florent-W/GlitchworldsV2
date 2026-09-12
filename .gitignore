@@ -29,3 +29,5 @@
 !/public/favicon.png
 !/public/og-default.jpg
 !/public/ads.txt
+!/public/dist/
+!/public/dist/**

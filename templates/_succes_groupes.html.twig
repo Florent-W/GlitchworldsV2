@@ -8,6 +8,7 @@
     boutique: {label: 'Récompense', icon: 'gift-fill', description: 'Tes premiers échanges de points.'}
 } %}
 {% set colonnes = colonnes|default('col-md-6 col-xl-4') %}
+{% set tauxSucces = tauxSucces|default({}) %}
 
 {% if succes is empty %}
     <p class="text-secondary mb-0">Aucun succès n’est encore défini.</p>
@@ -27,7 +28,7 @@
                     {% for item in items %}
                         {% set acquis = item.code in codesAcquis %}
                         <div class="{{ colonnes }}">
-                            <article class="gw-panel p-4 h-100 gw-reward-tier--{{ item.palier }} {{ not acquis ? 'opacity-50' }}">
+                            <article class="gw-panel p-4 h-100 gw-achievement-card gw-reward-tier--{{ item.palier }}{{ acquis ? ' gw-achievement-card--unlocked' : ' gw-achievement-card--locked' }}">
                                 <div class="d-flex gap-3">
                                     <span class="gw-achievement"><i class="bi bi-{{ acquis ? item.icone : 'lock-fill' }}"></i></span>
                                     <div>
@@ -37,7 +38,10 @@
                                             {% if acquis %}<span class="badge text-bg-success">Débloqué</span>{% endif %}
                                         </div>
                                         <p class="text-secondary my-2">{{ item.description }}</p>
-                                        <strong class="gw-shop-card__price">+{{ item.points }} points</strong>
+                                        <div class="d-flex flex-wrap align-items-center gap-3">
+                                            <strong class="gw-shop-card__price">+{{ item.points }} points</strong>
+                                            <span class="gw-achievement-card__rate" title="Pourcentage des membres actifs ayant gagné au moins 1 XP et obtenu ce succès"><i class="bi bi-people-fill" aria-hidden="true"></i>{{ tauxSucces[item.id]|default(0)|number_format(1, ',', ' ') }} % des membres actifs</span>
+                                        </div>
                                     </div>
                                 </div>
                             </article>

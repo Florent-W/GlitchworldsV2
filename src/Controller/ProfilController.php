@@ -84,6 +84,7 @@ final class ProfilController extends AbstractController
             'succes' => $succesRepository->trouverTousParDifficulte(),
             'succesAcquis' => $succesAcquis,
             'codesAcquis' => array_map(static fn ($d) => $d->getSucces()?->getCode(), $succesAcquis),
+            'tauxSucces' => $deblocages->trouverTauxObtention(),
         ]);
     }
 

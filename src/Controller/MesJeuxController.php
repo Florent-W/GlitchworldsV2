@@ -39,6 +39,7 @@ final class MesJeuxController extends AbstractController
             'succes' => $succes->trouverTousParDifficulte(),
             'succesAcquis' => $acquis,
             'codesAcquis' => array_map(static fn ($d) => $d->getSucces()?->getCode(), $acquis),
+            'tauxSucces' => $deblocages->trouverTauxObtention(),
             'statuts' => StatutBibliotheque::cases(),
         ]);
     }

@@ -30,7 +30,11 @@
                 <span class="gw-community__avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
                 <div class="flex-grow-1">
                     {% if formulairePublication %}
-                        {{ form_start(formulairePublication) }}
+                        {{ form_start(formulairePublication, {attr: {
+                            'data-controller': 'sondage-limite',
+                            'data-sondage-limite-max-value': '6',
+                            'data-action': 'submit->sondage-limite#valider'
+                        }}) }}
                             {{ form_widget(formulairePublication._token) }}
                             {{ form_widget(formulairePublication.contenu, { attr: { class: 'form-control mb-2' } }) }}
                             <div class="d-flex flex-wrap gap-2 mb-2">
@@ -40,8 +44,18 @@
                             </div>
                             <div id="publication-image" class="collapse mb-2">{{ form_row(formulairePublication.imageFichier) }}</div>
                             <div id="publication-lien" class="collapse mb-2">{{ form_row(formulairePublication.lien) }}</div>
-                            <div id="publication-sondage" class="collapse mb-2"><div class="row g-2"><div class="col-md-6">{{ form_row(formulairePublication.questionSondage) }}</div><div class="col-md-6">{{ form_row(formulairePublication.optionsSondageTexte) }}</div></div></div>
-                            <div class="text-end"><button class="btn btn-sm btn-primary rounded-pill px-4" type="submit">Publier</button></div>
+                            <div id="publication-sondage" class="collapse mb-2"><div class="row g-2"><div class="col-md-6">{{ form_row(formulairePublication.questionSondage) }}</div><div class="col-md-6">
+                                {{ form_row(formulairePublication.optionsSondageTexte, {attr: {
+                                    'data-sondage-limite-target': 'champ',
+                                    'data-action': 'input->sondage-limite#verifier',
+                                    'aria-describedby': 'limite-choix-sondage'
+                                }}) }}
+                                <div id="limite-choix-sondage" class="d-flex justify-content-between gap-2 small text-secondary mt-n2 mb-2">
+                                    <span data-sondage-limite-target="validation" aria-live="polite"></span>
+                                    <span class="text-nowrap" data-sondage-limite-target="compteur">0 / 6 choix</span>
+                                </div>
+                            </div></div></div>
+                            <div class="text-end"><button class="btn btn-sm btn-primary rounded-pill px-4" type="submit" data-sondage-limite-target="bouton">Publier</button></div>
                         {{ form_end(formulairePublication, {render_rest: false}) }}
                     {% else %}
                         <p class="form-control text-secondary mb-2">Connecte-toi pour partager quelque chose avec la communauté.</p>
@@ -92,9 +106,9 @@
                                     <time class="small text-secondary ms-auto" datetime="{{ element.dateAvis|date('c') }}">{{ element.dateAvis|format_datetime('medium', 'short', locale='fr') }}</time>
                                 </div>
                             {% elseif activite.type == 'jeu' %}
-                                <span class="badge text-bg-primary-subtle text-primary">Nouvelle création</span><h2 class="h5 mt-2">{{ element.nom }}</h2><p>{{ element.description }}</p><a class="btn btn-sm btn-primary" href="{{ path('app_jeu_show', { slug: element.slug, id: element.id }) }}">Voir la fiche</a>
+                                <span class="badge text-bg-primary-subtle text-primary">Nouvelle création</span><h2 class="h5 mt-2">{{ element.nom }}</h2><p>{{ element.description|extrait(180) }}</p><a class="btn btn-sm btn-primary" href="{{ path('app_jeu_show', { slug: element.slug, id: element.id }) }}">Voir la fiche</a>
                             {% else %}
-                                <span class="badge text-bg-info-subtle text-info-emphasis">Actualité</span><h2 class="h5 mt-2">{{ element.titre }}</h2><p>{{ element.description }}</p><a class="btn btn-sm btn-primary" href="{{ path('app_actualite_voir', { slug: element.slug, id: element.id }) }}">Lire l'article</a>
+                                <span class="badge text-bg-info-subtle text-info-emphasis">Actualité</span><h2 class="h5 mt-2">{{ element.titre }}</h2><p>{{ element.description|extrait(180) }}</p><a class="btn btn-sm btn-primary" href="{{ path('app_actualite_voir', { slug: element.slug, id: element.id }) }}">Lire l'article</a>
                             {% endif %}
                         </div>
                     </article>
