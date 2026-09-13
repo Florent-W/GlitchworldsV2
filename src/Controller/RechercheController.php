@@ -6,6 +6,7 @@ use App\Repository\ActualiteRepository;
 use App\Repository\AvisRepository;
 use App\Repository\JeuRepository;
 use App\Repository\UtilisateurRepository;
+use App\Repository\ListeJeuxRepository;
 use App\Repository\CategorieJeuRepository;
 use App\Repository\PlateformeRepository;
 use App\Repository\LangueRepository;
@@ -83,11 +84,12 @@ final class RechercheController extends AbstractController
         JeuRepository $jeuRepository,
         ActualiteRepository $actualiteRepository,
         UtilisateurRepository $utilisateurRepository,
+        ListeJeuxRepository $listeJeuxRepository,
         Packages $assets,
     ): JsonResponse {
         $recherche = trim($request->query->getString('recherche'));
         $type = $request->query->getString('type');
-        if (!in_array($type, ['', 'jeu', 'actualite'], true)) {
+        if (!in_array($type, ['', 'jeu', 'actualite', 'liste'], true)) {
             $type = '';
         }
         $categorieActualiteValeur = $request->query->getString('categorie_actualite');
@@ -134,6 +136,19 @@ final class RechercheController extends AbstractController
                 'url' => $this->generateUrl('app_profil', ['id' => $membre->getId()]),
             ];
         }
+        $listes = in_array($type, ['', 'liste'], true)
+            ? $listeJeuxRepository->trouverPubliquesPaginees(1, 5, $recherche)
+            : ['listes' => [], 'total' => 0];
+        foreach ($listes['listes'] as $liste) {
+            $resultats[] = [
+                'type' => 'Liste',
+                'icone' => 'list-stars',
+                'titre' => $liste->getNom(),
+                'detail' => 'Par '.$liste->getUtilisateur()?->getPseudo().' · '.count($liste->getJeux()).' jeu(x)',
+                'miniature' => null,
+                'url' => $this->generateUrl('app_liste_publique', ['slug' => $liste->getSlug(), 'id' => $liste->getId()]),
+            ];
+        }
 
         $totaux = [];
         if (in_array($type, ['', 'jeu'], true)) {
@@ -144,6 +159,9 @@ final class RechercheController extends AbstractController
         }
         if ('' === $type) {
             $totaux['Membre'] = $utilisateurRepository->compterParPseudo($recherche);
+        }
+        if (in_array($type, ['', 'liste'], true)) {
+            $totaux['Liste'] = $listes['total'];
         }
 
         return $this->json([

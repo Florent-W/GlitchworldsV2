@@ -5,7 +5,9 @@
 
 {% block body %}
 <div class="gw-profile{% if membre.effetProfilEquipe %} gw-profile--{{ membre.effetProfilEquipe.slug }}{% endif %}{% if membre.cadreAvatarEquipe %} gw-profile--{{ membre.cadreAvatarEquipe.slug }}{% endif %}">
-    <header class="gw-profile__hero gw-panel overflow-hidden">
+    <div class="gw-profile__hero-wrap">
+        {% if membre.effetProfilEquipe %}<div class="gw-profile__effect-layer" aria-hidden="true">{% for index in 1..14 %}<span></span>{% endfor %}</div>{% endif %}
+        <header class="gw-profile__hero gw-panel overflow-hidden">
         {% if app.user == membre %}
             <div class="gw-profile__banner gw-profile__banner--editable" data-controller="avatar-profil"{% if membre.banniere starts with 'banniere.' %} style="background-image:url('{{ asset('uploads/utilisateurs/' ~ membre.id ~ '/' ~ membre.banniere) }}')"{% endif %}>
                 <form method="post" action="{{ path('app_compte_banniere') }}" enctype="multipart/form-data" data-avatar-profil-target="form">
@@ -101,7 +103,8 @@
                 {% endif %}
             </div>
         </div>
-    </header>
+        </header>
+    </div>
 
     {% set fichesVitrine = membre.fichesMisesEnAvant is not empty ? membre.fichesMisesEnAvant : (membre.ficheMiseEnAvant ? [membre.ficheMiseEnAvant] : []) %}
     {% for ficheVitrine in fichesVitrine %}
@@ -200,7 +203,7 @@
                                 {% set jeuxVisibles = liste.jeux|filter(jeu => jeu.statut.value == 'approuve') %}
                                 <article class="border rounded-4 p-3 p-md-4">
                                     <header class="mb-3">
-                                        <h3 class="h6 mb-1">{{ liste.nom }}</h3>
+                                        <h3 class="h6 mb-1">{% if liste.publique and liste.slug %}<a href="{{ path('app_liste_publique', {slug: liste.slug, id: liste.id}) }}">{{ liste.nom }}</a>{% else %}{{ liste.nom }}{% endif %}</h3>
                                         {% if liste.description %}<p class="text-secondary small mb-0">{{ liste.description }}</p>{% endif %}
                                         <p class="small text-secondary mb-0 mt-1">{{ jeuxVisibles|length }} jeu{{ jeuxVisibles|length > 1 ? 'x' : '' }}</p>
                                     </header>
@@ -241,7 +244,13 @@
                         {% for deblocage in succesAcquis|slice(0, 6) %}
                             {% set item = deblocage.succes %}
                             {% if item %}
-                                <span class="gw-achievement gw-reward-tier--{{ item.palier }}" title="{{ item.nom }} - {{ item.description }}"><i class="bi bi-{{ item.icone }}"></i></span>
+                                <span class="gw-achievement gw-achievement--tooltip gw-reward-tier--{{ item.palier }}" tabindex="0" aria-describedby="succes-tooltip-{{ item.id }}">
+                                    <i class="bi bi-{{ item.icone }}" aria-hidden="true"></i>
+                                    <span class="gw-achievement-tooltip" id="succes-tooltip-{{ item.id }}" role="tooltip">
+                                        <strong>{{ item.nom }}</strong>
+                                        <span>{{ item.description }}</span>
+                                    </span>
+                                </span>
                             {% endif %}
                         {% endfor %}
                     </div>

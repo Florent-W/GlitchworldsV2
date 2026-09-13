@@ -131,4 +131,13 @@
     {% endif %}
     {% if app.user and achats is not empty %}<section class="gw-panel p-4 mt-5"><h2 class="h4 mb-3"><i class="bi bi-collection-fill text-primary me-2"></i>Ma collection</h2><div class="d-flex flex-wrap gap-2">{% for achat in achats %}<span class="badge rounded-pill text-bg-{{ achat.article.couleur }}-subtle text-{{ achat.article.couleur }}-emphasis p-2"><i class="bi bi-{{ achat.article.icone }} me-1"></i>{{ achat.article.nom }}</span>{% endfor %}</div></section>{% endif %}
 </section>
+{% if articleAEquiper %}
+<div class="modal fade" tabindex="-1" aria-labelledby="achat-equiper-titre" aria-describedby="achat-equiper-description" data-controller="modal-auto">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content gw-panel">
+        <div class="modal-header"><h2 class="modal-title h5" id="achat-equiper-titre"><i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>Récompense débloquée</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button></div>
+        <div class="modal-body text-center py-4"><span class="gw-rewards-group__icon mb-3"><i class="bi bi-{{ articleAEquiper.icone }}" aria-hidden="true"></i></span><h3 class="h4">{{ articleAEquiper.nom }}</h3><p class="text-secondary mb-0" id="achat-equiper-description">Veux-tu équiper cet élément sur ton profil maintenant&nbsp;?</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Plus tard</button><form method="post" action="{{ path('app_boutique_equiper', {id: articleAEquiper.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('equiper-article-' ~ articleAEquiper.id) }}"><button class="btn btn-primary"><i class="bi bi-person-badge me-1" aria-hidden="true"></i>Équiper maintenant</button></form></div>
+    </div></div>
+</div>
+{% endif %}
 {% endblock %}

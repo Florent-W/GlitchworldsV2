@@ -9,6 +9,7 @@ use App\Form\ActualitePropositionType;
 use App\Repository\ActualiteRepository;
 use App\Security\PropositionActualiteVoter;
 use App\Service\ActualiteImageUploader;
+use App\Service\CentreNotifications;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -27,6 +28,7 @@ final class PropositionActualiteController extends AbstractController
         ActualiteRepository $actualiteRepository,
         ActualiteImageUploader $imageUploader,
         EntityManagerInterface $entityManager,
+        CentreNotifications $notifications,
     ): Response {
         $utilisateur = $this->getUser();
         if (!$utilisateur instanceof Utilisateur) {
@@ -51,6 +53,10 @@ final class PropositionActualiteController extends AbstractController
             $entityManager->persist($actualite);
             $entityManager->flush();
             $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
+            if ($actualite->getStatut() === StatutActualite::Publiee) {
+                $this->notifierMembresSuivantLesJeux($actualite, $utilisateur, $notifications);
+                $entityManager->flush();
+            }
             $this->addFlash('success', $enBrouillon
                 ? 'Ton brouillon a été enregistré. Tu pourras l’envoyer pour validation quand tu seras prêt.'
                 : ($estAdministrateur ? 'L’actualité a été publiée.' : 'Ton actualité a été envoyée pour validation.'));
@@ -74,10 +80,12 @@ final class PropositionActualiteController extends AbstractController
         Request $request,
         ActualiteImageUploader $imageUploader,
         EntityManagerInterface $entityManager,
+        CentreNotifications $notifications,
     ): Response {
         $this->denyAccessUnlessGranted(PropositionActualiteVoter::MODIFIER, $actualite);
 
         $estAdministrateur = $this->isGranted('ROLE_ADMIN');
+        $etaitPubliee = $actualite->getStatut() === StatutActualite::Publiee;
         $enAttente = $actualite->getStatut() === StatutActualite::EnAttente;
         $formulaire = $this->createForm(ActualitePropositionType::class, $actualite, [
             'bouton_libelle' => $estAdministrateur
@@ -100,6 +108,11 @@ final class PropositionActualiteController extends AbstractController
 
             $this->enregistrerHabillages($actualite, $formulaire, $imageUploader, $entityManager);
             $entityManager->flush();
+            if (!$etaitPubliee && $actualite->getStatut() === StatutActualite::Publiee) {
+                $auteurModification = $this->getUser();
+                $this->notifierMembresSuivantLesJeux($actualite, $auteurModification instanceof Utilisateur ? $auteurModification : null, $notifications);
+                $entityManager->flush();
+            }
             $this->addFlash('success', $actualite->getStatut() === StatutActualite::Brouillon
                 ? 'Ton brouillon a été enregistré.'
                 : ($actualite->getStatut() === StatutActualite::EnAttente
@@ -117,6 +130,26 @@ final class PropositionActualiteController extends AbstractController
         }
 
         return $this->render('actualite/proposer.html.twig', ['formulaire' => $formulaire, 'modification' => true]);
+    }
+
+    private function notifierMembresSuivantLesJeux(Actualite $actualite, ?Utilisateur $auteur, CentreNotifications $notifications): void
+    {
+        $membresNotifies = [];
+        foreach ($actualite->getJeux() as $jeu) {
+            foreach ($jeu->getSuiviPar() as $membre) {
+                if ($membre === $auteur || isset($membresNotifies[$membre->getId()])) {
+                    continue;
+                }
+                $membresNotifies[$membre->getId()] = true;
+                $notifications->ajouter(
+                    $membre,
+                    'Nouvelle actualité sur un jeu suivi',
+                    sprintf('%s concerne un jeu que vous suivez.', $actualite->getTitre()),
+                    'newspaper',
+                    $this->generateUrl('app_actualite_voir', ['slug' => $actualite->getSlug(), 'id' => $actualite->getId()]),
+                );
+            }
+        }
     }
 
     private function enregistrerHabillages(

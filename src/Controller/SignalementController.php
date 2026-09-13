@@ -19,6 +19,8 @@ use App\Repository\AvisRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\SignalementRepository;
+use App\Enum\MotifSignalement;
+use App\Enum\StatutJeu;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +29,33 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class SignalementController extends AbstractController
 {
+    #[Route('/jeu/{id}/signaler-lien-manquant', name: 'app_jeu_signaler_lien_manquant', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function signalerLienManquant(Jeu $jeu, Request $request, SignalementRepository $signalements, EntityManagerInterface $entityManager): Response
+    {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) { throw $this->createAccessDeniedException(); }
+        if ($jeu->getStatut() !== StatutJeu::Approuve) { throw $this->createNotFoundException('Ce jeu n’existe pas.'); }
+        if (!$this->isCsrfTokenValid('signaler-lien-manquant-'.$jeu->getId(), $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+        $existant = $signalements->findOneBy([
+            'signalePar' => $utilisateur,
+            'jeu' => $jeu,
+            'motif' => MotifSignalement::LienManquant,
+            'statut' => \App\Enum\StatutSignalement::EnAttente,
+        ]);
+        if ($existant) {
+            $this->addFlash('info', 'Vous avez déjà signalé un lien manquant sur cette fiche.');
+        } else {
+            $signalement = (new Signalement())->setSignalePar($utilisateur)->setJeu($jeu)->setMotif(MotifSignalement::LienManquant);
+            $entityManager->persist($signalement);
+            $entityManager->flush();
+            $this->addFlash('success', 'Merci. Le lien manquant a été signalé à la modération.');
+        }
+
+        return $this->redirectToRoute('app_jeu_show', ['slug' => $jeu->getSlug(), 'id' => $jeu->getId()]);
+    }
+
     #[Route('/signaler/{type}/{id}', name: 'app_signaler', requirements: ['type' => 'jeu|commentaire-jeu|commentaire-actualite|publication|profil|avis|message', 'id' => '\d+'])]
     public function signaler(
         string $type,

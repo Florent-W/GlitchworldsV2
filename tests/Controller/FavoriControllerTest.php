@@ -39,7 +39,7 @@ final class FavoriControllerTest extends WebTestCase
 
         $client->loginUser($utilisateur);
         $crawler = $client->request('GET', sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeuId));
-        $client->submit($crawler->selectButton('Ajouter aux favoris')->form());
+        $client->submit($crawler->selectButton('Favoris')->form());
         self::assertResponseRedirects(sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeuId));
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
@@ -51,7 +51,7 @@ final class FavoriControllerTest extends WebTestCase
         self::assertSelectorTextContains('h2', 'Jeu favori de test');
 
         $crawler = $client->request('GET', sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeuId));
-        $client->submit($crawler->selectButton('Retirer des favoris')->form());
+        $client->submit($crawler->selectButton('Favoris')->form());
         self::assertResponseRedirects(sprintf('/jeu/%s-%d', $jeu->getSlug(), $jeuId));
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);

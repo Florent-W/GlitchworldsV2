@@ -303,7 +303,8 @@ final class ModerationController extends AbstractController
     public function signalements(Request $request, SignalementRepository $repository): Response
     {
         $statut = ($valeur = $request->query->getString('statut')) !== '' ? StatutSignalement::tryFrom($valeur) : StatutSignalement::EnAttente;
-        return $this->render('moderation/signalements.html.twig', ['signalements' => $repository->trouverPourModeration($statut), 'statutSelectionne' => $statut, 'statuts' => StatutSignalement::cases()]);
+        $liensUniquement = $request->query->getBoolean('liens');
+        return $this->render('moderation/signalements.html.twig', ['signalements' => $repository->trouverPourModeration($statut, $liensUniquement), 'statutSelectionne' => $statut, 'statuts' => StatutSignalement::cases(), 'liensUniquement' => $liensUniquement]);
     }
 
     #[Route('/signalements/{id}/{decision}', name: 'signalement_decider', requirements: ['decision' => 'traiter|rejeter|supprimer'], methods: ['POST'])]

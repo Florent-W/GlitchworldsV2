@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ liste.nom }} par {{ liste.utilisateur.pseudo }} - Glitchworlds{% endblock %}
+{% block meta_description %}{{ (liste.description ?: 'Découvrez la sélection de jeux de ' ~ liste.utilisateur.pseudo ~ ' sur Glitchworlds.')|extrait(155) }}{% endblock %}
+{% block canonical %}{{ url('app_liste_publique', {slug: liste.slug, id: liste.id}) }}{% endblock %}
+
+{% block body %}
+<main class="container-fluid py-4">
+    <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li><li class="breadcrumb-item"><a href="{{ path('app_communaute') }}">Communauté</a></li><li class="breadcrumb-item active" aria-current="page">{{ liste.nom }}</li></ol></nav>
+    <header class="gw-page-heading mb-4">
+        <div><span class="gw-eyebrow"><i class="bi bi-list-ol"></i> Liste publique</span><h1 class="display-5 fw-bold mb-2">{{ liste.nom }}</h1>{% if liste.description %}<p class="lead text-secondary mb-2">{{ liste.description }}</p>{% endif %}<p class="mb-0">Une sélection de <a href="{{ path('app_profil', {id: liste.utilisateur.id}) }}">{{ liste.utilisateur.pseudo }}</a> · {{ jeux|length }} jeu{{ jeux|length > 1 ? 'x' : '' }}</p></div>
+    </header>
+    <section class="gw-panel p-3 p-md-4" aria-label="Jeux de la liste">
+        <div class="gw-custom-list">
+            {% for jeu in jeux %}
+                <article class="gw-custom-list__game">
+                    <span class="gw-custom-list__rank" aria-label="Position {{ loop.index }}"><span class="gw-custom-list__rank-value">{{ loop.index }}</span></span>
+                    <a class="gw-custom-list__visual" href="{{ path('app_jeu_show', {id: jeu.id, slug: jeu.slug}) }}" aria-label="Voir {{ jeu.nom }}">{% if jeu.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="" loading="lazy">{% else %}<i class="bi bi-controller"></i>{% endif %}</a>
+                    <div class="flex-grow-1 min-w-0"><h2 class="h5 mb-1"><a class="text-decoration-none" href="{{ path('app_jeu_show', {id: jeu.id, slug: jeu.slug}) }}">{{ jeu.nom }}</a></h2>{% if jeu.description %}<p class="text-secondary small mb-1">{{ jeu.description|extrait(130) }}</p>{% endif %}{% include 'jeu/_note_badge.html.twig' with {note: notesJeux[jeu.id]|default(null)} only %}</div>
+                </article>
+            {% else %}
+                <div class="text-center text-secondary py-5"><i class="bi bi-list fs-1 d-block mb-2"></i>Cette liste est encore vide.</div>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+<script type="application/ld+json">{{ {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: liste.nom,
+    description: liste.description,
+    numberOfItems: jeux|length,
+    itemListElement: jeux|map((jeu, index) => {'@type': 'ListItem', position: index + 1, url: url('app_jeu_show', {slug: jeu.slug, id: jeu.id}), name: jeu.nom})
+}|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}</script>
+{% endblock %}

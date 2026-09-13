@@ -16,6 +16,11 @@
         <priority>0.8</priority>
     </url>
     <url>
+        <loc>{{ url('app_listes_publiques') }}</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
         <loc>{{ url('app_confidentialite') }}</loc>
         <changefreq>monthly</changefreq>
         <priority>0.3</priority>
@@ -49,6 +54,14 @@
             <lastmod>{{ actualite.publieeLe|date('Y-m-d') }}</lastmod>
             <changefreq>monthly</changefreq>
             <priority>0.7</priority>
+        </url>
+    {% endfor %}
+    {% for liste in listesPubliques %}
+        <url>
+            <loc>{{ url('app_liste_publique', { slug: liste.slug, id: liste.id }) }}</loc>
+            <lastmod>{{ liste.modifieLe|date('Y-m-d') }}</lastmod>
+            <changefreq>weekly</changefreq>
+            <priority>0.6</priority>
         </url>
     {% endfor %}
 </urlset>

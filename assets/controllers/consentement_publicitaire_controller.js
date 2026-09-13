@@ -22,7 +22,9 @@ export default class extends Controller {
         event.preventDefault();
 
         if (typeof window.googlefc?.showRevocationMessage === 'function') {
-            window.googlefc.showRevocationMessage();
+            // Google recommande de déclencher la révocation via sa file :
+            // l'appel reste ainsi synchronisé avec la CMP chargée en asynchrone.
+            window.googlefc.callbackQueue.push(window.googlefc.showRevocationMessage);
         }
     }
 }

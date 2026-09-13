@@ -41,7 +41,11 @@ final class ProfilController extends AbstractController
             $section = 'apropos';
         }
 
+        $utilisateur = $this->getUser();
         $listes = $listesJeux->trouverPour($membre);
+        if (!$utilisateur instanceof Utilisateur || $utilisateur !== $membre) {
+            $listes = array_values(array_filter($listes, static fn ($liste): bool => $liste->isPublique()));
+        }
         $jeuxDesListes = [];
         foreach ($listes as $liste) {
             foreach ($liste->getJeux() as $jeu) {
@@ -62,7 +66,6 @@ final class ProfilController extends AbstractController
             : ['actualites' => [], 'total' => $nombreActualitesPubliees, 'page' => 1, 'pages' => 1, 'parPage' => 12];
 
         $formulaireBiographie = null;
-        $utilisateur = $this->getUser();
         if ($utilisateur instanceof Utilisateur && $utilisateur === $membre) {
             $formulaireBiographie = $this->createForm(BiographieProfilType::class, $membre)->createView();
         }

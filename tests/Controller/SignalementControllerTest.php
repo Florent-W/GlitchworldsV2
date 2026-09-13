@@ -7,11 +7,49 @@ use App\Entity\Signalement;
 use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
 use App\Enum\StatutSignalement;
+use App\Enum\MotifSignalement;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class SignalementControllerTest extends WebTestCase
 {
+    public function testUnMembrePeutSignalerUnLienManquantSansCreerDeDoublon(): void
+    {
+        $client = self::createClient();
+        $suffixe = bin2hex(random_bytes(5));
+        $membre = (new Utilisateur())->setPseudo('Lien'.$suffixe)->setEmail('lien-'.$suffixe.'@test.local');
+        $moderateur = (new Utilisateur())->setPseudo('ModoLien'.$suffixe)->setEmail('modo-lien-'.$suffixe.'@test.local')->setRoles(['ROLE_MODERATEUR']);
+        $jeu = (new Jeu())->setNom('Lien manquant '.$suffixe)->setSlug('lien-manquant-'.$suffixe)->setDescription('Fiche avec un lien à contrôler.')->setStatut(StatutJeu::Approuve);
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        foreach ([$membre, $moderateur, $jeu] as $entite) { $entityManager->persist($entite); }
+        $entityManager->flush();
+        $ids = ['membre' => $membre->getId(), 'moderateur' => $moderateur->getId(), 'jeu' => $jeu->getId()];
+
+        $client->loginUser($membre);
+        $crawler = $client->request('GET', '/jeu/'.$jeu->getSlug().'-'.$jeu->getId());
+        $client->submit($crawler->selectButton('Lien manquant')->form());
+        self::assertResponseRedirects('/jeu/'.$jeu->getSlug().'-'.$jeu->getId());
+        $client->followRedirect();
+        $crawler = $client->getCrawler();
+        $client->submit($crawler->selectButton('Lien manquant')->form());
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $signalements = $entityManager->getRepository(Signalement::class)->findBy(['jeu' => $jeu, 'motif' => MotifSignalement::LienManquant]);
+        self::assertCount(1, $signalements);
+        $signalementId = $signalements[0]->getId();
+
+        $client->loginUser($moderateur);
+        $client->request('GET', '/moderation/signalements?liens=1');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Lien manquant '.$suffixe);
+
+        $entityManager->remove($entityManager->find(Signalement::class, $signalementId));
+        $entityManager->remove($entityManager->find(Jeu::class, $ids['jeu']));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $ids['membre']));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $ids['moderateur']));
+        $entityManager->flush();
+    }
+
     public function testUnMembrePeutSignalerUnJeuEtUnModerateurLeTraiter(): void
     {
         $client = self::createClient();

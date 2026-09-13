@@ -30,6 +30,14 @@ final class MessagerieControllerTest extends WebTestCase
 
         $client->loginUser($alice);
         $crawler = $client->request('GET', '/messages/nouveau');
+        self::assertSelectorExists('[data-controller="destinataire"]');
+        self::assertSelectorExists('input[type="hidden"][name="nouvelle_conversation[destinataire]"]');
+        self::assertSelectorNotExists('select[name="nouvelle_conversation[destinataire]"]');
+        $client->request('GET', '/messages/recherche-membres?recherche=Bob'.$suffixe, server: ['HTTP_ACCEPT' => 'application/json']);
+        self::assertResponseIsSuccessful();
+        $resultats = json_decode((string) $client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        self::assertSame($bobId, $resultats['resultats'][0]['id'] ?? null);
+        $crawler = $client->request('GET', '/messages/nouveau');
         $client->submit($crawler->selectButton('Envoyer')->form([
             'nouvelle_conversation[destinataire]' => $bobId,
             'nouvelle_conversation[contenu]' => 'Bonjour Bob '.$suffixe,

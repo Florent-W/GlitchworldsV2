@@ -1,4 +1,25 @@
 {% extends 'base.html.twig' %}
 {% block title %}Nouveau message - Glitchworlds{% endblock %}
-{% block robots_meta %}noindex,nofollow{% endblock %}
-{% block body %}<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width:760px"><nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_messages') }}">Messagerie</a></li><li class="breadcrumb-item active">Nouveau message</li></ol></nav><h1 class="h2 mb-4">Nouveau message</h1>{{ form_start(formulaire) }}{{ form_row(formulaire.destinataire) }}{{ form_row(formulaire.contenu) }}{{ form_row(formulaire.fichier) }}<div class="d-flex gap-2"><button class="btn btn-primary" type="submit"><i class="bi bi-send-fill me-1"></i>Envoyer</button><a class="btn btn-outline-secondary" href="{{ path('app_messages') }}">Annuler</a></div>{{ form_end(formulaire) }}</section>{% endblock %}
+
+{% block body %}
+<section class="gw-panel p-4 p-md-5 mx-auto" style="max-width:760px">
+    <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_messages') }}">Messagerie</a></li><li class="breadcrumb-item active">Nouveau message</li></ol></nav>
+    <h1 class="h2 mb-4">Nouveau message</h1>
+    {{ form_start(formulaire) }}
+        <div class="mb-3 gw-member-search" data-controller="destinataire" data-destinataire-url-value="{{ path('app_messages_recherche_membres') }}">
+            <label class="form-label" for="recherche-destinataire">Destinataire</label>
+            {{ form_widget(formulaire.destinataire, {attr: {'data-destinataire-target': 'identifiant'}}) }}
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+                <input id="recherche-destinataire" class="form-control" type="search" value="{{ destinataireSelectionne ? destinataireSelectionne.pseudo : '' }}" placeholder="Rechercher un membre…" autocomplete="off" aria-autocomplete="list" aria-expanded="false" data-destinataire-target="recherche" data-action="input->destinataire#rechercher focus->destinataire#rechercher">
+            </div>
+            <div class="gw-member-search__results" role="listbox" data-destinataire-target="resultats" hidden></div>
+            {{ form_errors(formulaire.destinataire) }}
+            <div class="form-text">Saisissez au moins 2 caractères puis sélectionnez un membre.</div>
+        </div>
+        {{ form_row(formulaire.contenu) }}
+        {{ form_row(formulaire.fichier) }}
+        <div class="d-flex gap-2"><button class="btn btn-primary" type="submit"><i class="bi bi-send-fill me-1"></i>Envoyer</button><a class="btn btn-outline-secondary" href="{{ path('app_messages') }}">Annuler</a></div>
+    {{ form_end(formulaire) }}
+</section>
+{% endblock %}

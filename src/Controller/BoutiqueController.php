@@ -24,13 +24,21 @@ final class BoutiqueController extends AbstractController
     use AnnonceSuccesTrait;
 
     #[Route('/boutique', name: 'app_boutique', methods: ['GET'])]
-    public function index(ArticleBoutiqueRepository $articles, AchatBoutiqueRepository $achats, JeuRepository $jeux): Response
+    public function index(Request $request, ArticleBoutiqueRepository $articles, AchatBoutiqueRepository $achats, JeuRepository $jeux): Response
     {
         $utilisateur = $this->getUser();
         $possessions = $utilisateur instanceof Utilisateur ? $achats->trouverPourUtilisateur($utilisateur) : [];
         $quantitesArticles = [];
         foreach ($possessions as $achat) { if ($achat->getArticle()) { $quantitesArticles[$achat->getArticle()->getId()] = $achat->getQuantite(); } }
-        return $this->render('boutique/index.html.twig', ['articles' => $articles->trouverActifs(), 'achats' => $possessions, 'articlesPossedes' => array_map(static fn (AchatBoutique $achat) => $achat->getArticle()?->getId(), $possessions), 'quantitesArticles' => $quantitesArticles, 'fichesCreees' => $utilisateur instanceof Utilisateur ? $jeux->findBy(['createur' => $utilisateur, 'statut' => StatutJeu::Approuve], ['nom' => 'ASC']) : []]);
+        $articleAEquiper = null;
+        $articleIds = $request->getSession()->getFlashBag()->get('article_a_equiper');
+        if ($articleIds !== [] && $utilisateur instanceof Utilisateur) {
+            $candidat = $articles->find((int) $articleIds[0]);
+            if ($candidat instanceof ArticleBoutique && in_array($candidat->getType(), [TypeArticleBoutique::Titre, TypeArticleBoutique::Effet, TypeArticleBoutique::Cadre], true)) {
+                $articleAEquiper = $candidat;
+            }
+        }
+        return $this->render('boutique/index.html.twig', ['articles' => $articles->trouverActifs(), 'achats' => $possessions, 'articlesPossedes' => array_map(static fn (AchatBoutique $achat) => $achat->getArticle()?->getId(), $possessions), 'quantitesArticles' => $quantitesArticles, 'fichesCreees' => $utilisateur instanceof Utilisateur ? $jeux->findBy(['createur' => $utilisateur, 'statut' => StatutJeu::Approuve], ['nom' => 'ASC']) : [], 'articleAEquiper' => $articleAEquiper]);
     }
 
     #[Route('/boutique/{id}/acheter', name: 'app_boutique_acheter', methods: ['POST'])]
@@ -43,6 +51,9 @@ final class BoutiqueController extends AbstractController
             $boutique->acheter($utilisateur, $article);
             $this->verifierEtAnnoncerSucces($utilisateur, $gestionSucces);
             $this->addFlash('success', 'Récompense débloquée : '.$article->getNom().' rejoint ta collection.');
+            if (in_array($article->getType(), [TypeArticleBoutique::Titre, TypeArticleBoutique::Effet, TypeArticleBoutique::Cadre], true)) {
+                $this->addFlash('article_a_equiper', (string) $article->getId());
+            }
         }
         catch (\DomainException $exception) { $this->addFlash('danger', $exception->getMessage()); }
         return $this->redirectToRoute('app_boutique');

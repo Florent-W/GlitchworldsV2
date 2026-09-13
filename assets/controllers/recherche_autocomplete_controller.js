@@ -99,7 +99,7 @@ export default class extends Controller {
         }
         const cumul = donnees.total ?? resultats.length;
         const complet = document.createElement('a');
-        complet.href = `${this.formulaireTarget.action}?recherche=${encodeURIComponent(recherche)}`;
+        complet.href = this.urlRechercheComplete(recherche);
         complet.className = 'gw-autocomplete__all';
         complet.textContent = cumul > 0
             ? `Voir ${cumul > 1 ? `les ${cumul} résultats` : 'le résultat'} pour « ${recherche} »`
@@ -135,7 +135,7 @@ export default class extends Controller {
         } else {
             recentes.forEach((terme, index) => {
                 const lien = document.createElement('a');
-                lien.href = `${this.formulaireTarget.action}?recherche=${encodeURIComponent(terme)}`;
+                lien.href = this.urlRechercheComplete(terme);
                 lien.className = 'gw-autocomplete__item';
                 lien.id = `gw-search-option-${index}`;
                 lien.setAttribute('role', 'option');
@@ -159,7 +159,15 @@ export default class extends Controller {
     }
 
     libellerCategorie(type) {
-        return { 'Jeu': 'Jeux', 'Actualité': 'Actualités', 'Membre': 'Membres' }[type] ?? type;
+        return { 'Jeu': 'Jeux', 'Actualité': 'Actualités', 'Membre': 'Membres', 'Liste': 'Listes' }[type] ?? type;
+    }
+
+    urlRechercheComplete(recherche) {
+        const url = new URL(this.formulaireTarget.action, window.location.origin);
+        const nom = this.champTarget.name || 'recherche';
+        url.searchParams.set(nom, recherche);
+        this.formulaireTarget.querySelectorAll('input[type="hidden"][name]').forEach(champ => url.searchParams.set(champ.name, champ.value));
+        return `${url.pathname}${url.search}`;
     }
 
     lireRecentes() {
