@@ -55,15 +55,20 @@ final class MessagerieController extends AbstractController
         $utilisateur = $this->utilisateur();
         $donnees = [];
         $destinataireId = $request->query->getInt('destinataire');
+        $destinataireSelectionne = null;
         if ($destinataireId > 0) {
-            $donnees['destinataire'] = $utilisateurRepository->find($destinataireId);
+            $destinataireSelectionne = $utilisateurRepository->find($destinataireId);
+            if ($destinataireSelectionne instanceof Utilisateur && $destinataireSelectionne !== $utilisateur && !$utilisateur->interactionBloqueeAvec($destinataireSelectionne)) {
+                $donnees['destinataire'] = (string) $destinataireSelectionne->getId();
+            } else {
+                $destinataireSelectionne = null;
+            }
         }
-        $formulaire = $this->createForm(NouvelleConversationType::class, $donnees, [
-            'destinataires' => $utilisateurRepository->trouverDestinatairesDisponibles($utilisateur),
-        ]);
+        $formulaire = $this->createForm(NouvelleConversationType::class, $donnees);
         $formulaire->handleRequest($request);
         if ($formulaire->isSubmitted() && $formulaire->isValid()) {
-            $destinataire = $formulaire->get('destinataire')->getData();
+            $destinataire = $utilisateurRepository->find((int) $formulaire->get('destinataire')->getData());
+            $destinataireSelectionne = $destinataire;
             if (!$destinataire instanceof Utilisateur || $destinataire === $utilisateur) {
                 $this->addFlash('danger', 'Choisis un autre membre comme destinataire.');
             } elseif ($utilisateur->interactionBloqueeAvec($destinataire)) {
@@ -85,7 +90,21 @@ final class MessagerieController extends AbstractController
             }
         }
 
-        return $this->render('messagerie/nouveau.html.twig', ['formulaire' => $formulaire]);
+        return $this->render('messagerie/nouveau.html.twig', ['formulaire' => $formulaire, 'destinataireSelectionne' => $destinataireSelectionne]);
+    }
+
+    #[Route('/recherche-membres', name: 'app_messages_recherche_membres', methods: ['GET'])]
+    public function rechercherMembres(Request $request, UtilisateurRepository $utilisateurRepository): Response
+    {
+        $recherche = trim($request->query->getString('recherche'));
+        if (mb_strlen($recherche) < 2) {
+            return $this->json(['resultats' => []]);
+        }
+
+        return $this->json(['resultats' => array_map(static fn (Utilisateur $membre): array => [
+            'id' => $membre->getId(),
+            'pseudo' => $membre->getPseudo(),
+        ], $utilisateurRepository->rechercherDestinatairesDisponibles($this->utilisateur(), $recherche))]);
     }
 
     #[Route('/{id}', name: 'app_messages_voir')]

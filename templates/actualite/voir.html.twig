@@ -38,6 +38,7 @@
             sizes: '(max-width: 980px) 100vw, 980px'
         } only %}
     {% endif %}
+    {{ include('_publicite_adsense.html.twig', {slot: '4494542924'}) }}
     <hr>
     <div class="gw-article-content">{{ actualite.contenu|bbcode }}</div>
     {% include '_auteur_fiche.html.twig' with { auteur: actualite.auteur } only %}

@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+{% block title %}Listes de jeux de la communauté - Glitchworlds{% endblock %}
+{% block meta_description %}Découvrez les sélections de jeux partagées par la communauté Glitchworlds : ROM hacks, fangames, mods et jeux à découvrir.{% endblock %}
+{% block canonical %}{{ url('app_listes_publiques', pagination.page > 1 ? {page: pagination.page} : {}) }}{% endblock %}
+
+{% block body %}
+<main class="container-fluid py-4">
+    <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li><li class="breadcrumb-item"><a href="{{ path('app_communaute') }}">Communauté</a></li><li class="breadcrumb-item active" aria-current="page">Listes publiques</li></ol></nav>
+    <header class="gw-page-heading mb-4">
+        <div><span class="gw-eyebrow"><i class="bi bi-list-stars"></i> Sélections de la communauté</span><h1 class="display-5 fw-bold mb-2">Listes publiques</h1><p class="text-secondary mb-0">Découvrez les jeux recommandés et classés par les membres de Glitchworlds.</p></div>
+        {% if app.user %}<a class="btn btn-primary" href="{{ path('app_mes_jeux', {onglet: 'listes', _fragment: 'listes'}) }}"><i class="bi bi-plus-lg"></i> Créer ma liste</a>{% endif %}
+    </header>
+
+    <form class="gw-search-box gw-list-search mb-4" method="get" action="{{ path('app_listes_publiques') }}" data-controller="recherche-autocomplete" data-recherche-autocomplete-url-value="{{ path('app_recherche_autocompletion', {type: 'liste'}) }}" data-recherche-autocomplete-target="formulaire">
+        <label class="visually-hidden" for="recherche-listes">Rechercher une liste</label>
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input class="form-control" id="recherche-listes" type="search" name="q" value="{{ recherche }}" maxlength="80" placeholder="Nom d’une liste, membre ou jeu…" autocomplete="off" aria-autocomplete="list" aria-controls="listes-recherche-resultats" aria-expanded="false" data-recherche-autocomplete-target="champ" data-action="input->recherche-autocomplete#rechercher keydown->recherche-autocomplete#naviguer focus->recherche-autocomplete#rechercher">
+        <div class="d-flex gap-2">{% if recherche %}<a class="btn btn-outline-secondary" href="{{ path('app_listes_publiques') }}" aria-label="Effacer la recherche"><i class="bi bi-x-lg"></i></a>{% endif %}<button class="btn btn-gw" type="submit">Rechercher</button></div>
+        <div id="listes-recherche-resultats" class="gw-autocomplete d-none" role="listbox" data-recherche-autocomplete-target="resultats"></div>
+    </form>
+
+    <div class="row g-4">
+        {% for liste in pagination.listes %}
+            {% set jeuxVisibles = liste.jeux|filter(jeu => jeu.statut.value == 'approuve') %}
+            <div class="col-md-6 col-xl-4">
+                <article class="gw-panel p-4 h-100 d-flex flex-column">
+                    <div class="d-flex align-items-start justify-content-between gap-3 mb-2"><div><h2 class="h5 mb-1"><a class="text-decoration-none stretched-link" href="{{ path('app_liste_publique', {slug: liste.slug, id: liste.id}) }}">{{ liste.nom }}</a></h2><a class="small text-secondary position-relative z-2" href="{{ path('app_profil', {id: liste.utilisateur.id}) }}">par {{ liste.utilisateur.pseudo }}</a></div><span class="badge text-bg-primary">{{ jeuxVisibles|length }} jeu{{ jeuxVisibles|length > 1 ? 'x' : '' }}</span></div>
+                    {% if liste.description %}<p class="text-secondary small">{{ liste.description|extrait(140) }}</p>{% endif %}
+                    <div class="d-flex gap-2 mt-auto" aria-label="Aperçu des jeux">
+                        {% for jeu in jeuxVisibles|slice(0, 4) %}<span class="gw-custom-list__visual" title="{{ jeu.nom }}">{% if jeu.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ jeu.id ~ '/' ~ jeu.miniature) }}" alt="{{ jeu.nom }}" loading="lazy">{% else %}<i class="bi bi-controller"></i>{% endif %}</span>{% else %}<span class="small text-secondary">Liste vide</span>{% endfor %}
+                    </div>
+                </article>
+            </div>
+        {% else %}
+            <div class="col-12"><div class="gw-panel p-5 text-center"><i class="bi bi-list-stars display-4 text-primary"></i><h2 class="h4 mt-3">{{ recherche ? 'Aucun résultat' : 'Aucune liste publique' }}</h2><p class="text-secondary mb-0">{{ recherche ? 'Essayez avec un autre nom de liste, membre ou jeu.' : 'Les premières sélections de la communauté apparaîtront ici.' }}</p></div></div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.pages > 1 %}<nav class="mt-4" aria-label="Pagination des listes publiques"><ul class="pagination justify-content-center"><li class="page-item{{ pagination.page == 1 ? ' disabled' : '' }}"><a class="page-link" href="{{ path('app_listes_publiques', {page: pagination.page - 1, q: recherche}) }}">Précédent</a></li>{% for numero in 1..pagination.pages %}<li class="page-item{{ numero == pagination.page ? ' active' : '' }}"><a class="page-link" href="{{ path('app_listes_publiques', {page: numero, q: recherche}) }}"{{ numero == pagination.page ? ' aria-current="page"' : '' }}>{{ numero }}</a></li>{% endfor %}<li class="page-item{{ pagination.page == pagination.pages ? ' disabled' : '' }}"><a class="page-link" href="{{ path('app_listes_publiques', {page: pagination.page + 1, q: recherche}) }}">Suivant</a></li></ul></nav>{% endif %}
+</main>
+{% endblock %}

@@ -113,7 +113,9 @@ final class ProfilControllerTest extends WebTestCase
         $liste = (new \App\Entity\ListeJeux())
             ->setUtilisateur($auteur)
             ->setNom('Fangames RPG')
-            ->setDescription('Mes recommandations');
+            ->setDescription('Mes recommandations')
+            ->setSlug('fangames-rpg')
+            ->setPublique(true);
         $liste->ajouterJeu($jeu);
 
         $entityManager->persist($auteur);

@@ -9,6 +9,7 @@ use App\Form\JeuPropositionType;
 use App\Repository\JeuRepository;
 use App\Security\PropositionJeuVoter;
 use App\Service\JeuGalerieUploader;
+use App\Service\CentreNotifications;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -68,7 +69,7 @@ final class PropositionJeuController extends AbstractController
     }
 
     #[Route('/jeu/proposition/{id}/modifier', name: 'app_jeu_proposition_modifier')]
-    public function modifier(Jeu $jeu, Request $request, EntityManagerInterface $entityManager, JeuGalerieUploader $galerieUploader): Response
+    public function modifier(Jeu $jeu, Request $request, EntityManagerInterface $entityManager, JeuGalerieUploader $galerieUploader, CentreNotifications $notifications): Response
     {
         $this->denyAccessUnlessGranted(PropositionJeuVoter::MODIFIER, $jeu);
 
@@ -86,6 +87,21 @@ final class PropositionJeuController extends AbstractController
             }
             $this->enregistrerHabillages($jeu, $formulaire, $galerieUploader);
             $entityManager->flush();
+            if ($jeu->getStatut() === StatutJeu::Approuve) {
+                $auteurModification = $this->getUser();
+                foreach ($jeu->getSuiviPar() as $membre) {
+                    if ($membre !== $auteurModification) {
+                        $notifications->ajouter(
+                            $membre,
+                            'Jeu mis à jour',
+                            sprintf('La fiche de %s vient d’être mise à jour.', $jeu->getNom()),
+                            'bell-fill',
+                            $this->generateUrl('app_jeu_show', ['slug' => $jeu->getSlug(), 'id' => $jeu->getId()]),
+                        );
+                    }
+                }
+                $entityManager->flush();
+            }
             $this->addFlash('success', 'La fiche a été modifiée.');
 
             if ($jeu->getStatut() === StatutJeu::Approuve) {

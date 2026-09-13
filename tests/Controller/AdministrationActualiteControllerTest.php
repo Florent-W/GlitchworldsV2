@@ -69,6 +69,38 @@ final class AdministrationActualiteControllerTest extends WebTestCase
         $entityManager->flush();
     }
 
+    public function testUnAdministrateurPeutNommerUnModerateurSansModifierUnAdministrateur(): void
+    {
+        $client = self::createClient();
+        $suffixe = bin2hex(random_bytes(5));
+        $administrateur = (new Utilisateur())->setPseudo('AdminRoles'.$suffixe)->setEmail('admin-roles-'.$suffixe.'@glitchworlds.local')->setRoles(['ROLE_ADMIN']);
+        $membre = (new Utilisateur())->setPseudo('MembreRoles'.$suffixe)->setEmail('membre-roles-'.$suffixe.'@glitchworlds.local');
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($administrateur);
+        $entityManager->persist($membre);
+        $entityManager->flush();
+        $adminId = $administrateur->getId();
+        $membreId = $membre->getId();
+
+        $client->loginUser($administrateur);
+        $crawler = $client->request('GET', '/administration/membres?recherche='.$membre->getPseudo());
+        self::assertResponseIsSuccessful();
+        $client->submit($crawler->filter('form[action="/administration/membres/'.$membreId.'/role"]')->form(['role' => 'moderateur']));
+        self::assertResponseRedirects('/administration/membres?recherche='.$membre->getPseudo());
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $membreActualise = $entityManager->find(Utilisateur::class, $membreId);
+        self::assertInstanceOf(Utilisateur::class, $membreActualise);
+        self::assertContains('ROLE_MODERATEUR', $membreActualise->getRoles());
+
+        $client->request('GET', '/administration/membres?recherche='.$administrateur->getPseudo());
+        self::assertSelectorTextContains('tbody', 'Administrateur');
+        self::assertSelectorNotExists('form[action="/administration/membres/'.$adminId.'/role"]');
+
+        $entityManager->remove($entityManager->find(Utilisateur::class, $membreId));
+        $entityManager->remove($entityManager->find(Utilisateur::class, $adminId));
+        $entityManager->flush();
+    }
+
     public function testUnAdministrateurPeutCreerUneActualite(): void
     {
         $client = self::createClient();

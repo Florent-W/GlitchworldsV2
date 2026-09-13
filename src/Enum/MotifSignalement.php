@@ -9,6 +9,7 @@ enum MotifSignalement: string
     case ContenuIllegal = 'contenu_illegal';
     case FaussesInformations = 'fausses_informations';
     case DroitsAuteur = 'droits_auteur';
+    case LienManquant = 'lien_manquant';
     case Autre = 'autre';
 
     public function label(): string
@@ -19,6 +20,7 @@ enum MotifSignalement: string
             self::ContenuIllegal => 'Contenu illégal ou dangereux',
             self::FaussesInformations => 'Informations trompeuses',
             self::DroitsAuteur => 'Atteinte aux droits d’auteur',
+            self::LienManquant => 'Lien manquant ou indisponible',
             self::Autre => 'Autre raison',
         };
     }

@@ -84,6 +84,10 @@ class Jeu
     #[ORM\ManyToMany(targetEntity: Utilisateur::class, mappedBy: 'jeuxFavoris')]
     private Collection $ajouteAuxFavorisPar;
 
+    /** @var Collection<int, Utilisateur> */
+    #[ORM\ManyToMany(targetEntity: Utilisateur::class, mappedBy: 'jeuxSuivis')]
+    private Collection $suiviPar;
+
     /** @var Collection<int, Actualite> */
     #[ORM\ManyToMany(targetEntity: Actualite::class, mappedBy: 'jeux')]
     private Collection $actualites;
@@ -130,6 +134,7 @@ class Jeu
         $this->genres = new ArrayCollection();
         $this->langues = new ArrayCollection();
         $this->ajouteAuxFavorisPar = new ArrayCollection();
+        $this->suiviPar = new ArrayCollection();
         $this->actualites = new ArrayCollection();
         $this->jeuxAssocies = new ArrayCollection();
         $this->modsAssocies = new ArrayCollection();
@@ -360,6 +365,9 @@ class Jeu
     {
         return $this->ajouteAuxFavorisPar;
     }
+
+    /** @return Collection<int, Utilisateur> */
+    public function getSuiviPar(): Collection { return $this->suiviPar; }
 
     public function getStatut(): StatutJeu
     {

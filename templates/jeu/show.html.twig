@@ -114,17 +114,20 @@
                         {% for item in jeu.genres %}<a class="gw-game-hero__tag" href="{{ path('app_jeux', {genre: item.slug}) }}">{{ item.nom }}</a>{% endfor %}
                         {% for item in jeu.plateformes %}<a class="gw-game-hero__tag" href="{{ path('app_jeux', {plateforme: item.slug}) }}">{{ item.nom }}</a>{% endfor %}
                     </div>
-                    <div class="d-flex flex-wrap gap-2 mt-4">
-                        <a class="btn btn-light btn-lg" href="#a-propos"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>Plus d’infos</a>
+                    <div class="gw-game-hero__actions d-flex flex-wrap gap-2 mt-4">
+                        <a class="btn btn-light" href="#a-propos"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>Plus d’infos</a>
                         {% if app.user %}
-                            <form method="post" action="{{ path('app_mes_jeux_ajouter', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('bibliotheque-' ~ jeu.id) }}"><input type="hidden" name="statut" value="a_jouer"><button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-collection-play-fill me-2" aria-hidden="true"></i>Ajouter à Mes jeux</button></form>
+                            <form method="post" action="{{ path('app_mes_jeux_ajouter', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('bibliotheque-' ~ jeu.id) }}"><input type="hidden" name="statut" value="a_jouer"><button class="btn btn-primary" type="submit"><i class="bi bi-collection-play-fill me-2" aria-hidden="true"></i>Mes jeux</button></form>
                             {% set estFavori = app.user.aPourFavori(jeu) %}
-                            <form method="post" action="{{ path('app_jeu_favori', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('favori-jeu-' ~ jeu.id) }}"><button class="btn {{ estFavori ? 'btn-light' : 'btn-outline-light' }} btn-lg" type="submit"><i class="bi bi-heart{{ estFavori ? '-fill' : '' }} me-2" aria-hidden="true"></i>{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}</button></form>
+                            <form method="post" action="{{ path('app_jeu_favori', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('favori-jeu-' ~ jeu.id) }}"><button class="btn {{ estFavori ? 'btn-light' : 'btn-outline-light' }}" type="submit" aria-label="{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}"><i class="bi bi-heart{{ estFavori ? '-fill' : '' }} me-2" aria-hidden="true"></i>Favoris</button></form>
+                            {% set estSuivi = app.user.suitJeu(jeu) %}
+                            <form method="post" action="{{ path('app_jeu_suivre', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('suivre-jeu-' ~ jeu.id) }}"><button class="btn {{ estSuivi ? 'btn-light' : 'btn-outline-light' }}" type="submit" aria-label="{{ estSuivi ? 'Ne plus suivre ce jeu' : 'Suivre ce jeu' }}"><i class="bi bi-bell{{ estSuivi ? '-fill' : '' }} me-2" aria-hidden="true"></i>Suivre</button></form>
                         {% else %}
-                            <a class="btn btn-outline-light btn-lg" href="{{ path('app_connexion') }}"><i class="bi bi-heart me-2" aria-hidden="true"></i>Ajouter aux favoris</a>
+                            <a class="btn btn-outline-light" href="{{ path('app_connexion') }}"><i class="bi bi-heart me-2" aria-hidden="true"></i>Favoris</a>
+                            <a class="btn btn-outline-light" href="{{ path('app_connexion') }}"><i class="bi bi-bell me-2" aria-hidden="true"></i>Suivre</a>
                         {% endif %}
                         {% if is_granted('PROPOSITION_JEU_MODIFIER', jeu) %}
-                            <a class="btn btn-warning btn-lg" href="{{ path('app_jeu_proposition_modifier', {id: jeu.id}) }}"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Modifier la fiche</a>
+                            <a class="btn btn-warning" href="{{ path('app_jeu_proposition_modifier', {id: jeu.id}) }}"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Modifier</a>
                         {% endif %}
                     </div>
                 </div>
@@ -198,14 +201,17 @@
                     <div class="gw-game-hero__actions d-flex flex-wrap gap-2 mt-4">
                         <a class="btn btn-light" href="#a-propos"><i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i>Plus d’infos</a>
                         {% if app.user %}
-                            <form method="post" action="{{ path('app_mes_jeux_ajouter', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('bibliotheque-' ~ jeu.id) }}"><input type="hidden" name="statut" value="a_jouer"><button class="btn btn-primary" type="submit"><i class="bi bi-collection-play-fill me-2" aria-hidden="true"></i>Ajouter à Mes jeux</button></form>
+                            <form method="post" action="{{ path('app_mes_jeux_ajouter', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('bibliotheque-' ~ jeu.id) }}"><input type="hidden" name="statut" value="a_jouer"><button class="btn btn-primary" type="submit"><i class="bi bi-collection-play-fill me-2" aria-hidden="true"></i>Mes jeux</button></form>
                             {% set estFavori = app.user.aPourFavori(jeu) %}
-                            <form method="post" action="{{ path('app_jeu_favori', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('favori-jeu-' ~ jeu.id) }}"><button class="btn {{ estFavori ? 'btn-light' : 'btn-outline-light' }}" type="submit"><i class="bi bi-heart{{ estFavori ? '-fill' : '' }} me-2" aria-hidden="true"></i>{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}</button></form>
+                            <form method="post" action="{{ path('app_jeu_favori', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('favori-jeu-' ~ jeu.id) }}"><button class="btn {{ estFavori ? 'btn-light' : 'btn-outline-light' }}" type="submit" aria-label="{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}"><i class="bi bi-heart{{ estFavori ? '-fill' : '' }} me-2" aria-hidden="true"></i>Favoris</button></form>
+                            {% set estSuivi = app.user.suitJeu(jeu) %}
+                            <form method="post" action="{{ path('app_jeu_suivre', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('suivre-jeu-' ~ jeu.id) }}"><button class="btn {{ estSuivi ? 'btn-light' : 'btn-outline-light' }}" type="submit" aria-label="{{ estSuivi ? 'Ne plus suivre ce jeu' : 'Suivre ce jeu' }}"><i class="bi bi-bell{{ estSuivi ? '-fill' : '' }} me-2" aria-hidden="true"></i>Suivre</button></form>
                         {% else %}
-                            <a class="btn btn-outline-light" href="{{ path('app_connexion') }}"><i class="bi bi-heart me-2" aria-hidden="true"></i>Ajouter aux favoris</a>
+                            <a class="btn btn-outline-light" href="{{ path('app_connexion') }}"><i class="bi bi-heart me-2" aria-hidden="true"></i>Favoris</a>
+                            <a class="btn btn-outline-light" href="{{ path('app_connexion') }}"><i class="bi bi-bell me-2" aria-hidden="true"></i>Suivre</a>
                         {% endif %}
                         {% if is_granted('PROPOSITION_JEU_MODIFIER', jeu) %}
-                            <a class="btn btn-warning" href="{{ path('app_jeu_proposition_modifier', {id: jeu.id}) }}"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Modifier la fiche</a>
+                            <a class="btn btn-warning" href="{{ path('app_jeu_proposition_modifier', {id: jeu.id}) }}"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Modifier</a>
                         {% endif %}
                     </div>
 
@@ -314,6 +320,8 @@
     </section>
     {% endif %}
 
+    {{ include('_publicite_adsense.html.twig', {slot: '4494542924'}) }}
+
     {% set sectionsPresentation = modePresentation != 'complete' ? toutesSections : [] %}
     <section id="a-propos" class="{{ sectionsPresentation is empty ? 'gw-panel ' : '' }}{{ modePresentation == 'complete' ? 'gw-game-presentation--complete ' : '' }}p-4 mt-4">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
@@ -408,6 +416,7 @@
     </section>
 
     <div id="actions-fiche" class="d-flex flex-wrap justify-content-end gap-2 mt-3">
+        {% if app.user %}<form class="d-flex" method="post" action="{{ path('app_jeu_signaler_lien_manquant', {id: jeu.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('signaler-lien-manquant-' ~ jeu.id) }}"><button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Signaler un lien manquant"><i class="bi bi-link-45deg me-1" aria-hidden="true"></i>Lien manquant</button></form>{% else %}<a class="btn btn-sm btn-outline-danger" href="{{ path('app_connexion') }}" aria-label="Se connecter pour signaler un lien manquant"><i class="bi bi-link-45deg me-1" aria-hidden="true"></i>Lien manquant</a>{% endif %}
         {% if app.user and app.user != jeu.createur %}<a class="btn btn-sm btn-outline-danger" href="{{ path('app_signaler', {type: 'jeu', id: jeu.id}) }}"><i class="bi bi-flag me-1" aria-hidden="true"></i>Signaler</a>{% endif %}
     </div>
 

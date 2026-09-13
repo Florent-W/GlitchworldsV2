@@ -17,6 +17,7 @@
         {% for cle, libelle in { fil: "Fil d'activité", discussions: 'Discussions', creations: 'Créations', actualites: 'Actualités' } %}
             <a class="nav-link{{ section == cle ? ' active' : '' }}" href="{{ path('app_communaute', { section: cle }) }}" {{ section == cle ? 'aria-current="page"' : '' }}>{{ libelle }}</a>
         {% endfor %}
+        <a class="nav-link" href="{{ path('app_listes_publiques') }}"><i class="bi bi-list-stars me-1" aria-hidden="true"></i>Listes publiques</a>
         {% if app.user %}
             <a class="nav-link{{ section == 'abonnements' ? ' active' : '' }}" href="{{ path('app_communaute', { section: 'abonnements' }) }}" {{ section == 'abonnements' ? 'aria-current="page"' : '' }}>
                 <i class="bi bi-person-check-fill me-1" aria-hidden="true"></i>Abonnements

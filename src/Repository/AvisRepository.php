@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Avis;
 use App\Entity\Jeu;
+use App\Entity\Utilisateur;
 use App\Enum\StatutJeu;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -54,6 +55,40 @@ class AvisRepository extends ServiceEntityRepository
         }
 
         return $resumes;
+    }
+
+    /**
+     * @param iterable<Jeu> $jeux
+     * @return array<int, float>
+     */
+    public function trouverNotesUtilisateurPour(iterable $jeux, Utilisateur $utilisateur): array
+    {
+        $ids = [];
+        foreach ($jeux as $jeu) {
+            if ($jeu->getId() !== null) {
+                $ids[] = $jeu->getId();
+            }
+        }
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $lignes = $this->createQueryBuilder('avis')
+            ->select('IDENTITY(avis.jeu) AS jeuId', 'avis.note')
+            ->andWhere('avis.auteur = :utilisateur')
+            ->andWhere('avis.jeu IN (:jeux)')
+            ->setParameter('utilisateur', $utilisateur)
+            ->setParameter('jeux', array_values(array_unique($ids)))
+            ->getQuery()
+            ->getArrayResult();
+
+        $notes = [];
+        foreach ($lignes as $ligne) {
+            $notes[(int) $ligne['jeuId']] = (float) $ligne['note'];
+        }
+
+        return $notes;
     }
 
     /**

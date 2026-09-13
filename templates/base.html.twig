@@ -140,7 +140,7 @@
             { label: 'Actualités', icon: 'newspaper',     route: 'app_actualites', couleur: 'gris' }
         ] %}
         {% if app.user %}
-            {% set nav_items = nav_items|merge([{ label: 'Mes jeux', icon: 'collection-play-fill', route: 'app_mes_jeux', couleur: 'vert' }]) %}
+            {% set nav_items = nav_items|merge([{ label: 'Collection', icon: 'collection-play-fill', route: 'app_mes_jeux', couleur: 'vert' }]) %}
         {% endif %}
         {% set nav_items = nav_items|merge([
             { label: 'Communauté', icon: 'people-fill',     route: 'app_communaute', couleur: 'bleu' },
@@ -217,7 +217,7 @@
                             <div id="gw-notif-panel" class="gw-notif-panel" role="region" aria-label="Dernières notifications" data-notifications-target="panneau" hidden></div>
                         </div>
                     {% endif %}
-                    <button type="button" class="gw-icon-btn gw-icon-btn--sound" aria-label="Activer ou couper les sons d'interface" title="Sons d'interface" aria-pressed="true" data-controller="son" data-action="click->son#basculer" data-son-base-url="{{ app.request.basePath }}/sons/">
+                    <button type="button" class="gw-icon-btn gw-icon-btn--sound" aria-label="Activer ou couper le son des vidéos et musiques" title="Son des vidéos et musiques" aria-pressed="true" data-controller="son" data-action="click->son#basculer">
                         <i class="bi bi-volume-up-fill" aria-hidden="true" data-son-target="icone"></i>
                     </button>
                     <button type="button" class="gw-icon-btn" aria-label="Activer le thème sombre" title="Activer le thème sombre" aria-pressed="false" data-controller="theme" data-action="click->theme#basculer"{% if app.user %} data-theme-sync-url="{{ path('app_parametres_preferences') }}"{% endif %}>

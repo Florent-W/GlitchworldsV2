@@ -62,4 +62,33 @@ final class BoutiqueControllerTest extends WebTestCase
         foreach ($entityManager->getRepository(AchatBoutique::class)->findBy(['utilisateur' => $membre]) as $achat) { $entityManager->remove($achat); }
         $entityManager->remove($membre); $entityManager->flush();
     }
+
+    public function testUnAchatEquipableProposeDeLEquiperImmediatement(): void
+    {
+        $client = self::createClient();
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $article = $entityManager->getRepository(ArticleBoutique::class)->findOneBy(['slug' => 'explorateur-du-glitch']);
+        self::assertInstanceOf(ArticleBoutique::class, $article);
+        $suffixe = bin2hex(random_bytes(5));
+        $membre = (new Utilisateur())->setPseudo('Modal'.$suffixe)->setEmail('modal-'.$suffixe.'@test.local')->setPoints(500);
+        $entityManager->persist($membre); $entityManager->flush();
+        $membreId = $membre->getId(); $articleId = $article->getId();
+        $client->loginUser($membre);
+
+        $crawler = $client->request('GET', '/boutique');
+        $formulaire = $crawler->filter(sprintf('form[action="/boutique/%d/acheter"]', $articleId))->form();
+        $client->submit($formulaire);
+        self::assertResponseRedirects('/boutique');
+        $crawler = $client->followRedirect();
+        self::assertSelectorTextContains('.modal', 'Veux-tu équiper cet élément sur ton profil maintenant');
+        $client->submit($crawler->selectButton('Équiper maintenant')->form());
+        self::assertResponseRedirects('/boutique');
+
+        $entityManager->clear();
+        $membre = $entityManager->find(Utilisateur::class, $membreId);
+        self::assertSame($articleId, $membre?->getTitreEquipe()?->getId());
+        $membre?->setTitreEquipe(null); $entityManager->flush();
+        foreach ($entityManager->getRepository(AchatBoutique::class)->findBy(['utilisateur' => $membre]) as $achat) { $entityManager->remove($achat); }
+        $entityManager->remove($membre); $entityManager->flush();
+    }
 }

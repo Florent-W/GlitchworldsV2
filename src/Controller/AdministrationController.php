@@ -16,7 +16,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\StatistiquesAdministration;
+use App\Service\GoogleSearchConsole;
 use App\Entity\ActionModeration;
+use App\Entity\Utilisateur;
+use App\Service\JournalModeration;
 use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/administration', name: 'app_administration_')]
@@ -33,6 +36,7 @@ final class AdministrationController extends AbstractController
         SignalementRepository $signalements,
         Connection $connexion,
         StatistiquesAdministration $statistiquesAdministration,
+        GoogleSearchConsole $searchConsole,
         EntityManagerInterface $entityManager,
     ): Response {
         $activites = [];
@@ -67,6 +71,16 @@ final class AdministrationController extends AbstractController
             ];
         }
         usort($activites, static fn (array $a, array $b): int => $b['date'] <=> $a['date']);
+        $periode = $request->query->getInt('periode', 30);
+        $filtreContenu = $request->query->getString('contenu', 'tout');
+        $filtreContenu = in_array($filtreContenu, ['tout', 'jeux', 'actualites'], true) ? $filtreContenu : 'tout';
+        $performanceGoogle = null;
+        $erreurSearchConsole = false;
+        try {
+            $performanceGoogle = $searchConsole->statistiques($periode, $filtreContenu);
+        } catch (\Throwable) {
+            $erreurSearchConsole = true;
+        }
 
         return $this->render('administration/tableau_de_bord.html.twig', [
             'statistiques' => [
@@ -80,7 +94,15 @@ final class AdministrationController extends AbstractController
             'derniersJeux' => $jeux->findBy([], ['creeLe' => 'DESC'], 5),
             'activites' => array_slice($activites, 0, 8),
             'tendances' => $this->construireTendances($connexion),
-            'audience' => $statistiquesAdministration->construire($request->query->getInt('periode', 30)),
+            'audience' => $statistiquesAdministration->construire($periode),
+            'searchConsole' => [
+                'configuree' => $searchConsole->estConfiguree(),
+                'connectee' => $searchConsole->estConnectee(),
+                'performance' => $performanceGoogle,
+                'erreur' => $erreurSearchConsole,
+                'jours' => in_array($periode, [7, 28, 30, 90, 180, 365], true) ? $periode : 30,
+                'contenu' => $filtreContenu,
+            ],
             'journalModeration' => $entityManager->getRepository(ActionModeration::class)->findBy([], ['effectueeLe' => 'DESC'], 10),
         ]);
     }
@@ -94,6 +116,43 @@ final class AdministrationController extends AbstractController
             'membres' => $utilisateurs->rechercherPourAdministration($recherche),
             'recherche' => $recherche,
         ]);
+    }
+
+    #[Route('/membres/{id}/role', name: 'membre_role', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function modifierRoleMembre(
+        Request $request,
+        Utilisateur $membre,
+        EntityManagerInterface $entityManager,
+        JournalModeration $journalModeration,
+    ): Response {
+        if (!$this->isCsrfTokenValid('modifier-role-'.$membre->getId(), $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+        if (in_array('ROLE_ADMIN', $membre->getRoles(), true)) {
+            $this->addFlash('warning', 'Le rôle d’un administrateur ne peut être modifié que directement en base de données.');
+
+            return $this->redirectToRoute('app_administration_membres');
+        }
+
+        $role = $request->request->getString('role');
+        if (!in_array($role, ['membre', 'moderateur'], true)) {
+            throw $this->createNotFoundException('Rôle inconnu.');
+        }
+        $membre->setRoles($role === 'moderateur' ? ['ROLE_MODERATEUR'] : []);
+        $administrateur = $this->getUser();
+        $journalModeration->ajouter(
+            $administrateur instanceof Utilisateur ? $administrateur : null,
+            'modification_role',
+            'utilisateur',
+            $membre->getId(),
+            sprintf('%s est maintenant %s.', $membre->getPseudo(), $role === 'moderateur' ? 'modérateur' : 'membre'),
+        );
+        $entityManager->flush();
+        $this->addFlash('success', sprintf('Le rôle de %s a été mis à jour.', $membre->getPseudo()));
+
+        $recherche = trim($request->request->getString('recherche'));
+
+        return $this->redirectToRoute('app_administration_membres', $recherche === '' ? [] : ['recherche' => $recherche]);
     }
 
     /** @return array{graphique: list<array{jour: string, membres: int, commentaires: int}>, maximum: int, membres30: int, commentaires30: int, jeux30: int, evolutionMembres: ?int, evolutionCommentaires: ?int} */

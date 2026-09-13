@@ -157,6 +157,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     #[ORM\JoinTable(name: 'utilisateur_jeu_favori')]
     private Collection $jeuxFavoris;
 
+    /** @var Collection<int, Jeu> */
+    #[ORM\ManyToMany(targetEntity: Jeu::class, inversedBy: 'suiviPar')]
+    #[ORM\JoinTable(name: 'utilisateur_jeu_suivi')]
+    private Collection $jeuxSuivis;
+
     /** @var Collection<int, self> */
     #[ORM\ManyToMany(targetEntity: self::class, inversedBy: 'abonnes')]
     #[ORM\JoinTable(name: 'utilisateur_abonnement')]
@@ -182,6 +187,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     public function __construct()
     {
         $this->jeuxFavoris = new ArrayCollection();
+        $this->jeuxSuivis = new ArrayCollection();
         $this->fichesMisesEnAvant = new ArrayCollection();
         $this->abonnements = new ArrayCollection();
         $this->abonnes = new ArrayCollection();
@@ -485,4 +491,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     {
         return $this->jeuxFavoris->contains($jeu);
     }
+
+    /** @return Collection<int, Jeu> */
+    public function getJeuxSuivis(): Collection { return $this->jeuxSuivis; }
+    public function suitJeu(Jeu $jeu): bool { return $this->jeuxSuivis->contains($jeu); }
+    public function suivreJeu(Jeu $jeu): static { if (!$this->jeuxSuivis->contains($jeu)) { $this->jeuxSuivis->add($jeu); } return $this; }
+    public function nePlusSuivreJeu(Jeu $jeu): static { $this->jeuxSuivis->removeElement($jeu); return $this; }
 }
