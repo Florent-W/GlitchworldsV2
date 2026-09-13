@@ -93,6 +93,8 @@
         </ol>
     </nav>
 
+    {{ include('_publicite_adsense.html.twig', {slot: '4494542924', format: 'horizontal', layout: 'in-article', responsive: false}) }}
+
     {% set toutesSections = jeu.contenu|sections_jeu %}
     {% set sectionTelechargement = toutesSections|filter(section => section.type == 'telechargement')|first %}
     {% set presentationCourte = jeu.description %}
@@ -319,8 +321,6 @@
         <div class="col-md-7 col-xl-4"><div class="gw-console-panel h-100 p-4"><h2 class="h6 text-uppercase">Similaires que vous aimerez</h2><div class="gw-overview-similar">{% for similaire in jeuxSimilaires|slice(0, 4) %}<a href="{{ path('app_jeu_show', {slug: similaire.slug, id: similaire.id}) }}">{% if similaire.miniature starts with 'miniature.' %}<img src="{{ asset('uploads/jeux/' ~ similaire.id ~ '/' ~ similaire.miniature) }}" alt="" loading="lazy">{% else %}<span><i class="bi bi-controller"></i></span>{% endif %}<small>{{ similaire.nom }}</small></a>{% else %}<p class="small text-secondary mb-0">Aucune suggestion pour le moment.</p>{% endfor %}</div></div></div>
     </section>
     {% endif %}
-
-    {{ include('_publicite_adsense.html.twig', {slot: '4494542924'}) }}
 
     {% set sectionsPresentation = modePresentation != 'complete' ? toutesSections : [] %}
     <section id="a-propos" class="{{ sectionsPresentation is empty ? 'gw-panel ' : '' }}{{ modePresentation == 'complete' ? 'gw-game-presentation--complete ' : '' }}p-4 mt-4">

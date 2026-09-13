@@ -131,6 +131,8 @@
         {{ _self.listeJeux('populaires', 'Jeux populaires', 'star-fill', populaires, notesJeux, commentairesJeux) }}
         {{ _self.listeActualites('glitchs', 'Derniers glitchs', 'lightning-charge-fill', derniersGlitchs, path('app_actualites_glitchs'), commentairesActualites) }}
 
+        {{ include('_publicite_adsense.html.twig', {slot: '1720205774', format: 'auto'}) }}
+
         {% if activiteRecente is not empty or nouveauxMembres is not empty %}
             <section class="gw-panel p-4 mb-4 gw-home-menu gw-home-menu--communaute gw-home-sortable-section" data-home-section="communaute" aria-labelledby="activite-communaute-title">
                 <div class="gw-home-menu__entete d-flex justify-content-between align-items-center gap-3 mb-3">

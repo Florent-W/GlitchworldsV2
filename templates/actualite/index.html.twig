@@ -40,6 +40,8 @@
     {% if actualites is empty %}
         <div class="alert alert-info mb-0">Aucune actualité dans cette catégorie.</div>
     {% else %}
+        <div class="row g-4 align-items-start">
+        <div class="col-xl-9">
         <div class="gw-disposition gw-disposition--grille" data-controller="disposition" data-disposition-mode="grille">
             <div class="d-flex justify-content-end mb-3">
                 {% include '_disposition_boutons.html.twig' with { label: 'Disposition des actualités' } only %}
@@ -54,7 +56,6 @@
                         {% endif %}
                     </div>
                 </div>
-                {% if loop.index == 4 %}<div class="col-12">{{ include('_publicite_adsense.html.twig', {slot: '1720205774'}) }}</div>{% endif %}
             {% endfor %}
         </div>
 
@@ -65,6 +66,11 @@
                 {% endfor %}
             </ul></nav>
         {% endif %}
+        </div>
+        </div>
+        <aside class="col-xl-3 d-none d-xl-block gw-ad-sidebar">
+            {{ include('_publicite_adsense.html.twig', {slot: '1720205774'}) }}
+        </aside>
         </div>
     {% endif %}
 </section>

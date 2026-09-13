@@ -15,6 +15,7 @@
 
 {% block body %}
 <article class="gw-panel p-4 p-lg-5 mx-auto" style="max-width: 980px">
+    {{ include('_publicite_adsense.html.twig', {slot: '4494542924', format: 'fluid', layout: 'in-article', responsive: false}) }}
     <nav aria-label="Fil d’Ariane"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_actualites') }}">Actualités</a></li><li class="breadcrumb-item active" aria-current="page">{{ actualite.categorie.label }}</li></ol></nav>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
         <span class="badge text-bg-primary">{{ actualite.categorie.label }}</span>
@@ -38,7 +39,6 @@
             sizes: '(max-width: 980px) 100vw, 980px'
         } only %}
     {% endif %}
-    {{ include('_publicite_adsense.html.twig', {slot: '4494542924'}) }}
     <hr>
     <div class="gw-article-content">{{ actualite.contenu|bbcode }}</div>
     {% include '_auteur_fiche.html.twig' with { auteur: actualite.auteur } only %}
