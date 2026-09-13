@@ -13,6 +13,10 @@
         {% if app.user %}<a class="btn btn-primary rounded-pill px-4" href="{{ path('app_jeu_proposer') }}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Nouvelle création</a>{% endif %}
     </header>
 
+    {% if activites is not empty %}
+        {{ include('_publicite_adsense.html.twig', {slot: '1720205774', format: 'auto'}) }}
+    {% endif %}
+
     <nav class="nav nav-pills gw-community__tabs" aria-label="Sections de la communauté">
         {% for cle, libelle in { fil: "Fil d'activité", discussions: 'Discussions', creations: 'Créations', actualites: 'Actualités' } %}
             <a class="nav-link{{ section == cle ? ' active' : '' }}" href="{{ path('app_communaute', { section: cle }) }}" {{ section == cle ? 'aria-current="page"' : '' }}>{{ libelle }}</a>

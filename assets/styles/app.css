@@ -1083,6 +1083,16 @@ form.is-open.position-relative {
     min-height: 90px;
 }
 
+.gw-ad-sidebar {
+    position: sticky;
+    top: 1rem;
+}
+
+.gw-ad-sidebar .gw-ad {
+    min-height: 280px;
+    margin-top: 0 !important;
+}
+
 @media (max-width: 575.98px) {
     .gw-ad { min-height: 82px; }
     .gw-ad .adsbygoogle { min-height: 60px; }
